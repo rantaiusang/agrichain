@@ -8,6 +8,8 @@
     <!-- Library Blockchain -->
     <script src="https://unpkg.com/@web3modal/web3modal"></script>
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <!-- Library Chart.js (Grafik Monitoring) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         /* --- CSS VARIABLES & RESET --- */
@@ -87,15 +89,6 @@
         .btn-action:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3);
-        }
-        
-        .btn-monitor {
-            background-color: var(--dark-green); /* Beda warna sedikit agar beda */
-        }
-        
-        .btn-monitor:hover {
-            background-color: #144814;
-            box-shadow: 0 4px 8px rgba(27, 94, 32, 0.3);
         }
 
         .wallet-status-dot {
@@ -240,6 +233,88 @@
             line-height: 1.5;
         }
 
+        /* --- MONITORING SECTION (TAB SYSTEM) --- */
+        .monitoring-nav {
+            background: var(--white);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            border-bottom: 2px solid var(--light-green);
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 70px; /* Di bawah header sticky */
+            z-index: 90;
+        }
+
+        .monitor-tab {
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-grey);
+            transition: all 0.3s;
+            background: #f9f9f9;
+            border: 1px solid transparent;
+        }
+
+        .monitor-tab:hover {
+            color: var(--primary-green);
+            background: #e8f5e9;
+        }
+
+        .monitor-tab.active {
+            background: var(--primary-green);
+            color: white;
+            box-shadow: 0 2px 5px rgba(46, 125, 50, 0.3);
+        }
+
+        .monitor-content {
+            display: none;
+            padding: 20px 0;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .monitor-content.active {
+            display: block;
+        }
+
+        .monitor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .monitor-card {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid #eee;
+        }
+
+        .monitor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .monitor-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--primary-green);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         /* --- MARKET SECTION (Cards) --- */
         .market-section {
             background: var(--white);
@@ -363,14 +438,14 @@
         /* --- CHAT CONTAINER --- */
         .chat-container {
             position: fixed;
-            bottom: 90px; /* Di atas tombol floating */
+            bottom: 90px;
             right: 20px;
             width: 350px;
             background: var(--white);
             border-radius: 16px;
             box-shadow: 0 5px 25px rgba(0,0,0,0.15);
             z-index: 999;
-            display: none; /* Default Hidden */
+            display: none;
             flex-direction: column;
             border: 1px solid #ddd;
             transform-origin: bottom right;
@@ -482,11 +557,6 @@
             </a>
             
             <div style="display: flex; gap: 10px;">
-                <!-- Tombol Monitor (GRAFIK -->
-                <a href="monitor.html" class="btn-action btn-monitor" title="Dashboard Monitor">
-                    <span>📊</span> <span>GRAFIK</span>
-                </a>
-
                 <!-- Tombol Dompet -->
                 <button id="btnWallet" class="btn-action">
                     <div class="wallet-status-dot"></div>
@@ -496,8 +566,14 @@
         </div>
     </header>
 
-    <!-- Main Content: Landing Page -->
-    <main>
+    <!-- TAB NAVIGASI: BERANDA & MONITOR (TERINTEGRASI) -->
+    <div class="monitoring-nav">
+        <div class="monitor-tab active" id="tabHome" onclick="switchTab('home')">🏠 Beranda</div>
+        <div class="monitor-tab" id="tabMonitor" onclick="switchTab('monitor')">📊 Monitor</div>
+    </div>
+
+    <!-- CONTENT: BERANDA (DEFAULT) -->
+    <main id="homeContent">
         <!-- Hero Section -->
         <section class="hero">
             <div class="container">
@@ -506,7 +582,7 @@
                     <p>AgriChain menghubungkan Petani, Pembeli, dan Lembaga secara transparan. Tanpa perantara, data tersimpan aman di jaringan Polygon.</p>
                     
                     <div class="cta-group">
-                        <a href="input-panen.html" class="cta-btn cta-primary">
+                        <a href="#" class="cta-btn cta-primary">
                             <span>🌾</span> Mulai Jual Panen
                         </a>
                         <a href="login.html" class="cta-btn cta-secondary">
@@ -551,7 +627,7 @@
             <div class="container">
                 <div class="section-header">
                     <h2 style="margin:0; color: var(--primary-green);">Panen Siap Jual</h2>
-                    <a href="input-panen.html" style="color: var(--primary-green); text-decoration: none; font-weight: bold;">+ Jual Panen Anda</a>
+                    <a href="#" style="color: var(--primary-green); text-decoration: none; font-weight: bold;">+ Jual Panen Anda</a>
                 </div>
 
                 <div class="card-grid" id="productList">
@@ -561,10 +637,83 @@
         </section>
     </main>
 
+    <!-- CONTENT: MONITOR (TERSEMBUNYI DEFAULT) -->
+    <main id="monitorContent" class="monitor-content">
+        <div class="container">
+            <h2 style="text-align:center; color: var(--primary-green); margin-bottom: 30px;">📊 Sistem Monitor AgriChain</h2>
+            
+            <!-- SUB TABS: PASAR, ANALISA, SMART FARM -->
+            <div style="display:flex; justify-content:center; gap:10px; margin-bottom: 20px;">
+                <button onclick="openMonitorTab(event, 'monMarket')" style="padding:8px 16px; border:1px solid #ddd; background:white; border-radius:8px; cursor:pointer;">📈 Pasar</button>
+                <button onclick="openMonitorTab(event, 'monAnalisa')" style="padding:8px 16px; border:1px solid #ddd; background:white; border-radius:8px; cursor:pointer;">📊 Analisa</button>
+                <button onclick="openMonitorTab(event, 'monFarm')" style="padding:8px 16px; border:1px solid #ddd; background:white; border-radius:8px; cursor:pointer;">🌾 Lahan</button>
+            </div>
+
+            <!-- SUB TAB 1: PASAR (Grafik Harga) -->
+            <div id="monMarket" class="monitor-content active">
+                <div class="monitor-grid">
+                    <div class="monitor-card">
+                        <div class="monitor-header">
+                            <span class="monitor-title">💹 Tren Harga Padi</span>
+                            <span style="font-size:0.8rem; color:#999;">7 Hari Terakhir</span>
+                        </div>
+                        <canvas id="chartHargaPadi"></canvas>
+                    </div>
+                    <div class="monitor-card">
+                        <div class="monitor-header">
+                            <span class="monitor-title">💹 Perbandingan Harga</span>
+                            <span style="font-size:0.8rem; color:#999;">Padi vs Jagung</span>
+                        </div>
+                        <canvas id="chartKomoditas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB TAB 2: ANALISA (Grafik Konsumsi) -->
+            <div id="monAnalisa" class="monitor-content">
+                <div class="monitor-grid">
+                    <div class="monitor-card">
+                        <div class="monitor-header">
+                            <span class="monitor-title">⚗️ Pemakaian Pupuk</span>
+                            <span style="font-size:0.8rem; color:#999;">Bulan Ini</span>
+                        </div>
+                        <canvas id="chartKonsumsi"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUB TAB 3: LAHAN (Log Hama & Cuaca) -->
+            <div id="monFarm" class="monitor-content">
+                <div class="monitor-grid">
+                    <div class="monitor-card">
+                        <div class="monitor-header">
+                            <span class="monitor-title">📈 Log Serangan Hama</span>
+                        </div>
+                        <ul style="list-style: none; padding: 0;">
+                            <li style="padding: 10px; border-bottom: 1px solid #eee;">🐛 1 Feb: Ulat Grayak (Serius) - <a href="#" style="color:red;">[Detail]</a></li>
+                            <li style="padding: 10px; border-bottom: 1px solid #eee;">🐛 3 Jan: Kutu Daun (Ringan)</li>
+                            <li style="padding: 10px; border-bottom: 1px solid #eee;">🐛 5 Jan: Kutu Daun (Ringan)</li>
+                        </ul>
+                    </div>
+                    <div class="monitor-card">
+                        <div class="monitor-header">
+                            <span class="monitor-title">🌦️ Prakiraan Cuaca</span>
+                        </div>
+                        <div style="background: #E8F5E9; padding: 15px; border-radius: 8px;">
+                            <p><strong>Status Cuaca:</strong> Panas Terik (32°C)</p>
+                            <p><strong>Saran:</strong> Siram sore hari ini (16:00).</p>
+                            <button style="padding: 8px 16px; background: #2E7D32; color: white; border:none; border-radius: 5px; cursor: pointer;">Atur Otomatis</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
     <!-- 1. FLOATING CHAT BUTTON (TOMBOL BULAT) -->
     <div id="chatFloatBtn" class="chat-float-btn">
-        <!-- SVG Icon Chat -->
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-.7 5.2 8.5 8.5 0 0 1-7.8 4 8.5 8.5 0 0 1-4.7-4.5 8.5 8.5 0 0 1-1.3-1.7 8.5 8.5 0 0 1-5.5-2.3 2.9-2.9 5.9-3.5 4.1-1.3 4.8-2.8 1.5-3.3 1.5-6.6 0-10.6 4.2-10.6 8.4 0 1.3.5 1.6 3.2-2.3 5.2-4.1 5.5 7.3 0 9.6-2.3 9.6-6.5 0-8.4-2.3-8.4-4.8 0-3.1 1.1-5.5 3.3-4.1 5.5-3.7 5.2-8.2 2.3-9.6 2.3-8.4 0-6.5-4.2-10.6-8.4 0-1.3-.5-1.6-3.2-2.3-5.2-4.1-8.5-6.2 10.6-8.4-2.3-1.6-5.5-2.3-8.4-2.3-1.3 0-.3 0 .4 0l1.2-2.4c-.6-1.3-2-2.5-2-4.1 0-3.4-2.8-6.2-2-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path><path d="M14.9 18c.1 0 .3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path></svg>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-.7 5.2 8.5 8.5 0 0 1-7.8 4 8.5 8.5 0 0 1-4.7-4.5 8.5 8.5 0 0 1-1.3-1.7 8.5 8.5 0 0 1-5.5-2.3 2.9-2.9 5.9-3.5 4.1-1.3 4.8-2.8 1.5-3.3 1.5-6.6 0-10.6 4.2-10.6 8.4 0 1.3.5 1.6 3.2-2.3 5.2-4.1 5.5 7.3 0 9.6-2.3 9.6-6.5 0-8.4-2.3-8.4-4.8 0-3.1 1.1-5.5 3.3-4.1 5.5-3.7 5.2-8.2 2.3-9.6 2.3-8.4 0-6.5-4.2-10.6-8.4 0-1.3-.5-1.6-3.2-2.3-5.2-4.1-8.5-6.2 10.6-8.4-2.3-1.6-5.5-2.3-8.4-2.3-1.3 0-.3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path><path d="M14.9 18c.1 0 .3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path></svg>
     </div>
 
     <!-- 2. CHAT CONTAINER (POP UP) -->
@@ -596,8 +745,111 @@
         const chatBox = document.getElementById('chatBox');
         const closeChatBtn = document.getElementById('closeChatBtn');
         const sendChatBtn = document.getElementById('sendChatBtn');
+        
+        // Elements Tab
+        const tabHome = document.getElementById('tabHome');
+        const tabMonitor = document.getElementById('tabMonitor');
+        const homeContent = document.getElementById('homeContent');
+        const monitorContent = document.getElementById('monitorContent');
 
-        // --- A. CEK LOGIN SESI ---
+        // --- A. FUNGSI TAB UTAMA (BERANDA VS MONITOR) ---
+        window.switchTab = function(tabName) {
+            if (tabName === 'home') {
+                // Tampilkan Beranda
+                homeContent.style.display = 'block';
+                monitorContent.style.display = 'none';
+                tabHome.classList.add('active');
+                tabMonitor.classList.remove('active');
+                // Scroll ke atas
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else if (tabName === 'monitor') {
+                // Tampilkan Monitor
+                homeContent.style.display = 'none';
+                monitorContent.style.display = 'block';
+                tabMonitor.classList.add('active');
+                tabHome.classList.remove('active');
+                
+                // Render Grafik Monitor saat tab dibuka
+                renderCharts();
+            }
+        };
+
+        // --- B. FUNGSI SUB TAB MONITOR ---
+        window.openMonitorTab = function(evt, monName) {
+            var i, tabcontent, tabs;
+            tabcontent = document.getElementsByClassName("monitor-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            document.getElementById(monName).style.display = "block";
+        };
+
+        // --- C. FUNGSI RENDER CHART (Monitor) ---
+        function renderCharts() {
+            // 1. Chart Harga Padi
+            const ctxPadi = document.getElementById('chartHargaPadi');
+            if (ctxPadi) {
+                new Chart(ctxPadi, {
+                    type: 'line',
+                    data: {
+                        labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+                        datasets: [{
+                            label: 'Harga Padi (Rp/Kg)',
+                            data: [6200, 6300, 6250, 6400, 6500, 6350, 6400],
+                            borderColor: '#2E7D32',
+                            backgroundColor: 'rgba(46, 125, 50, 0.2)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            // 2. Chart Komoditas
+            const ctxKomoditas = document.getElementById('chartKomoditas');
+            if (ctxKomoditas) {
+                new Chart(ctxKomoditas, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Padi', 'Jagung', 'Kopi', 'Cabai'],
+                        datasets: [{
+                            label: 'Rata-rata Harga (Rp/Kg)',
+                            data: [6400, 4100, 55000, 18000],
+                            backgroundColor: [
+                                'rgba(46, 125, 50, 0.7)',
+                                'rgba(255, 193, 7, 0.7)',
+                                'rgba(139, 69, 19, 0.7)',
+                                'rgba(205, 92, 92, 0.7)'
+                            ]
+                        }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false }
+                });
+            }
+
+            // 3. Chart Konsumsi
+            const ctxKonsumsi = document.getElementById('chartKonsumsi');
+            if (ctxKonsumsi) {
+                new Chart(ctxKonsumsi, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Urea', 'NPK', 'Organik'],
+                        datasets: [{
+                            label: 'Pemakaian (Kg)',
+                            data: [500, 300, 100],
+                            backgroundColor: '#FFC107'
+                        }]
+                    },
+                    options: {
+                        scales: { y: { beginAtZero: true } },
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+        }
+
+        // --- D. CEK LOGIN SESI ---
         const token = localStorage.getItem('agrichain_token');
         const userStr = localStorage.getItem('agrichain_user');
 
@@ -616,7 +868,7 @@
             }
         }
 
-        // --- B. FUNGSI PRODUK (DUMMY) ---
+        // --- E. FUNGSI PRODUK (DUMMY) ---
         function getProducts() {
             return new Promise(resolve => {
                 setTimeout(() => {
@@ -629,7 +881,7 @@
             });
         }
 
-        // --- C. IMPORT CHAT MODUL ---
+        // --- F. IMPORT CHAT MODUL ---
         async function loadChatModule() {
             try {
                 const module = await import('./src/appchat.js');
@@ -644,7 +896,7 @@
             }
         }
 
-        // --- D. RENDER PRODUK ---
+        // --- G. RENDER PRODUK ---
         getProducts().then(products => {
             productList.innerHTML = ''; 
 
@@ -661,7 +913,7 @@
                     <div class="card-body">
                         <h3 class="card-title">${prod.name}</h3>
                         <div class="card-meta">
-                            <svg class="icon" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,1 2,12A10,10 0 0,1 2,12Z"/></svg>
+                            <svg class="icon" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,1 2,12A10,10 0 0,1 2,12M12,2A10,10 0 0,1 2,12Z"/></svg>
                             <span>Update: 2 jam lalu</span>
                         </div>
                         <div class="card-price">Rp ${prod.price} / kg</div>
@@ -674,44 +926,35 @@
             });
         });
 
-        // --- E. LOAD CHAT HISTORY ---
+        // --- H. LOAD CHAT HISTORY ---
         loadChatModule().then(chatModule => {
             const history = chatModule.getChatHistory();
-            // JANGAN RENDER HISTORY SAAT LOAD HALAMAN
-            // Biar chat box defaultnya kosong ("Mulai percakapan...")
         });
 
-        // --- F. TOGGLE CHAT (BUKA/TUTUP + HAPUS VISUAL) ---
+        // --- I. TOGGLE CHAT (BUKA/TUTUP + HAPUS VISUAL) ---
         window.toggleChat = function() {
-            // Jika Widget Tertutup (Display: None)
             if (chatContainer.style.display === 'none' || chatContainer.style.display === '') {
-                
-                // 1. BUKA Widget (Display: Flex)
                 chatContainer.style.display = 'flex'; 
                 chatInput.focus();
 
-                // 2. HAPUS VISUAL LAMA (Agar "Mulai Percakapan")
+                // Bersihkan Visual
                 while (chatBox.firstChild) {
                     chatBox.removeChild(chatBox.firstChild);
                 }
 
-                // 3. TEKS DEFAULT
                 chatBox.innerHTML = '<div style="text-align: center; color: #999; margin-top: 20px;">Mulai percakapan...</div>';
 
             } else {
-                // Jika Widget Terbuka (Display: Flex)
-                
-                // 1. TUTUP Widget (Display: None)
                 chatContainer.style.display = 'none'; 
             }
         };
 
-        // --- G. HANDLE WALLET ---
+        // --- J. HANDLE WALLET ---
         window.handleProfileClick = async function() {
-            alert("Fitur koneksi wallet akan aktif saat Backend Server dinyalakan.");
+            alert("Fitur koneksi wallet akan aktif saat WalletConnect dipasang.");
         };
 
-        // --- H. EVENT LISTENER ---
+        // --- K. EVENT LISTENER ---
         
         // 1. Tombol Chat Floating
         if (chatFloatBtn) {
@@ -723,27 +966,23 @@
             closeChatBtn.addEventListener('click', window.toggleChat);
         }
 
-        // 3. Tombol Kirim (➤)
+        // 3. Tombol Kirim
         if (sendChatBtn) {
             sendChatBtn.addEventListener('click', function() {
                 const q = chatInput.value;
                 if (!q.trim()) return;
 
-                // 1. Render Bubble User (UI Cepat)
                 chatBox.innerHTML += `<div class="chat-bubble user">${q}</div>`;
                 chatBox.scrollTop = chatBox.scrollHeight;
 
-                // 2. Panggil Fungsi Modular AI (Analisa Pintar)
                 loadChatModule().then(chatModule => {
                     chatModule.handleChat(q, "Umum");
                 });
-
-                // 3. Reset Input
                 chatInput.value = '';
             });
         }
 
-        // --- I. TOAST (Helper) ---
+        // --- L. TOAST (Helper) ---
         function showToast(message) {
             const toast = document.getElementById('toast');
             if(!toast) return;
