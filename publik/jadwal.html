@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jadwal & Kegiatan - AgriChain</title>
+    
+    <!-- Library Blockchain -->
+    <script src="https://unpkg.com/@web3modal/web3modal"></script>
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+    <style>
+        :root {
+            --primary-green: #2E7D32;
+            --light-green: #E8F5E9;
+            --dark-green: #1B5E20;
+            --text-dark: #333;
+            --white: #ffffff;
+            --shadow: 0 2px 5px rgba(0,0,0,0.05);
+            --radius: 8px;
+        }
+
+        body {
+            font-family: "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        h2 { color: var(--primary-green); margin-top: 0; }
+        
+        /* Form Styles */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: var(--text-dark); }
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        .form-actions { display: flex; gap: 10px; margin-top: 20px; }
+        
+        .btn-primary {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-secondary {
+            background: #eee;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th { background-color: var(--light-green); color: var(--primary-green); }
+        
+        /* Status Badge */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .status-upcoming { background: #FFF3E0; color: #F57F17; }
+        .status-done { background: #E8F5E9; color: #2E7D32; }
+
+        /* Alert */
+        .alert {
+            padding: 15px;
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* Header Nav */
+        .header-nav {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .back-link { color: var(--primary-green); text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header-nav">
+            <h2>🗓️ Jadwal Pertanian</h2>
+            <a href="index.html" class="back-link">Kembali ke Beranda</a>
+        </div>
+
+        <!-- Form Input Jadwal -->
+        <div class="card">
+            <h3>Input Kegiatan Baru</h3>
+            <div id="alertBox" class="alert"></div>
+            <form id="jadwalForm">
+                <div class="form-group">
+                    <label for="kegiatan">Nama Kegiatan</label>
+                    <input type="text" id="kegiatan" placeholder="Contoh: Tanam Padi, Panen Jagung" required>
+                </div>
+                <div class="form-group">
+                    <label for="tanggal">Tanggal & Waktu</label>
+                    <input type="datetime-local" id="tanggal" required>
+                </div>
+                <div class="form-group">
+                    <label for="catatan">Catatan / Detail</label>
+                    <textarea id="catatan" rows="3" placeholder="Contoh: Siapkan bibit dan pupuk..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="resetForm()">Reset</button>
+                    <button type="submit" class="btn-primary">Simpan Jadwal</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabel Daftar Jadwal -->
+        <div class="card">
+            <h3>Daftar Kegiatan Saya</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Kegiatan</th>
+                        <th>Tanggal</th>
+                        <th>Waktu</th>
+                        <th>Status</th>
+                        <th>Catatan</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="jadwalBody">
+                    <!-- Data akan dirender lewat JS -->
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: #999;">Belum ada jadwal.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Script Utama -->
+    <script type="module">
+        // 1. DATA DUMMY (Simulasi Database Supabase)
+        // Karena backend offline, kita simpan data di array lokal JavaScript
+        let jadwalDB = [
+            { id: 1, kegiatan: "Tanam Benih Padi", tanggal: "2023-11-10T07:00", catatan: "Gunakan bibit unggul." },
+            { id: 2, kegiatan: "Pupuk Sawah", tanggal: "2023-11-12T15:00", catatan: "Tebarkan NPK 20kg per petak." }
+        ];
+
+        // 2. DOM Elements
+        const formJadwal = document.getElementById('jadwalForm');
+        const jadwalBody = document.getElementById('jadwalBody');
+        const alertBox = document.getElementById('alertBox');
+
+        // 3. Render Tabel
+        function renderTable() {
+            jadwalBody.innerHTML = '';
+            
+            // Sort jadwal berdasarkan tanggal (terbaru di atas)
+            jadwalDB.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+            if (jadwalDB.length === 0) {
+                jadwalBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Belum ada jadwal.</td></tr>';
+                return;
+            }
+
+            jadwalDB.forEach(item => {
+                const dateObj = new Date(item.tanggal);
+                const tglIndo = dateObj.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+                const jamIndo = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                const isUpcoming = new Date(item.tanggal) > new Date();
+
+                const statusBadge = isUpcoming 
+                    ? '<span class="status-badge status-upcoming">Akan Datang</span>' 
+                    : '<span class="status-badge status-done">Selesai</span>';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${item.kegiatan}</strong></td>
+                    <td>${tglIndo}</td>
+                    <td>${jamIndo}</td>
+                    <td>${statusBadge}</td>
+                    <td style="font-size: 0.9rem; color: #666;">${item.catatan}</td>
+                    <td><button class="btn-secondary" style="padding: 5px 10px; font-size: 0.8rem; background: #e74c3c; color: white; border: none;" onclick="hapusJadwal(${item.id})">Hapus</button></td>
+                `;
+                jadwalBody.appendChild(row);
+            });
+        }
+
+        // 4. Handle Submit Form (Tambah Jadwal)
+        formJadwal.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const kegiatan = document.getElementById('kegiatan').value;
+            const tanggal = document.getElementById('tanggal').value;
+            const catatan = document.getElementById('catatan').value;
+
+            if (jadwalDB.length >= 5) {
+                showAlert("Versi demo maksimal 5 jadwal.");
+                return;
+            }
+
+            // Tambah ke Database
+            const newId = jadwalDB.length > 0 ? jadwalDB[jadwalDB.length - 1].id + 1 : 1;
+            const newJadwal = { id: newId, kegiatan, tanggal, catatan };
+            
+            jadwalDB.push(newJadwal);
+            
+            renderTable();
+            resetForm();
+            showAlert("Jadwal berhasil ditambahkan!");
+        });
+
+        // 5. Handle Hapus
+        window.hapusJadwal = function(id) {
+            const confirmDel = confirm("Hapus jadwal ini?");
+            if (confirmDel) {
+                jadwalDB = jadwalDB.filter(j => j.id !== id);
+                renderTable();
+            }
+        }
+
+        // 6. Helper Functions
+        function resetForm() {
+            formJadwal.reset();
+        }
+
+        function showAlert(msg) {
+            alertBox.innerText = msg;
+            alertBox.style.display = 'block';
+            setTimeout(() => { alertBox.style.display = 'none'; }, 3000);
+        }
+
+        // 7. Init: Cek Jadwal Terdekat & Notifikasi Sederhana
+        document.addEventListener("DOMContentLoaded", () => {
+            renderTable();
+
+            // Cek Jadwal Terdekat
+            const jadwalTerdekat = jadwalDB
+                .map(j => ({ ...j, date: new Date(j.tanggal) }))
+                .filter(j => j.date >= new Date())
+                .sort((a, b) => a.date - b.date)[0];
+
+            if (jadwalTerdekat) {
+                const tglIndo = jadwalTerdekat.date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' });
+                const jamIndo = jadwalTerdekat.date.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                
+                // Notifikasi (Alert Sederhana)
+                setTimeout(() => {
+                    alert(`⚠️ PENGINGATAN JADWAL! \n\nKegiatan: ${jadwalTerdekat.kegiatan}\nWaktu: ${tglIndo}, Pukul ${jamIndo}`);
+                }, 1000); // Delay 1 detik agar render selesai dulu
+            }
+        });
+
+    </script>
+</body>
+</html>

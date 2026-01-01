@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - AgriAdmin</title>
+    <style>
+        /* --- RESET & BODY --- */
+        body { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f6f8; margin: 0; display: flex; min-height: 100vh; }
+        
+        /* --- SIDEBAR --- */
+        .sidebar { width: 250px; background: #1A237E; color: white; height: 100vh; position: fixed; left: 0; top: 0; z-index: 100; flex-shrink: 0; display: flex; flex-direction: column; padding: 20px; }
+        .brand { font-size: 1.5rem; margin-bottom: 40px; color: #FFD700; font-weight: bold; display: flex; align-items: center; gap: 10px; }
+        .nav-item { padding: 12px 15px; margin-bottom: 8px; cursor: pointer; transition: background 0.2s; display: flex; gap: 10px; color: rgba(255,255,255,0.7); white-space: nowrap; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.15); color: white; }
+        .logout { margin-top: auto; color: #ff8a80; cursor: pointer; border: 1px solid #ff8a80; padding: 10px; text-align: center; border-radius: 6px; }
+        
+        /* --- MAIN CONTENT --- */
+        .main { margin-left: 270px; flex: 1; padding: 30px; min-width: 0; }
+        h2 { color: #333; margin-top: 0; }
+        p { color: #666; }
+
+        /* --- TABEL --- */
+        .table-wrapper { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow-x: auto; padding: 5px; }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; border-spacing: 0; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; vertical-align: middle; white-space: nowrap; }
+        th { background: #f8f9fa; font-weight: 600; color: #333; border-bottom: 2px solid #ddd; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #fafafa; }
+
+        /* --- BADGE --- */
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; display: inline-block; }
+        .badge-admin { background: #E3F2FD; color: #1565C0; }
+        .badge-petani { background: #E8F5E9; color: #2E7D32; }
+        .badge-buyer { background: #FFF8E1; color: #F57F17; }
+        .badge-lembaga { background: #FCE4EC; color: #C62828; }
+
+        /* --- TOMBOL EDIT --- */
+        .btn-edit { padding: 6px 12px; background-color: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: background 0.2s; }
+        .btn-edit:hover { background-color: #1976D2; }
+
+        /* --- MODAL POPUP (OVERLAY) --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); /* Layar gelap transparan */
+            display: none; /* Default sembunyi */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .modal-title { font-size: 1.5rem; margin-bottom: 20px; color: #333; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
+        .modal-actions { display: flex; justify-content: space-between; margin-top: 20px; }
+        
+        .btn-cancel { background: #f44336; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .btn-save { background: #2E7D32; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="brand">🏠 AgriAdmin</div>
+        <div class="nav-item" onclick="location.href='dashboard-admin.html'">📊 Dashboard</div>
+        <div class="nav-item active">👥 User Management</div>
+        <div class="nav-item" onclick="location.href='admin-blockchain.html'">⛓️ Blockchain Logs</div>
+        <div class="nav-item" onclick="location.href='admin-keuangan.html'">💰 Keuangan</div>
+        <div class="nav-item" onclick="location.href='admin-pengaturan.html'">⚙️ Pengaturan</div>
+        <div class="logout" onclick="localStorage.clear(); window.location.href='login.html'">🚪 Keluar</div>
+    </div>
+
+    <!-- Konten Utama -->
+    <div class="main">
+        <h2>Kelola Pengguna</h2>
+        <p>Daftar seluruh petani, pembeli, dan lembaga yang terdaftar di AgriChain.</p>
+        <br>
+        
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Nama Lengkap</th>
+                        <th style="width: 20%;">Nomor HP</th>
+                        <th style="width: 15%;">Role</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 25%;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Budi Santoso</td>
+                        <td>08123456789</td>
+                        <td><span class="badge badge-petani">Petani</span></td>
+                        <td>Aktif</td>
+                        <td><button class="btn-edit" onclick="openEditModal('Budi Santoso', '08123456789', 'PETANI', 'Aktif')">Edit</button></td>
+                    </tr>
+                    <tr>
+                        <td>PT. Pangan Jaya</td>
+                        <td>08198765432</td>
+                        <td><span class="badge badge-buyer">Pembeli</span></td>
+                        <td>Aktif</td>
+                        <td><button class="btn-edit" onclick="openEditModal('PT. Pangan Jaya', '08198765432', 'PEMBELI', 'Aktif')">Edit</button></td>
+                    </tr>
+                    <tr>
+                        <td>Koperasi Tani Makmur</td>
+                        <td>0811223344</td>
+                        <td><span class="badge badge-lembaga">Lembaga</span></td>
+                        <td>Aktif</td>
+                        <td><button class="btn-edit" onclick="openEditModal('Koperasi Tani Makmur', '0811223344', 'LEMBAGA', 'Aktif')">Edit</button></td>
+                    </tr>
+                    <!-- Baris Admin Sendiri (Tidak bisa diedit) -->
+                    <tr style="background:#f0f4ff;">
+                        <td><strong>Super Admin</strong></td>
+                        <td>0816253606</td>
+                        <td><span class="badge badge-admin">Admin</span></td>
+                        <td><strong>Owner</strong></td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP (Jendela Edit) -->
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 class="modal-title">Edit Data Pengguna</h3>
+            
+            <form id="editForm" onsubmit="handleSaveUser(event)">
+                <div class="form-group">
+                    <label for="editName">Nama Lengkap</label>
+                    <input type="text" id="editName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editPhone">Nomor HP</label>
+                    <input type="tel" id="editPhone" required>
+                </div>
+                <div class="form-group">
+                    <label for="editRole">Role</label>
+                    <!-- Role dikunci (disabled) agar Admin tidak bisa mengubah jadi Petani sembarangan -->
+                    <select id="editRole" disabled>
+                        <option value="PETANI">Petani</option>
+                        <option value="PEMBELI">Pembeli</option>
+                        <option value="LEMBAGA">Lembaga</option>
+                        <option value="ADMIN">Admin</option>
+                    </select>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Batal</button>
+                    <button type="submit" class="btn-save">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 1. Buka Modal saat tombol Edit diklik
+        function openEditModal(nama, hp, role, status) {
+            // Isi form dengan data dari tabel
+            document.getElementById('editName').value = nama;
+            document.getElementById('editPhone').value = hp;
+            document.getElementById('editRole').value = role;
+
+            // Tampilkan Modal
+            const modal = document.getElementById('editModal');
+            modal.style.display = 'flex';
+        }
+
+        // 2. Tutup Modal
+        function closeEditModal() {
+            const modal = document.getElementById('editModal');
+            modal.style.display = 'none';
+        }
+
+        // 3. Simpan Data (Logic saat tombol Simpan diklik)
+        function handleSaveUser(e) {
+            e.preventDefault(); // Mencegah reload halaman
+
+            const namaBaru = document.getElementById('editName').value;
+            const hpBaru = document.getElementById('editPhone').value;
+            
+            // SIMULASI: Alert bahwa data berhasil diubah
+            // Di Backend asli, di sini kita akan kirim POST request ke API
+            alert(`Data Berhasil Diupdate!\n\nNama: ${namaBaru}\nNomor HP: ${hpBaru}\n\n(Perubahan akan tersimpan ke Database)`);
+            
+            // Tutup Modal setelah simpan
+            closeEditModal();
+        }
+
+        // 4. Tutup Modal jika user klik di luar kotak putih (layar gelap)
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target == modal) {
+                closeEditModal();
+            }
+        }
+    </script>
+</body>
+</html>

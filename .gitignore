@@ -1,0 +1,11 @@
+# Supabase
+SUPABASE_URL=https://nkcctncsjmcfsiguowms.supabase.co
+SUPABASE_ANON_KEY=sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X  # Publishable Key aman untuk frontend
+
+# Blockchain RPC (Polygon / BNB / dll)
+RPC_URL=https://polygon-rpc.com
+
+# Smart Contract Address
+CONTRACT_ADDRESS=0x0000000000000000000000000000000000000
+
+

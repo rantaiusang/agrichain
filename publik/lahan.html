@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Manajemen Lahan - AgriChain</title>
+    
+    <!-- Library Blockchain -->
+    <script src="https://unpkg.com/@web3modal/web3modal"></script>
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+    <style>
+        /* --- CSS VARIABLES --- */
+        :root {
+            --primary-green: #2E7D32;
+            --dark-green: #1B5E20;
+            --light-green: #E8F5E9;
+            --text-dark: #333;
+            --text-grey: #666;
+            --white: #ffffff;
+            --shadow: 0 2px 5px rgba(0,0,0,0.1);
+            --radius: 8px;
+        }
+
+        body {
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* --- CONTAINER & HEADER --- */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--white);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        h2 { margin: 0; color: var(--primary-green); }
+        .btn-add {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(46, 125, 50, 0.2);
+        }
+
+        /* --- FORM EDITOR --- */
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark); }
+        
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus {
+            border-color: var(--primary-green);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-save {
+            background: var(--primary-green);
+            color: white;
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .btn-cancel {
+            background: #f0f0f0;
+            color: #666;
+            border: 1px solid #ddd;
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* --- TABEL LAHAN --- */
+        .table-wrapper {
+            overflow-x: auto;
+            margin-top: 30px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        thead {
+            background: var(--light-green);
+            color: var(--primary-green);
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th { font-weight: 700; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #fafafa; }
+
+        /* Tombol Aksi Tabel */
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 5px;
+            border: none;
+        }
+        .btn-edit { background: #FFD700; color: #333; }
+        .btn-delete { background: #e74c3c; color: white; }
+
+        /* --- NOTIFIKASI (TOAST) --- */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .toast.show { opacity: 1; }
+        .toast.success { background: var(--primary-green); }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 600px) {
+            .form-actions { flex-direction: column; }
+            .page-header { flex-direction: column; gap: 10px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="page-header">
+            <h2>Manajemen Lahan Petani</h2>
+            <button class="btn-add" onclick="showForm()">+ Tambah Lahan</button>
+        </div>
+
+        <!-- FORM INPUT / EDIT (Hidden by default) -->
+        <div id="lahanForm" style="display: none; background: #f9f9f9; padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+            <h3 style="margin-top: 0; color: var(--text-dark);" id="formTitle">Input Data Lahan</h3>
+            
+            <form id="formLahan">
+                <!-- Hidden ID untuk Edit Mode -->
+                <input type="hidden" id="lahanId">
+
+                <div class="form-group">
+                    <label for="namaLahan">Nama Lahan</label>
+                    <input type="text" id="namaLahan" placeholder="Contoh: Sawah Bakti I" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="luas">Luas (Meter Persegi)</label>
+                    <input type="number" id="luas" placeholder="5000" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="lokasi">Lokasi (Kabupaten/Kecamatan)</label>
+                    <input type="text" id="lokasi" placeholder="Contoh: Cianjur, Warungkondang" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="jenisTanah">Jenis Tanah</label>
+                    <select id="jenisTanah" required>
+                        <option value="">Pilih Jenis Tanah...</option>
+                        <option value="Sawah Irigasi">Sawah Irigasi</option>
+                        <option value="Sawah Tadah Hujan">Sawah Tadah Hujan</option>
+                        <option value="Kebun Sayur">Kebun Sayur</option>
+                        <option value="Perkebunan Padi">Perkebunan Padi</option>
+                        <option value="Ladang Hutan">Ladang Hutan (Kopi/Kakao)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="komoditas">Komoditas Utama</label>
+                    <input type="text" id="komoditas" placeholder="Contoh: Padi Cianjur, Jagung Manis" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="hideForm()">Batal</button>
+                    <button type="submit" class="btn-save">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- TABEL DAFTAR LAHAN -->
+        <div class="table-wrapper">
+            <table id="tabelLahan">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Nama Lahan</th>
+                        <th style="width: 15%;">Luas</th>
+                        <th style="width: 20%;">Lokasi</th>
+                        <th style="width: 15%;">Jenis Tanah</th>
+                        <th style="width: 15%;">Komoditas</th>
+                        <th style="width: 25%;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data akan di-render via JavaScript -->
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: #999;">Memuat data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Elemen Toast Notifikasi -->
+    <div id="toast" class="toast">Data berhasil disimpan!</div>
+
+    <!-- SCRIPT UTAMA -->
+    <script type="module">
+        // Import dari file modular (src/)
+        // Kita mengimpor fungsi supabase di masa depan, tapi sekarang pakai local array
+        import { connectWallet } from './src/connectWallet.js';
+
+        // 1. DATA DUMMY (Simulasi Database Supabase karena Backend Offline)
+        let lahanDB = [
+            { id: 1, nama: "Sawah Bakti I", luas: 5000, lokasi: "Cianjur, Warungkondang", jenis: "Sawah Irigasi", komoditas: "Padi Cianjur" },
+            { id: 2, nama: "Kebun Cabai Merah", luas: 1500, lokasi: "Bogor, Citeureup", jenis: "Kebun Sayur", komoditas: "Cabai Merah" }
+        ];
+
+        // 2. DOM ELEMENTS
+        const formLahan = document.getElementById('lahanForm');
+        const tabelBody = document.querySelector('#tabelLahan tbody');
+        const formTitle = document.getElementById('formTitle');
+        const btnSubmit = document.querySelector('.btn-save');
+        
+        // 3. RENDER TABEL
+        function renderTable() {
+            tabelBody.innerHTML = ''; // Bersihkan tabel
+            
+            if (lahanDB.length === 0) {
+                tabelBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Belum ada data lahan.</td></tr>';
+                return;
+            }
+
+            lahanDB.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${item.nama}</strong></td>
+                    <td>${item.luas.toLocaleString()} m²</td>
+                    <td>${item.lokasi}</td>
+                    <td>${item.jenis}</td>
+                    <td>${item.komoditas}</td>
+                    <td>
+                        <button class="action-btn btn-edit" onclick="editLahan(${item.id})">Edit</button>
+                        <button class="action-btn btn-delete" onclick="hapusLahan(${item.id})">Hapus</button>
+                    </td>
+                `;
+                tabelBody.appendChild(row);
+            });
+        }
+
+        // 4. TAMPILKAN FORM (Mode Add)
+        function showForm() {
+            formLahan.style.display = 'block';
+            formTitle.innerText = "Input Data Lahan Baru";
+            document.getElementById('formLahan').reset();
+            document.getElementById('lahanId').value = ''; // Kosongkan ID untuk mode Add
+        }
+
+        // 5. SEMBUNYIKAN FORM
+        function hideForm() {
+            formLahan.style.display = 'none';
+        }
+
+        // 6. LOGIKA SIMPAN (ADD / EDIT)
+        document.getElementById('formLahan').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('lahanId').value;
+            const nama = document.getElementById('namaLahan').value;
+            const luas = document.getElementById('luas').value;
+            const lokasi = document.getElementById('lokasi').value;
+            const jenis = document.getElementById('jenisTanah').value;
+            const komoditas = document.getElementById('komoditas').value;
+
+            // Jika ID ada = UPDATE, jika ID kosong = ADD
+            if (id) {
+                // UPDATE (Edit)
+                const index = lahanDB.findIndex(l => l.id == id);
+                if (index !== -1) {
+                    lahanDB[index] = { id, nama, luas, lokasi, jenis, komoditas };
+                    showToast("Data lahan berhasil diperbarui!", "success");
+                }
+            } else {
+                // ADD (Tambah)
+                const newId = lahanDB.length > 0 ? lahanDB[lahanDB.length - 1].id + 1 : 1;
+                lahanDB.push({ id: newId, nama, luas, lokasi, jenis, komoditas });
+                showToast("Lahan baru berhasil ditambahkan!", "success");
+            }
+
+            hideForm();
+            renderTable();
+        });
+
+        // 7. LOGIKA EDIT
+        function editLahan(id) {
+            const lahan = lahanDB.find(l => l.id == id);
+            if (!lahan) return;
+
+            showForm(); // Tampilkan form
+            formTitle.innerText = "Edit Data Lahan";
+
+            // Isi form dengan data yang ada
+            document.getElementById('lahanId').value = lahan.id;
+            document.getElementById('namaLahan').value = lahan.nama;
+            document.getElementById('luas').value = lahan.luas;
+            document.getElementById('lokasi').value = lahan.lokasi;
+            document.getElementById('jenisTanah').value = lahan.jenis;
+            document.getElementById('komoditas').value = lahan.komoditas;
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll ke atas
+        }
+
+        // 8. LOGIKA HAPUS
+        function hapusLahan(id) {
+            const confirmDelete = confirm("Apakah Anda yakin ingin menghapus data lahan ini?");
+            if (confirmDelete) {
+                lahanDB = lahanDB.filter(l => l.id != id);
+                renderTable();
+                showToast("Data lahan berhasil dihapus.");
+            }
+        }
+
+        // 9. FUNGSI HELPER NOTIFIKASI
+        function showToast(message, type = "success") {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.className = 'toast show ' + type;
+            setTimeout(() => { toast.className = 'toast'; }, 3000);
+        }
+
+        // 10. INIT: Render Saat Halaman Dimuat
+        document.addEventListener("DOMContentLoaded", () => {
+            // Cek Login Sesi (Opsional, jika ingin membatasi akses)
+            const token = localStorage.getItem('agrichain_token');
+            if (!token) {
+                // Jika belum login, lempar ke login (opsional, sesuaikan kebutuhan)
+                // window.location.href = 'login.html';
+            }
+
+            renderTable();
+        });
+
+    </script>
+</body>
+</html>
