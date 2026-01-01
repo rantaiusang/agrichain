@@ -12,22 +12,23 @@ export function saveChatHistory(history) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
 }
 
-// 3. Fungsi Render Tampilan Chat (PERBAIKAN AGRESIF)
+// 3. Fungsi Render Tampilan Chat (PERBAIKAN: HILANGKAN WHILE LOOP)
 export function renderChatUI(history) {
     const chatBox = document.getElementById('chatBox');
     if (!chatBox) return; 
 
-    // --- HAPUS FISIK SEMUA ELEMEN VISUAL ---
-    // Ini mencegah duplikat atau sisa-sisa cache DOM
-    while (chatBox.firstChild) {
-        chatBox.removeChild(chatBox.firstChild);
-    }
+    // --- HAPUS KODE WHILE LOOP DI SINI ---
+    // Kita TIDAK menggunakan "while (chatBox.firstChild)" di sini
+    // karena itu menyebabkan infinite loop / rekursi.
+    // Pembersihan visual dilakukan di index.html saat tombol klik (toggleChat).
+    
+    // Bersihkan HTML (Cukup ini saja untuk render ulang)
+    chatBox.innerHTML = '';
 
     // --- JANGAN RENDER APA-APA JIKA USER INGIN KOSONG ---
-    // User ingin "Mulai Percakapan". Jika history kosong, berhenti di sini.
     if (history.length === 0) {
         chatBox.innerHTML = '<div style="text-align: center; color: #999; margin-top: 20px;">Mulai percakapan...</div>';
-        return; // <--- PENTING: KEMBALI (RETURN) DISINI AGAR TIDAK MENAMBAH HTML LAIN
+        return; // <--- PENTING: STOP DI SINI AGAR TIDAK MENAMBAH HTML LAIN
     }
 
     // Loop history dan tampilkan
@@ -53,15 +54,15 @@ export function renderChatUI(history) {
         chatBox.innerHTML += bubbleUser + bubbleAI;
     });
 
-    // Scroll ke paling bawah
+    // Scroll otomatis ke paling bawah
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// 4. Fungsi Utama Chat (FUNGSI NGOBROL)
+// 4. Logika Utama Chat (FUNGSI NGOBROL)
 export function handleChat(question, category) {
     let history = getChatHistory();
 
-    // --- LOGIKA AI ---
+    // --- LOGIKA AI (KATA KUNCI) ---
     let aiJawaban = "Mohon maaf, AgriAI sedang belajar tentang ini.";
     const lowerQ = question.toLowerCase();
 
@@ -72,7 +73,7 @@ export function handleChat(question, category) {
     } else if (lowerQ.includes('hama') || lowerQ.includes('ulat')) {
         aiJawaban = "Silakan gunakan pestisida nabati.";
     } else if (category === "Harga") {
-        aiJawaban = "Cek fitur Info Harga.";
+        aiJawaban = "Cek fitur Info Harga Pasar di AgriChain.";
     } else {
         aiJawaban = `Saya mencatat keluhan: "${question}".`;
     }
@@ -94,7 +95,7 @@ export function handleChat(question, category) {
     };
 
     // Masukkan chat baru ke Paling Depan
-    history.unshift(newChat);
+    history.push(newChat); // Paling Baru
 
     // Batasi history maksimal 10 chat
     if (history.length > 10) {
@@ -108,7 +109,7 @@ export function handleChat(question, category) {
     renderChatUI(history);
 }
 
-// 5. Fungsi Hapus History (HAPUS RIWAYAT) - BARU
+// 5. Fungsi Hapus History (HAPUS RIWAYAT)
 export function clearChatHistory() {
     // Hapus data dari LocalStorage
     localStorage.removeItem(STORAGE_KEY);
