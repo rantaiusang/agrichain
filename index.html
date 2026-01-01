@@ -325,24 +325,6 @@
 
         .btn-view:hover { background-color: var(--dark-green); }
 
-        /* --- TOAST --- */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            z-index: 999;
-        }
-        .toast.show { opacity: 1; }
-
         /* --- CHAT FLOATING BUTTON --- */
         .chat-float-btn {
             position: fixed;
@@ -365,21 +347,21 @@
         }
 
         .chat-float-btn:hover {
-            transform: scale(1.1); /* Membesar sedikit saat di-hover */
+            transform: scale(1.1);
             box-shadow: 0 6px 20px rgba(46, 125, 50, 0.5);
         }
 
-        /* --- CHAT CONTAINER (POP UP) --- */
+        /* --- CHAT CONTAINER --- */
         .chat-container {
             position: fixed;
-            bottom: 90px; /* Di atas tombol floating */
+            bottom: 90px;
             right: 20px;
             width: 350px;
             background: var(--white);
             border-radius: 16px;
             box-shadow: 0 5px 25px rgba(0,0,0,0.15);
             z-index: 999;
-            display: none; /* Default Hidden */
+            display: none;
             flex-direction: column;
             border: 1px solid #ddd;
             transform-origin: bottom right;
@@ -458,6 +440,24 @@
             border-radius: 50%;
             cursor: pointer;
         }
+
+        /* --- TOAST --- */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .toast.show { opacity: 1; }
     </style>
 </head>
 <body>
@@ -542,6 +542,7 @@
                 </div>
 
                 <div class="card-grid" id="productList">
+                    <!-- Produk akan dirender otomatis via JS -->
                     <div style="text-align: center; color: #999; grid-column: 1 / -1; padding: 20px;">Memuat data pasar...</div>
                 </div>
             </div>
@@ -550,9 +551,8 @@
 
     <!-- 1. FLOATING CHAT BUTTON (TOMBOL BULAT) -->
     <div id="chatFloatBtn" class="chat-float-btn" onclick="toggleChat()">
-        <div id="chatBadge" class="chat-badge"></div>
         <!-- SVG Icon Chat -->
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-.7 5.2 8.5 8.5 0 0 1-7.8 4 8.5 8.5 0 0 1-4.7-4.5 8.5 8.5 0 0 1-1.3-1.7 8.5 8.5 0 0 1-5.5-2.3 2.9-2.9 5.9-3.5 4.1-1.3 4.8-2.8 1.5-3.3 1.5-6.6 0-10.6 4.2-10.6 8.4 0 1.3.5 1.6 3.2-2.3 5.2-4.1 5.5 7.3 0 9.6-2.3 9.6-6.5 0-8.4-2.3-8.4-4.8 0-3.1 1.1-5.5 3.3-4.1 5.5-3.7 5.2-8.2 2.3-9.6 2.3-8.4 0-6.5-4.2-10.6-8.4 0-1.3-.5-1.6-3.2-2.3-5.2-4.1-8.5-6.2 10.6-8.4 2.3-1.6-5.5-2.3-8.4-2.3-1.3 0-.3 0 .4 0l1.2-2.4c-.6-1.3-2-2.5-2-4.1 0-3.4 2.8-6.2 2.8-10.6 0-6.4-5.2-11.6-11.6-11.6-3.4 0-6.4-2.8-8.4-6.2-8.4-10.6 0-1.3.5-1.6 3.2-2.3 5.2-4.1 8.5-6.2 10.6-8.4-2.3-1.6-5.5-2.3-8.4-2.3z"></path><path d="M14.9 18c.1 0 .3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path></svg>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-.7 5.2 8.5 8.5 0 0 1-7.8 4 8.5 8.5 0 0 1-4.7-4.5 8.5 8.5 0 0 1-1.3-1.7 8.5 8.5 0 0 1-5.5-2.3 2.9-2.9 5.9-3.5 4.1-1.3 4.8-2.8 1.5-3.3 1.5-6.6 0-10.6 4.2-10.6 8.4 0 1.3.5 1.6 3.2-2.3 5.2-4.1 5.5 7.3 0 9.6-2.3 9.6-6.5 0-8.4-2.3-8.4-4.8 0-3.1 1.1-5.5 3.3-4.1 5.5-3.7 5.2-8.2 2.3-9.6 2.3-8.4 0-6.5-4.2-10.6-8.4 0-1.3-.5-1.6-3.2-2.3-5.2-4.1-8.5-6.2 10.6-8.4-2.3-1.6-5.5-2.3-8.4-2.3z"></path><path d="M14.9 18c.1 0 .3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path></svg>
     </div>
 
     <!-- 2. CHAT CONTAINER (POP UP) -->
@@ -583,7 +583,6 @@
         const chatContainer = document.getElementById('chatContainer');
         const chatInput = document.getElementById('chatInput');
         const chatBox = document.getElementById('chatBox');
-        const chatBadge = document.getElementById('chatBadge');
 
         // --- A. CEK LOGIN SESI ---
         const token = localStorage.getItem('agrichain_token');
@@ -610,15 +609,35 @@
                 setTimeout(() => {
                     resolve([
                         { id: 1, name: "Padi Cianjur", price: 6500, img: "https://picsum.photos/seed/padi/400/200" },
-                        { id: 2, name: "Jagung Manis", price: 4000, img: "https://picsum.photos/seed/jagung/400/200" }
+                        { id: 2, name: "Jagung Manis", price: 4000, img: "https://picsum.photos/seed/jagung/400/200" },
+                        { id: 3, name: "Kopi Arabika", price: 45000, img: "https://picsum.photos/seed/kopi/400/200" }
                     ]);
-                }, 500);
+                }, 500); // Simulasi loading 0.5 detik
             });
         }
 
-        // --- RENDER PRODUK ---
+        // --- C. IMPORT CHAT MODUL & HANDLE ERROR ---
+        async function loadChatModule() {
+            try {
+                const module = await import('./src/appchat.js');
+                return module;
+            } catch (err) {
+                console.error("Gagal load appchat.js:", err);
+                // Fallback jika file belum ada (buat dummy logic lokal)
+                return {
+                    handleChat: (q, cat) => {
+                        console.log("Mock AI:", q);
+                        return { success: true };
+                    },
+                    getChatHistory: () => [],
+                    renderChatUI: () => {}
+                };
+            }
+        }
+
+        // --- D. RENDER PRODUK ---
         getProducts().then(products => {
-            productList.innerHTML = ''; 
+            productList.innerHTML = ''; // Bersihkan tabel
 
             if (products.length === 0) {
                 productList.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Belum ada data panen.</div>';
@@ -646,72 +665,61 @@
             });
         });
 
-        // --- C. LOAD CHAT MODULE (IMPORT) ---
-        async function loadChatModule() {
-            try {
-                const module = await import('./src/appchat.js');
-                return module;
-            } catch (err) {
-                console.warn("appchat.js not found, using mock.");
-                return {
-                    handleChat: (q, cat) => { console.log(q); },
-                    getChatHistory: () => [],
-                    renderChatUI: () => {},
-                    updateChatPreview: () => {}
-                };
-            }
-        }
-
-        // --- D. INISIALISASI CHAT (LOAD HISTORY & PREVIEW) ---
+        // --- E. LOAD CHAT HISTORY ---
         loadChatModule().then(chatModule => {
             const history = chatModule.getChatHistory();
-            
-            if (history.length > 0) {
-                // 1. Render History jika chat box terbuka nanti
-                // chatModule.renderChatUI(history); 
-
-                // 2. Update PREVIEW (Tampilkan riwayat terakhir di bawah tombol)
-                chatModule.updateChatPreview(history[0].answer);
-                
-                // 3. Tampilkan Badge Notifikasi Merah
-                if (chatBadge) chatBadge.style.display = 'block';
-            }
+            // Jangan render history otomatis di awal agar UX sesuai permintaan (Mulai percakapan)
+            // if (history.length > 0) { chatModule.renderChatUI(history); }
         });
 
-        // --- E. TOGGLE CHAT (BUKA/TUTUP) ---
+        // --- F. HANDLE WALLET ---
+        window.handleProfileClick = async function() {
+            // Simulasi connect
+            alert("Fitur koneksi wallet akan aktif saat WalletConnect dipasang.");
+        };
+
+        // --- G. TOGGLE CHAT (BUKA/TUTUP + KOSONGKAN CHAT) ---
         window.toggleChat = function() {
+            // Kondisi: Widget Tertutup (Display: None)
             if (chatContainer.style.display === 'none' || chatContainer.style.display === '') {
-                chatContainer.style.display = 'flex'; // Buka
+                
+                // 1. BUKA Widget (Display: Flex)
+                chatContainer.style.display = 'flex';
                 chatInput.focus();
+
+                // 2. BERSIHKAN LAYAR (Mulai Percakapan)
+                chatBox.innerHTML = '<div style="text-align: center; color: #999; margin-top: 20px;">Mulai percakapan...</div>';
+
             } else {
-                chatContainer.style.display = 'none'; // Tutup
+                // Kondisi: Widget Terbuka (Display: Flex)
+                
+                // 1. TUTUP Widget (Display: None)
+                chatContainer.style.display = 'none';
             }
         };
 
-        // --- F. KIRIM PESAN CHAT ---
+        // --- H. KIRIM PESAN CHAT ---
         window.handleChatSend = async function() {
             const q = chatInput.value;
             if (!q.trim()) return;
 
-            // 1. Tampilkan Pesan User (UI Cepat)
+            // 1. Render Bubble User Manual (Cepat agar responsif)
             chatBox.innerHTML += `<div class="chat-bubble user">${q}</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // 2. Panggil Fungsi Modular
+            // 2. Panggil fungsi AI dari appchat.js (Simulasi await)
             loadChatModule().then(chatModule => {
                 chatModule.handleChat(q, "Umum");
+                chatInput.value = '';
             });
-
-            // 3. Reset Input
-            chatInput.value = '';
         }
 
-        // --- G. HANDLE WALLET ---
-        window.handleProfileClick = async function() {
-            alert("Fitur koneksi wallet akan aktif saat Backend Server dinyalakan.");
-        };
+        // Event Listener tombol chat header
+        if(chatFloatBtn) {
+            chatFloatBtn.addEventListener('click', window.toggleChat);
+        }
 
-        // --- H. TOAST (Helper) ---
+        // --- I. TOAST (Helper) ---
         function showToast(message) {
             const toast = document.getElementById('toast');
             if(!toast) return;
