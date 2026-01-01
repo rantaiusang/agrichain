@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MONITORING - AgriChain</title>
+    <!-- Library Chart.js (Grafik) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #2E7D32; --bg: #F1F8E9; }
+        body { font-family: sans-serif; background: var(--bg); padding: 20px; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab { padding: 10px 20px; background: #ddd; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        .tab.active { background: var(--primary); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <h1 style="color: var(--primary-green); text-align: center;">MANTAB MONITORING</h1>
+
+    <!-- Nav Menu -->
+    <div class="tabs">
+        <div class="tab active" onclick="openTab(event, 'tabMarket')">📊 Pasar</div>
+        <div class="tab" onclick="openTab(event, 'tabAnalisa')">📉 Analisa Konsumsi</div>
+        <div class="tab" onclick="openTab(event, 'tabSmartFarm')">🌾 Smart Farm</div>
+    </div>
+
+    <!-- TAB 1: MARKET (GRAFIK HARGA) -->
+    <div id="tabMarket" class="tab-content active">
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>Tren Harga Padi (1 Minggu)</h3>
+                <canvas id="chartHargaPadi"></canvas>
+            </div>
+            <div class="card">
+                <h3>Perbandingan Harga (Padi vs Jagung)</h3>
+                <canvas id="chartKomoditas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 2: ANALISA KONSUMSI (BAR CHART) -->
+    <div id="tabAnalisa" class="tab-content">
+        <div class="card">
+            <h3>Analisa Penggunaan Pupuk (Bulan Ini)</h3>
+            <canvas id="chartKonsumsi"></canvas>
+        </div>
+    </div>
+
+    <!-- TAB 3: SMART FARM (PETA & LOG) -->
+    <div id="tabSmartFarm" class="tab-content">
+        <div class="dashboard-grid">
+            <div class="card">
+                <h3>📈 Log Serangan Hama</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <li style="padding: 10px; border-bottom: 1px solid #eee;">🐛 1 Feb: Ulat Grayak (Serius) - <a href="#" style="color:red;">[Detail]</a></li>
+                    <li style="padding: 10px; border-bottom: 1px solid #eee;">🐛 3 Jan: Kutu Daun (Ringan)</li>
+                    <li style="padding: 10px; border-bottom: 1px solid #eee;">🐛 5 Jan: Kutu Daun (Ringan)</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h3>💧 Jadwal Siram Otomatis</h3>
+                <div style="background: #E8F5E9; padding: 15px; border-radius: 8px;">
+                    <p><strong>Status Cuaca:</strong> Panas Terik (32°C)</p>
+                    <p><strong>Saran:</strong> Siram sore hari ini (16:00).</p>
+                    <button style="padding: 8px 16px; background: #2E7D32; color: white; border:none; border-radius: 5px; cursor: pointer;">Atur Otomatis</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-top: 20px; text-align: center;">
+        <a href="index.html" style="color: var(--primary-green); font-weight: bold;">← Kembali ke Beranda</a>
+    </div>
+
+    <script>
+        // --- A. FUNGSI TAB ---
+        function openTab(evt, tabName) {
+            var i, tabcontent, tabs;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+                tabcontent[i].classList.remove("active");
+            }
+            tabs = document.getElementsByClassName("tab");
+            for (i = 0; i < tabs.length; i++) {
+                tabs[i].className = tabs[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        // --- B. CHART: TREN HARGA PADI (Line Chart) ---
+        const ctxPadi = document.getElementById('chartHargaPadi');
+        new Chart(ctxPadi, {
+            type: 'line',
+            data: {
+                labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+                datasets: [{
+                    label: 'Harga Padi (Rp/Kg)',
+                    data: [6200, 6300, 6250, 6400, 6500, 6350, 6400],
+                    borderColor: '#2E7D32',
+                    backgroundColor: 'rgba(46, 125, 50, 0.2)',
+                    tension: 0.4
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // --- C. CHART: KOMODITAS (Bar Chart) ---
+        const ctxKomoditas = document.getElementById('chartKomoditas');
+        new Chart(ctxKomoditas, {
+            type: 'bar',
+            data: {
+                labels: ['Padi', 'Jagung', 'Kopi', 'Cabai'],
+                datasets: [{
+                    label: 'Rata-rata Harga (Rp/Kg)',
+                    data: [6400, 4100, 55000, 18000],
+                    backgroundColor: [
+                        'rgba(46, 125, 50, 0.7)',
+                        'rgba(255, 193, 7, 0.7)',
+                        'rgba(139, 69, 19, 0.7)',
+                        'rgba(205, 92, 92, 0.7)'
+                    ]
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        // --- D. CHART: KONSUMSI PUPUK (Bar Chart) ---
+        const ctxKonsumsi = document.getElementById('chartKonsumsi');
+        new Chart(ctxKonsumsi, {
+            type: 'bar',
+            data: {
+                labels: ['Urea', 'NPK', 'Organik'],
+                datasets: [{
+                    label: 'Penggunaan (Kg)',
+                    data: [500, 300, 100],
+                    backgroundColor: '#FFC107'
+                }]
+            },
+            options: {
+                scales: { y: { beginAtZero: true } },
+                responsive: true, maintainAspectRatio: false
+            }
+        });
+    </script>
+</body>
+</html>
