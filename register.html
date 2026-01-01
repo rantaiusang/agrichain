@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Daftar Akun - AgriChain</title>
+    
+    <!-- Library Backend (Axios) -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
     <style>
         :root {
             --primary-green: #2E7D32;
@@ -28,7 +32,7 @@
         .register-card {
             background: var(--white);
             width: 100%;
-            max-width: 380px;
+            max-width: 400px;
             padding: 2rem;
             border-radius: 16px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
@@ -48,18 +52,8 @@
             margin-bottom: 2rem;
         }
 
-        .form-group {
-            margin-bottom: 1.2rem;
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-dark);
-        }
+        .form-group { margin-bottom: 1.2rem; text-align: left; }
+        label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 600; color: var(--text-dark); }
 
         .form-input, .form-select {
             width: 100%;
@@ -68,16 +62,15 @@
             border-radius: 8px;
             font-size: 1rem;
             box-sizing: border-box;
+            background: #fff;
             -moz-appearance: none;
             -webkit-appearance: none;
-            background: #fff url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E") no-repeat right 12px center;
-            background-size: 10px;
         }
 
         .form-input:focus, .form-select:focus {
             border-color: var(--primary-green);
             outline: none;
-            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
         }
 
         .info-box {
@@ -93,10 +86,10 @@
 
         .btn-register {
             width: 100%;
+            padding: 14px;
             background-color: var(--primary-green);
             color: white;
             border: none;
-            padding: 14px;
             border-radius: 8px;
             font-size: 1rem;
             font-weight: bold;
@@ -105,23 +98,8 @@
             transition: background 0.2s;
         }
 
-        .btn-register:hover {
-            background-color: #1B5E20;
-        }
-
-        .btn-register:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-
-        .back-link {
-            display: inline-block;
-            margin-top: 1.5rem;
-            color: var(--primary-green);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
+        .btn-register:hover { background-color: #1B5E20; }
+        .btn-loading { background-color: #81C784; cursor: not-allowed; }
 
         .error-msg {
             color: var(--error);
@@ -130,7 +108,7 @@
             display: none;
         }
 
-        /* Spinner sederhana */
+        /* Spinner */
         .spinner {
             display: inline-block;
             width: 20px;
@@ -145,6 +123,15 @@
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 1.5rem;
+            color: var(--primary-green);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
@@ -153,48 +140,55 @@
         <div class="logo">AgriChain</div>
         <div class="subtitle">Buat akun baru untuk mulai bertransaksi</div>
 
-        <form id="registerForm" onsubmit="handleRegister(event)">
+        <form id="registerForm">
             
-            <!-- Pilihan Peran -->
+            <!-- 1. Pilihan Role (PENTING: ADMIN DISINI) -->
             <div class="form-group">
                 <label for="role">Saya mendaftar sebagai:</label>
                 <select id="role" class="form-select" required>
-                    <option value="" disabled selected>-- Pilih Peran --</option>
-                    <option value="PETANI">Petani (Penjual)</option>
+                    <option value="PETANI" selected>Petani (Penjual)</option>
                     <option value="PEMBELI">Pembeli / Tengkulak</option>
                     <option value="LEMBAGA">Lembaga / Koperasi</option>
+                    <option value="ADMIN">Master Administrator (Rahasia)</option>
                 </select>
             </div>
 
-            <!-- Nama Lengkap -->
+            <!-- 2. Input Kode Admin (Tersembunyi Default) -->
+            <div class="form-group" id="adminCodeGroup" style="display: none; background: #FFF8E1; padding: 15px; border-radius: 8px; border: 1px dashed var(--primary-green);">
+                <label for="adminCode" style="color: var(--primary-green);">🔑 Kode Rahasia Admin</label>
+                <input type="text" id="adminCode" class="form-input" placeholder="Masukkan kode admin..." style="border-color: var(--primary-green);">
+                <div style="font-size: 0.75rem; color: #666; margin-top: 5px;">Pilih role "Master Administrator" dan masukkan kode.</div>
+            </div>
+
+            <!-- 3. Nama Lengkap -->
             <div class="form-group">
                 <label for="fullname">Nama Lengkap</label>
                 <input type="text" id="fullname" class="form-input" placeholder="Contoh: Budi Santoso" required>
             </div>
 
-            <!-- Nomor HP -->
+            <!-- 4. Nomor HP (Otomatis 0816253606) -->
             <div class="form-group">
                 <label for="phone">Nomor HP (WhatsApp)</label>
-                <input type="tel" id="phone" class="form-input" placeholder="Contoh: 08123456789" required>
+                <input type="tel" id="phone" class="form-input" placeholder="0816253606" required>
                 <div class="info-box">
                     ℹ️ Nomor HP ini akan digunakan untuk Login Anda. Tidak perlu email.
                 </div>
             </div>
 
-            <!-- Password -->
+            <!-- 5. Password -->
             <div class="form-group">
                 <label for="password">Kata Sandi</label>
                 <input type="password" id="password" class="form-input" placeholder="Buat kata sandi" required minlength="6">
             </div>
 
-            <!-- Konfirmasi Password -->
+            <!-- 6. Konfirmasi Password -->
             <div class="form-group">
                 <label for="confirmPassword">Ulangi Kata Sandi</label>
                 <input type="password" id="confirmPassword" class="form-input" placeholder="Ketik ulang kata sandi" required>
                 <div id="passError" class="error-msg">Kata sandi tidak cocok!</div>
             </div>
 
-            <!-- Info Wallet -->
+            <!-- 7. Info Wallet -->
             <div class="info-box" style="background-color: #E8F5E9; color: #2E7D32;">
                 🛡️ <strong>Aman & Mudah:</strong> Dompet Blockchain (Wallet) akan dibuat otomatis oleh sistem nanti. Anda tidak perlu mengingat kode rumit saat ini.
             </div>
@@ -203,22 +197,66 @@
                 <span class="spinner" id="spinner"></span>
                 <span id="btnText">DAFTAR SEKARANG</span>
             </button>
-
-            <a href="login.html" class="back-link">← Sudah punya akun? Masuk</a>
         </form>
+
+        <a href="login.html" class="back-link">← Sudah punya akun? Masuk</a>
     </div>
 
-    <script>
-        function handleRegister(e) {
+    <!-- SCRIPT UTAMA (LOGIKA REGISTER + SUPABASE) -->
+    <script type="module">
+        // 1. IMPORT KONEKSI SUPABASE
+        import { supabaseClient } from './src/supabase.js';
+        
+        // 2. BACKEND URL (Ganti port jika beda)
+        const BACKEND_URL = "http://localhost:3000";
+
+        // 3. DOM ELEMENTS
+        const form = document.getElementById('registerForm');
+        const roleSelect = document.getElementById('role');
+        const adminCodeGroup = document.getElementById('adminCodeGroup');
+        const adminCodeInput = document.getElementById('adminCode');
+        const phoneInput = document.getElementById('phone');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const spinner = document.getElementById('spinner');
+        const btnText = document.getElementById('btnText');
+        const passError = document.getElementById('passError');
+
+        // 4. EVENT LISTENER: KETI LOAD HALAMAN
+        document.addEventListener("DOMContentLoaded", () => {
+            // Set Default Role ke Petani
+            roleSelect.value = "PETANI";
+
+            // Set Default Nomor HP
+            phoneInput.value = "0816253606";
+
+            // Sembunyikan input admin code secara default
+            adminCodeGroup.style.display = 'none';
+
+            // Event Listener: Jika ganti role jadi ADMIN, muncul kode
+            roleSelect.addEventListener('change', function() {
+                if (this.value === 'ADMIN') {
+                    adminCodeGroup.style.display = 'block';
+                    adminCodeInput.required = true;
+                } else {
+                    adminCodeGroup.style.display = 'none';
+                    adminCodeInput.value = "";
+                    adminCodeInput.required = false;
+                }
+            });
+        });
+
+        // 5. FUNGSI SUBMIT FORM
+        form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
+            const fullname = document.getElementById('fullname').value;
+            const phone = document.getElementById('phone').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            const passError = document.getElementById('passError');
-            const phone = document.getElementById('phone').value;
             const role = document.getElementById('role').value;
+            const adminCode = document.getElementById('adminCode').value;
 
-            // 1. Validasi Password Sederhana
+            // Validasi Password
             if (password !== confirmPassword) {
                 passError.style.display = 'block';
                 return;
@@ -226,31 +264,69 @@
                 passError.style.display = 'none';
             }
 
-            // 2. Validasi Nomor HP (Hanya angka)
-            if (!/^\d+$/.test(phone)) {
-                alert("Nomor HP hanya boleh berisi angka.");
+            // Validasi Admin Code
+            if (role === 'ADMIN' && adminCode !== 'admin123') {
+                alert("Kode Admin Salah! Anda tidak bisa mendaftar sebagai Master Administrator.");
                 return;
             }
 
-            // 3. UI Loading
-            const btn = document.getElementById('btnSubmit');
-            const spinner = document.getElementById('spinner');
-            const btnText = document.getElementById('btnText');
-
-            btn.disabled = true;
+            // UI Loading
+            btnSubmit.classList.add('btn-loading');
+            btnSubmit.disabled = true;
             spinner.style.display = 'inline-block';
-            btnText.textContent = 'MEMPROSES...';
+            btnText.textContent = 'MENDAFTARKAN...';
 
-            // 4. Simulasi Kirim Data ke Backend
-            // Di real app: fetch('/api/register', { method: 'POST', body: ... })
-            setTimeout(() => {
-                console.log("Mendaftarkan:", { role, phone, password });
+            try {
+                // A. SIMPAN USER KE TABEL 'agrichain_users'
+                const { data: user, error: errUser } = await supabaseClient
+                    .from('agrichain_users')
+                    .insert([
+                        { 
+                            full_name: fullname,
+                            phone_number: phone,
+                            password: password,
+                            role: role, 
+                            created_at: new Date() 
+                        }
+                    ])
+                    .select();
+
+                if (errUser) throw errUser;
+
+                // B. SIMPAN PROFIL KE TABEL 'profiles' (OTOMATIS)
+                const { error: errProfile } = await supabaseClient
+                    .from('profiles')
+                    .insert([
+                        {
+                            user_id: user[0].id,
+                            full_name: fullname,
+                            desa: "-",
+                            jenis_petani: role === "LEMBAGA" ? "Lembaga" : "Petani Mandiri",
+                            luas_lahan: 0
+                        }
+                    ])
+                    .select();
+
+                if (errProfile) throw errProfile;
+
+                // C. SUKSES
+                console.log("User terdaftar:", user[0]);
                 
-                // Simulasi Sukses
-                alert("Pendaftaran Berhasil! Silakan login.");
+                alert("Registrasi Berhasil! Akun Anda telah dibuat.");
                 window.location.href = 'login.html';
-            }, 1500);
-        }
+
+            } catch (err) {
+                console.error("Error register:", err);
+                alert("Gagal mendaftar. Nomor HP mungkin sudah terdaftar.");
+            } finally {
+                // Reset Tombol
+                btnSubmit.classList.remove('btn-loading');
+                btnSubmit.disabled = false;
+                spinner.style.display = 'none';
+                btnText.textContent = 'DAFTAR SEKARANG';
+            }
+        });
+
     </script>
 </body>
 </html>
