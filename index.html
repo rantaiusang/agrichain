@@ -372,6 +372,7 @@
             line-height: 1.4;
             max-width: 85%;
             display: flex;
+            flex-direction: column;
         }
 
         .chat-bubble.user {
@@ -479,7 +480,7 @@
             <!-- Ganti Link Unsplash ini dengan Logo/File Anda -->
             <div class="hero-image">
                 <img src="https://images.unsplash.com/photo-16252464724-7189a844d954?q=80&w=1000&auto=format&fit=crop" 
-                     alt="" style="max-width: 400px; border-radius: 16px;">
+                     alt="AgriChain Illustration" style="max-width: 400px; border-radius: 16px;">
             </div>
         </section>
 
@@ -517,7 +518,6 @@
 
                 <div class="card-grid" id="productList">
                     <!-- Produk akan dirender otomatis via JS -->
-                    <!-- HAPUS KODE <tr><td> SALAH INI -->
                     <div style="text-align: center; color: #999; grid-column: 1 / -1; padding: 20px;">Memuat data pasar...</div>
                 </div>
             </div>
@@ -559,67 +559,64 @@
 
         if (!token || !userStr) {
             console.log("Belum login");
-            // Jangan redirect otomatis biar bisa test produk
+            // Jangan redirect otomatis dulu agar bisa test produk
             // window.location.href = 'login.html'; 
         } else {
             const user = JSON.parse(userStr);
             walletText.textContent = user.full_name.split(' ')[0]; // Tampilkan nama depan
 
-            // Jika sudah connect sebelumnya
+            // Cek Wallet Status
             const savedAddress = localStorage.getItem('user_wallet_address');
             if (savedAddress) {
                 walletText.textContent += ` (${savedAddress.substring(0,6)}...)`;
-                isWalletConnected = true;
             }
         }
 
-        // --- B. FUNGSI PRODUK (DARI SUPABASE) ---
-        // Import Supabase Client (Pastikan file ini ada)
-        // Jika src/supabase.js belum ada, kita buat dummy client sementara
-        const { supabaseClient } = await import('./src/supabase.js').catch(() => {
-            console.warn("supabase.js not found, using mock.");
-            return null;
-        });
+        // --- B. FUNGSI PRODUK (DUMMY) ---
+        function getProducts() {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    resolve([
+                        { id: 1, name: "Padi Cianjur", price: 6500, img: "https://picsum.photos/seed/padi/400/200" },
+                        { id: 2, name: "Jagung Manis", price: 4000, img: "https://picsum.photos/seed/jagung/400/200" },
+                        { id: 3, name: "Kopi Arabika", price: 45000, img: "https://picsum.photos/seed/kopi/400/200" }
+                    ]);
+                }, 500); // Simulasi loading 0.5 detik
+            });
+        }
 
-        async function getProducts() {
-            if (!supabaseClient) {
-                // Fallback Dummy jika belum ada file src/supabase.js
-                return [
-                    { id: 1, name: "Padi Cianjur", price: 6500, img: "https://picsum.photos/seed/padi/400/200" },
-                    { id: 2, name: "Jagung Manis", price: 4000, img: "https://picsum.photos/seed/jagung/400/200" }
-                ];
-            }
-
-            // Ambil Data Asli dari Supabase (Tabel 'agrichain_panen')
+        // --- C. IMPORT CHAT MODUL & HANDLE ERROR ---
+        async function loadChatModule() {
             try {
-                const { data, error } = await supabaseClient
-                    .from('agrichain_panen')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                // Mapping Data Supabase ke Format Frontend
-                return data.map(panen => ({
-                    id: panen.id,
-                    name: panen.nama_produk || panen.nama_lahan, // Sesua nama kolom di DB
-                    price: panen.estimated_price || panen.harga_per_kg || 0,
-                    img: "https://picsum.photos/seed/" + panen.id + "/400/200" // Placeholder image
-                }));
-
+                const module = await import('./src/appchat.js');
+                return { 
+                    handleChat: module.handleChat, 
+                    getChatHistory: module.getChatHistory,
+                    renderChatUI: module.renderChatUI // Mengambil fungsi render dari appchat.js
+                };
             } catch (err) {
-                console.error("Gagal ambil produk:", err);
-                return [];
+                console.error("Gagal load appchat.js:", err);
+                // Fallback jika file belum ada (buat dummy logic lokal)
+                return {
+                    handleChat: (q, cat) => {
+                        console.log("Mock AI:", q);
+                        return { success: true };
+                    },
+                    getChatHistory: () => [],
+                    renderChatUI: () => {}
+                };
             }
         }
 
-        // --- RENDER PRODUK ---
-        const products = await getProducts();
-        productList.innerHTML = ''; // Bersihkan tabel
+        // --- D. RENDER PRODUK ---
+        getProducts().then(products => {
+            productList.innerHTML = ''; // Bersihkan tabel
 
-        if (products.length === 0) {
-            productList.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Belum ada data panen.</div>';
-        } else {
+            if (products.length === 0) {
+                productList.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Belum ada data panen.</div>';
+                return;
+            }
+
             products.forEach(prod => {
                 const item = document.createElement('article');
                 item.className = 'card';
@@ -628,7 +625,7 @@
                     <div class="card-body">
                         <h3 class="card-title">${prod.name}</h3>
                         <div class="card-meta">
-                            <svg class="icon" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,1 2,12A10,10 0 0,1 2,12M12,2A10,10 0 0,1 2,12Z"/></svg>
+                            <svg class="icon" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,1 2,12A10,10 0 0,1 2,12M12,2A10,10 0 0,1 2,12M12,2A10,10 0 0,1 2,12Z"/></svg>
                             <span>Update: 2 jam lalu</span>
                         </div>
                         <div class="card-price">Rp ${prod.price} / kg</div>
@@ -639,30 +636,23 @@
                 `;
                 productList.appendChild(item);
             });
-        }
+        });
 
-        // --- C. LOAD CHAT HISTORY (Jika ada) ---
-        function renderChatUI() {
-            const STORAGE_KEY = 'agrichain_chat_history';
-            const history = localStorage.getItem(STORAGE_KEY);
-            if (history) {
-                const parsedHistory = JSON.parse(history);
-                if (parsedHistory.length > 0) {
-                    const lastChat = parsedHistory[0];
-                    chatBox.innerHTML = `<div class="chat-bubble user">${lastChat.question}</div>
-                                      <div class="chat-bubble ai">${lastChat.answer}</div>`;
-                }
+        // --- E. LOAD CHAT HISTORY ---
+        loadChatModule().then(chatModule => {
+            const history = chatModule.getChatHistory();
+            if (history.length > 0) {
+                chatModule.renderChatUI(history);
             }
-        }
-        renderChatUI();
+        });
 
-        // --- D. HANDLE WALLET ---
+        // --- F. HANDLE WALLET ---
         window.handleProfileClick = async function() {
-            // Simulasi connect wallet
+            // Simulasi connect
             alert("Fitur koneksi wallet akan aktif saat WalletConnect dipasang.");
         };
 
-        // --- E. TOGGLE CHAT ---
+        // --- G. TOGGLE CHAT ---
         window.toggleChat = function() {
             if (chatContainer.style.display === 'none' || chatContainer.style.display === '') {
                 chatContainer.style.display = 'flex';
@@ -672,57 +662,25 @@
             }
         };
 
-        // --- F. HANDLE CHAT SEND ---
+        // --- H. KIRIM PESAN CHAT ---
         window.handleChatSend = async function() {
             const q = chatInput.value;
             if (!q.trim()) return;
 
-            // Tampilkan pesan user
+            // 1. Render Bubble User Manual (Cepat agar responsif)
             chatBox.innerHTML += `<div class="chat-bubble user">${q}</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Simpan ke LocalStorage (Simple AI Logic)
-            const STORAGE_KEY = 'agrichain_chat_history';
-            let history = localStorage.getItem(STORAGE_KEY);
-            history = history ? JSON.parse(history) : [];
-
-            const lowerQ = q.toLowerCase();
-            let aiJawaban = "Mohon maaf, AI kami sedang dipelajari.";
-
-            if (lowerQ.includes("kuning")) aiJawaban = "Tanaman Anda kemungkinan kekurangan Nitrogen.";
-            if (lowerQ.includes("pupuk")) aiJawaban = "Gunakan pupuk NPK berimbang.";
-
-            const newChat = {
-                id: Date.now(),
-                question: q,
-                answer: aiJawaban,
-                timestamp: new Date().toLocaleTimeString()
-            };
-            history.unshift(newChat);
-            if (history.length > 10) history.shift();
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-
-            // Tampilkan balasan AI
-            setTimeout(() => {
-                chatBox.innerHTML += `<div class="chat-bubble ai">${aiJawaban}</div>`;
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }, 500);
-
-            chatInput.value = '';
+            // 2. Panggil fungsi AI dari appchat.js (Simulasi await)
+            loadChatModule().then(chatModule => {
+                chatModule.handleChat(q, "Umum");
+                chatInput.value = '';
+            });
         }
 
-        // Event Listener tombol chat
+        // Event Listener tombol chat header
         if(btnChat) {
             btnChat.addEventListener('click', window.toggleChat);
-        }
-
-        // --- G. TOAST (Helper) ---
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            if(!toast) return;
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
 
     </script>
