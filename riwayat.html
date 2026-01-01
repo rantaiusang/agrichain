@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Pertanian - AgriChain</title>
+    
+    <!-- Library Blockchain -->
+    <script src="https://unpkg.com/@web3modal/web3modal"></script>
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+    <style>
+        :root {
+            --primary-green: #2E7D32;
+            --light-green: #E8F5E9;
+            --dark-green: #1B5E20;
+            --text-dark: #333;
+            --text-grey: #666;
+            --white: #ffffff;
+            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --radius: 8px;
+        }
+
+        body {
+            font-family: "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        h2 { color: var(--primary-green); margin-top: 0; }
+        h3 { color: var(--text-dark); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; font-size: 1.1rem; }
+
+        /* --- FILTER --- */
+        .filter-section {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        /* --- TIMELINE --- */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin-top: 20px;
+            border-left: 2px solid var(--light-green);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -38px;
+            top: 5px;
+            width: 14px;
+            height: 14px;
+            background: var(--primary-green);
+            border: 2px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.3);
+        }
+
+        .timeline-date {
+            font-size: 0.85rem;
+            color: var(--text-grey);
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .timeline-content {
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        .timeline-title {
+            font-weight: bold;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+
+        .timeline-desc {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .badge-panen { background: #E8F5E9; color: #2E7D32; }
+        .badge-kegiatan { background: #E3F2FD; color: #1565C0; }
+        .badge-catatan { background: #FFF8E1; color: #FFA000; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>📓 Riwayat Pertanian</h2>
+            <a href="index.html" style="color: #666; text-decoration: none; font-weight: bold;">&larr; Kembali</a>
+        </div>
+
+        <!-- Filter -->
+        <div class="card filter-section">
+            <label for="filterLahan" style="font-weight: bold; color: #333;">Filter berdasarkan Lahan:</label>
+            <select id="filterLahan">
+                <option value="all">Semua Lahan</option>
+                <option value="Sawah Bakti I">Sawah Bakti I</option>
+                <option value="Kebun Cabai Merah">Kebun Cabai Merah</option>
+            </select>
+        </div>
+
+        <!-- Timeline -->
+        <div id="timelineContainer">
+            <!-- Data akan dirender JS -->
+            <div style="text-align: center; color: #999;">Memuat riwayat...</div>
+        </div>
+    </div>
+
+    <script type="module">
+        // --- DATA DUMMY (MENSIMULASI SUPABASE) ---
+        // Mengambil data 'lahan' dan 'jadwal' yang sudah dibuat sebelumnya
+        const dataLahan = [
+            { id: 1, nama: "Sawah Bakti I", luas: 5000, lokasi: "Cianjur" },
+            { id: 2, nama: "Kebun Cabai Merah", luas: 1500, lokasi: "Bogor" }
+        ];
+
+        const dataJadwal = [
+            { id: 1, kegiatan: "Tanam Benih Padi", tanggal: "2023-10-01T07:00", lahanId: 1 },
+            { id: 2, kegiatan: "Pupuk Sawah", tanggal: "2023-10-05T15:00", lahanId: 1 },
+            { id: 3, kegiatan: "Catat Hasil Panen", tanggal: "2023-11-01T08:00", lahanId: 1 },
+            { id: 4, kegiatan: "Bibit Cabai", tanggal: "2023-10-10T06:00", lahanId: 2 },
+            { id: 5, kegiatan: "Panen Cabai", tanggal: "2023-11-20T09:00", lahanId: 2 }
+        ];
+
+        // --- DOM ELEMENTS ---
+        const timelineContainer = document.getElementById('timelineContainer');
+        const filterLahan = document.getElementById('filterLahan');
+
+        // --- FUNGSI UTAMA ---
+
+        // 1. Render Timeline
+        function renderTimeline(filterId) {
+            timelineContainer.innerHTML = '';
+
+            // Gabungkan Jadwal berdasarkan Lahan dan Filter
+            let filteredJadwal = dataJadwal;
+            
+            if (filterId !== 'all') {
+                filteredJadwal = dataJadwal.filter(j => {
+                    // Cari nama lahan berdasarkan ID di jadwal
+                    const lahan = dataLahan.find(l => l.id == j.lahanId);
+                    return lahan && lahan.nama === filterId;
+                });
+            }
+
+            if (filteredJadwal.length === 0) {
+                timelineContainer.innerHTML = '<div style="text-align: center; color: #999;">Belum ada riwayat kegiatan.</div>';
+                return;
+            }
+
+            // Render Item
+            filteredJadwal.forEach(item => {
+                const dateObj = new Date(item.tanggal);
+                const tglStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                const jamStr = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+                const lahanItem = dataLahan.find(l => l.id == item.lahanId);
+                const namaLahan = lahanItem ? lahanItem.nama : "Lahan Dihapus";
+                const lokasiLahan = lahanItem ? lahanItem.lokasi : "-";
+
+                // Tentukan Badge berdasarkan kata kunci sederhana
+                let badge = '<span class="badge badge-kegiatan">Catatan</span>';
+                const lowerKegiatan = item.kegiatan.toLowerCase();
+                if (lowerKegiatan.includes('panen') || lowerKegiatan.includes('jual')) {
+                    badge = '<span class="badge badge-panen">Panen</span>';
+                } else if (lowerKegiatan.includes('tanam') || lowerKegiatan.includes('pupuk')) {
+                    badge = '<span class="badge badge-kegiatan">Perawatan</span>';
+                }
+
+                const el = document.createElement('div');
+                el.className = 'timeline-item';
+                el.innerHTML = `
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-date">${tglStr}, ${jamStr}</div>
+                    <div class="timeline-content">
+                        <div class="timeline-title">
+                            ${item.kegiatan} ${badge}
+                        </div>
+                        <div class="timeline-desc">
+                            <strong>Lahan:</strong> ${namaLahan} (${lokasiLahan})
+                        </div>
+                    </div>
+                `;
+                timelineContainer.appendChild(el);
+            });
+        }
+
+        // --- EVENT LISTENER ---
+
+        // 1. Saat Pilihan Filter Berubah
+        filterLahan.addEventListener('change', (e) => {
+            renderTimeline(e.target.value);
+        });
+
+        // 2. Inisialisasi Halaman
+        document.addEventListener("DOMContentLoaded", () => {
+            renderTimeline('all'); // Default tampilkan semua
+        });
+
+    </script>
+</body>
+</html>

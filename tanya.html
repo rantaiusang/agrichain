@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tanya Konsultan - AgriChain</title>
+    
+    <!-- Library Blockchain -->
+    <script src="https://unpkg.com/@web3modal/web3modal"></script>
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+    <style>
+        :root {
+            --primary-green: #2E7D32;
+            --light-green: #E8F5E9;
+            --dark-green: #1B5E20;
+            --text-dark: #333;
+            --text-grey: #666;
+            --white: #ffffff;
+            --shadow: 0 2px 8px rgba(0,0,0,0.05);
+            --radius: 8px;
+        }
+
+        body {
+            font-family: "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        h2 { color: var(--primary-green); margin-top: 0; text-align: center; }
+        
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark); }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            -moz-appearance: none;
+            -webkit-appearance: none;
+        }
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--primary-green);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover { background-color: var(--dark-green); }
+
+        .btn-loading { background-color: #81C784; cursor: not-allowed; }
+        .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; margin-right: 8px; vertical-align: middle; display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- LIST PERTANYAAN --- */
+        .qa-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--light-green);
+        }
+
+        .qa-header { display: flex; justify-content: space-between; align-items: center; }
+        .qa-question { font-weight: bold; font-size: 1.05rem; color: var(--text-dark); }
+        .qa-meta { font-size: 0.8rem; color: var(--text-grey); }
+        .qa-answer { margin-top: 10px; color: var(--text-dark); line-height: 1.5; padding: 10px; background: white; border-radius: 6px; border: 1px solid #eee; font-style: italic; }
+        .badge-answer { background: var(--light-green); color: var(--primary-green); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; font-style: normal; display: inline-block; margin-bottom: 5px; }
+
+        /* --- NAV --- */
+        .back-link { display: block; text-align: center; margin-top: 20px; color: #666; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="card">
+            <h2>❓ Forum & Konsultan Tani</h2>
+            
+            <!-- FORM PERTANYAAN -->
+            <form id="formTanya">
+                <div class="form-group">
+                    <label for="pertanyaan">Pertanyaan Anda</label>
+                    <textarea id="pertanyaan" rows="3" placeholder="Contoh: Tanaman saya daunnya kuning dan layu, kenapa ya?" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="kategori">Kategori</label>
+                    <select id="kategori" required>
+                        <option value="">Pilih Kategori...</option>
+                        <option value="Hama & Penyakit">Hama & Penyakit</option>
+                        <option value="Pupuk & Nutrisi">Pupuk & Nutrisi</option>
+                        <option value="Irigasi & Air">Irigasi & Air</option>
+                        <option value="Pascapanen">Pascapanen</option>
+                        <option value="Harga Pasar">Harga Pasar</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="wallet">Dompet Anda (Opsional)</label>
+                    <input type="text" id="wallet" placeholder="0x... (Jika ingin tuntutan hadiah token)">
+                </div>
+
+                <button type="submit" id="btnSubmit" class="btn-submit">
+                    <span class="spinner" id="spinner"></span>
+                    <span id="btnText">Kirim Pertanyaan</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- LIST RIWAYAT -->
+        <div class="card">
+            <h3>Riwayat Pertanyaan & Jawaban</h3>
+            <div id="qaList">
+                <!-- Render JS -->
+            </div>
+        </div>
+
+        <a href="index.html" class="back-link">Kembali ke Beranda</a>
+    </div>
+
+    <!-- SCRIPT UTAMA (MEMANGGIL FILE MODULAR) -->
+    <script type="module">
+        // Import fungsi dari src/api.js (Yang sudah kita buat sebelumnya)
+        import { loginUser, getProducts, getAllProducts } from './src/api.js';
+
+        // Karena API `/api/questions` belum kita buat di server.js, 
+        // kita buat function frontend khusus untuk mengirim ke endpoint tersebut.
+        
+        // URL Backend
+        const BACKEND_URL = "http://localhost:3000/api"; // Ubah ini jika backend sudah di hosting (Render)
+        
+        // --- DOM ELEMENTS ---
+        const form = document.getElementById('formTanya');
+        const qaList = document.getElementById('qaList');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const spinner = document.getElementById('spinner');
+        const btnText = document.getElementById('btnText');
+
+        // --- DATA DUMMY (MENSIMULASI TABEL 'konsultasi') ---
+        // Ini menggantikan fetch ke tabel 'konsultasi' Supabase yang belum ada.
+        let konsultasiDB = [
+            { 
+                id: 1, 
+                pertanyaan: "Kenapa daun padi saya berwarna kuning?", 
+                kategori: "Hama & Penyakit", 
+                wallet: "0x123...abc",
+                jawaban: "Kemungkinan tanaman kekurangan Nitrogen. Gunakan pupuk Urea yang kaya akan Nitrogen.",
+                tanya: "2023-10-25"
+            },
+            { 
+                id: 2, 
+                pertanyaan: "Kapan waktu terbaik untuk memanen jagung?", 
+                kategori: "Pascapanen",
+                wallet: "-",
+                jawaban: "Jagung manis sebaiknya dipanen pada pagi hari (sebelum jam 10) kadar air 20-25%.",
+                tanya: "2023-10-24"
+            },
+            { 
+                id: 3, 
+                pertanyaan: "Harga jagung hari ini stabil?", 
+                kategori: "Harga Pasar",
+                wallet: "0x456...def",
+                jawaban: "Harga sedang fluktuatif disebab cuaca ekstrem. Disarankan tahan stok jika harga bagus.",
+                tanya: "2023-10-26"
+            }
+        ];
+
+        // --- RENDER LIST ---
+        function renderList() {
+            qaList.innerHTML = '';
+            
+            if (konsultasiDB.length === 0) {
+                qaList.innerHTML = '<div style="text-align: center; color: #999;">Belum ada pertanyaan.</div>';
+                return;
+            }
+
+            konsultasiDB.forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'qa-item';
+                el.innerHTML = `
+                    <div class="qa-header">
+                        <div class="qa-question">${item.pertanyaan}</div>
+                        <div class="qa-meta">Kategori: ${item.kategori} | Tanya: ${item.tanya}</div>
+                    </div>
+                    <div class="badge-answer">JAWABAN AHLI</div>
+                    <div class="qa-answer">${item.jawaban}</div>
+                `;
+                qaList.appendChild(el);
+            });
+        }
+
+        // --- HANDLE SUBMIT FORM ---
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const pertanyaan = document.getElementById('pertanyaan').value;
+            const kategori = document.getElementById('kategori').value;
+            const wallet = document.getElementById('wallet').value;
+
+            // UI Loading
+            btnSubmit.classList.add('btn-loading');
+            btnSubmit.disabled = true;
+            spinner.style.display = 'inline-block';
+            btnText.textContent = 'MENGIRIM KE PAKAR...';
+
+            try {
+                // SIMULASI MENGIRIM KE BACKEND (/api/questions)
+                // Karena backend belum memiliki route ini, kita simulasi delay network
+                await new Promise(r => setTimeout(r, 1500));
+
+                // Simulasi Jawaban AI Sederhana (Kata Kunci)
+                let aiJawaban = "Mohon maaf, sistem AI kami sedang dipelajari. Silakan konsultasi ke penyuluh lokal.";
+                
+                if (pertanyaan.toLowerCase().includes("kuning")) aiJawaban = "Tanaman kemungkinan kekurangan Nitrogen atau Magnesium.";
+                if (pertanyaan.toLowerCase().includes("pupuk")) aiJawaban = "Gunakan pupuk NPK berimbang sesuai rekomendasi ahli.";
+                if (kategori === "Harga") aiJawaban = "Cek fitur Info Harga Pasar di AgriChain untuk update harga terkini.";
+
+                // Tambahkan ke Database Dummy
+                const newId = konsultasiDB.length > 0 ? konsultasiDB[konsultasiDB.length - 1].id + 1 : 1;
+                const dateObj = new Date();
+                const tglIndo = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                
+                konsultasiDB.unshift({
+                    id: newId,
+                    pertanyaan: pertanyaan,
+                    kategori: kategori,
+                    wallet: wallet || "-",
+                    jawaban: aiJawaban,
+                    tanya: tglIndo
+                });
+
+                // Render Ulang
+                renderList();
+                
+                // Reset Form
+                form.reset();
+                alert(`Pertanyaan terkirim! AI: ${aiJawaban}`);
+
+            } catch (err) {
+                console.error(err);
+                alert("Gagal mengirim pertanyaan.");
+            } finally {
+                // Reset UI Tombol
+                btnSubmit.classList.remove('btn-loading');
+                btnSubmit.disabled = false;
+                spinner.style.display = 'none';
+                btnText.textContent = 'Kirim Pertanyaan';
+            }
+        });
+
+        // Init
+        document.addEventListener("DOMContentLoaded", () => {
+            renderList();
+        });
+
+    </script>
+</body>
+</html>
