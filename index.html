@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/@web3modal/web3modal"></script>
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
-    <!-- CSS Global (Bisa dipisahkan ke style.css nanti) -->
+    <!-- CSS Global -->
     <style>
         /* --- CSS VARIABLES & RESET --- */
         :root {
@@ -33,7 +33,7 @@
             color: var(--text-dark);
             line-height: 1.6;
             overflow-x: hidden;
-            padding-bottom: 100px; /* Jaga chat tidak ketutup footer */
+            padding-bottom: 100px; 
         }
 
         /* --- HEADER LANDING PAGE --- */
@@ -402,13 +402,6 @@
             gap: 5px;
         }
 
-        .chat-input-area input {
-            flex: 1;
-            border: 1px solid #ddd;
-            border-radius: 20px;
-            padding: 8px 12px;
-        }
-
         .chat-btn-send {
             background: var(--primary-green);
             color: white;
@@ -483,7 +476,10 @@
                 </div>
             </div>
 
-           
+            <!-- Ganti Link Unsplash ini dengan Logo/File Anda -->
+            <div class="hero-image">
+                <img src="https://images.unsplash.com/photo-16252464724-7189a844d954?q=80&w=1000&auto=format&fit=crop" 
+                     alt="AgriChain Illustration" style="max-width: 400px; border-radius: 16px;">
             </div>
         </section>
 
@@ -530,7 +526,7 @@
     <!-- CHAT WIDGET (POP UP) -->
     <div id="chatContainer" class="chat-container">
         <div class="chat-header">
-            <span>💬 AgriAI - Ahli Tani</span>
+            <span>💬 Tanya Ahli Tani</span>
             <span class="close-chat" onclick="toggleChat()">&times;</span>
         </div>
         <div class="chat-messages" id="chatBox">
@@ -564,22 +560,25 @@
         // 3. Inisialisasi Halaman
         document.addEventListener("DOMContentLoaded", async () => {
             
-            // --- A. CEK LOGIN SESI ---
+            // --- A. CEK LOGIN SESI (Jika tidak ada token, LEPAR KE LOGIN PAGE) ---
             const token = localStorage.getItem('agrichain_token');
             const userStr = localStorage.getItem('agrichain_user');
 
             if (!token || !userStr) {
                 console.log("Belum login");
-                walletText.textContent = "Akun Saya";
-            } else {
-                const user = JSON.parse(userStr);
-                walletText.textContent = user.full_name.split(' ')[0]; // Tampilkan nama depan
-                // Jika sudah connect sebelumnya (disimpan di localStorage optional)
-                const savedAddress = localStorage.getItem('user_wallet_address');
-                if (savedAddress) {
-                    walletText.textContent += ` (${savedAddress.substring(0,6)}...)`;
-                    isWalletConnected = true;
-                }
+                window.location.href = 'login.html'; // <--- PENTING: REDIRECT OTOMATIS
+                return; // Stop eksekusi
+            }
+
+            // Jika ada token, lanjut
+            const user = JSON.parse(userStr);
+            walletText.textContent = user.full_name.split(' ')[0]; // Tampilkan nama depan
+
+            // Jika sudah connect sebelumnya (disimpan di localStorage optional)
+            const savedAddress = localStorage.getItem('user_wallet_address');
+            if (savedAddress) {
+                walletText.textContent += ` (${savedAddress.substring(0,6)}...)`;
+                isWalletConnected = true;
             }
 
             // --- B. RENDER PRODUK (Panggil dari api.js) ---
@@ -589,7 +588,7 @@
 
                 if (products.length === 0) {
                     productList.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Belum ada data panen.</div>';
-                return;
+                    return;
                 }
 
                 products.forEach(prod => {
@@ -600,7 +599,7 @@
                         <div class="card-body">
                             <h3 class="card-title">${prod.name}</h3>
                             <div class="card-meta">
-                                <svg class="icon" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,2A10,10 0 0,1 2,12M12,2A10,10 0 0,1 2,12Z"/></svg>
+                                <svg class="icon" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,1 2,12A10,10 0 0,1 2,12M12,2A10,10 0 0,1 2,12M12,2A10,10 0 0,1 2,12Z"/></svg>
                                 <span>Update: 2 jam lalu</span>
                             </div>
                             <div class="card-price">Rp ${prod.price} / kg</div>
