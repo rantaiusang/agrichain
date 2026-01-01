@@ -1,15 +1,27 @@
-// Simulasi Database Tabel 'harga_pasar' & 'products'
-const dataHargaPasar = [
-    { id: 1, nama: "Padi Cianjur", harga: 6500, rata: 6000, volume: 50 },
-    { id: 2, nama: "Jagung Manis", harga: 3200, rata: 3500, volume: 120 }
-];
+// --- src/api.js ---
+import { createClient } from 'https://unpkg.com/@supabase/supabase-js@2'
 
-async function getProducts() {
-    // Return mockup products dulu
-    return [
-        { id: 1, name: "Padi IR64", price: 6500, img: "https://picsum.photos/seed/padi/400/200" },
-        { id: 2, name: "Jagung Manis", price: 4000, img: "https://picsum.photos/seed/jagung/400/200" }
-    ];
+const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'
+const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X'  // Publishable Key
+
+export const supa = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+// Ambil data panen (frontend langsung ke supabase)
+export async function getProducts() {
+    try {
+        const { data, error } = await supa
+            .from('agrichain_panen')
+            .select('*')
+            .order('created_at', { ascending: false })
+        if (error) throw error
+        // Return array dengan properti standar
+        return data.map(p => ({
+            name: p.nama_produk,
+            price: p.jumlah_kg,
+            img: p.img || 'https://via.placeholder.com/200'
+        }))
+    } catch(e) {
+        console.error("Gagal ambil produk:", e)
+        return []
+    }
 }
-
-export { getProducts };
