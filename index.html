@@ -347,21 +347,21 @@
         }
 
         .chat-float-btn:hover {
-            transform: scale(1.1); /* Membesar sedikit saat di-hover */
+            transform: scale(1.1);
             box-shadow: 0 6px 20px rgba(46, 125, 50, 0.5);
         }
 
         /* --- CHAT CONTAINER --- */
         .chat-container {
             position: fixed;
-            bottom: 90px; /* Di atas tombol floating */
+            bottom: 90px;
             right: 20px;
             width: 350px;
             background: var(--white);
             border-radius: 16px;
             box-shadow: 0 5px 25px rgba(0,0,0,0.15);
             z-index: 999;
-            display: none; /* Default Hidden */
+            display: none;
             flex-direction: column;
             border: 1px solid #ddd;
             transform-origin: bottom right;
@@ -547,13 +547,12 @@
         </section>
     </main>
 
-    <!-- 1. FLOATING CHAT BUTTON -->
+    <!-- 1. FLOATING CHAT BUTTON (TOMBOL BULAT) -->
     <div id="chatFloatBtn" class="chat-float-btn">
-        <!-- SVG Icon Chat -->
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-.7 5.2 8.5 8.5 0 0 1-7.8 4 8.5 8.5 0 0 1-4.7-4.5 8.5 8.5 0 0 1-1.3-1.7 8.5 8.5 0 0 1-5.5-2.3 2.9-2.9 5.9-3.5 4.1-1.3 4.8-2.8 1.5-3.3 1.5-6.6 0-10.6 4.2-10.6 8.4 0 1.3.5 1.6 3.2-2.3 5.2-4.1 5.5 7.3 0 9.6-2.3 9.6-6.5 0-8.4-2.3-8.4-4.8 0-3.1 1.1-5.5 3.3-4.1 5.5-3.7 5.2-8.2 2.3-9.6 2.3-8.4 0-6.5-4.2-10.6-8.4 0-1.3-.5-1.6-3.2-2.3-5.2-4.1-8.5-6.2 10.6-8.4-2.3-1.6-5.5-2.3-8.4-2.3z"></path><path d="M14.9 18c.1 0 .3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path></svg>
     </div>
 
-    <!-- 2. CHAT CONTAINER -->
+    <!-- 2. CHAT CONTAINER (POP UP) -->
     <div id="chatContainer" class="chat-container">
         <div class="chat-header">
             <span>💬 Tanya Ahli Tani</span>
@@ -589,10 +588,12 @@
 
         if (!token || !userStr) {
             console.log("Belum login");
+            // window.location.href = 'login.html'; 
         } else {
             const user = JSON.parse(userStr);
             walletText.textContent = user.full_name.split(' ')[0];
 
+            // Cek Wallet Status
             const savedAddress = localStorage.getItem('user_wallet_address');
             if (savedAddress) {
                 walletText.textContent += ` (${savedAddress.substring(0,6)}...)`;
@@ -631,10 +632,12 @@
         // --- D. RENDER PRODUK ---
         getProducts().then(products => {
             productList.innerHTML = ''; 
+
             if (products.length === 0) {
                 productList.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Belum ada data panen.</div>';
                 return;
             }
+
             products.forEach(prod => {
                 const item = document.createElement('article');
                 item.className = 'card';
@@ -643,6 +646,7 @@
                     <div class="card-body">
                         <h3 class="card-title">${prod.name}</h3>
                         <div class="card-meta">
+                            <svg class="icon" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,1 2,12A10,10 0 0,1 2,12M12,2A10,10 0 0,1 2,12Z"/></svg>
                             <span>Update: 2 jam lalu</span>
                         </div>
                         <div class="card-price">Rp ${prod.price} / kg</div>
@@ -658,67 +662,80 @@
         // --- E. LOAD CHAT HISTORY ---
         loadChatModule().then(chatModule => {
             const history = chatModule.getChatHistory();
-            // JANGAN RENDER HISTORY SAAT LOAD HALAMAN
-            // Biar chat box defaultnya kosong ("Mulai percakapan...")
-            if (history.length > 0) {
-                // chatModule.renderChatUI(history);
-            }
+            // Jangan render otomatis
         });
 
         // --- F. TOGGLE CHAT (BUKA/TUTUP + HAPUS VISUAL) ---
         window.toggleChat = function() {
+            // Jika Widget Tertutup (Display: None)
             if (chatContainer.style.display === 'none' || chatContainer.style.display === '') {
                 
-                // 1. BUKA Widget
+                // 1. BUKA Widget (Display: Flex)
                 chatContainer.style.display = 'flex'; 
                 chatInput.focus();
 
-                // 2. HAPUS SEMUA CHILD ELEMEN VISUAL (FORCE CLEAR)
+                // 2. HAPUS VISUAL LAMA (Agar "Mulai Percakapan")
                 while (chatBox.firstChild) {
                     chatBox.removeChild(chatBox.firstChild);
                 }
 
-                // 3. MASUKKAN TEKS DEFAULT
+                // 3. TEKS DEFAULT
                 chatBox.innerHTML = '<div style="text-align: center; color: #999; margin-top: 20px;">Mulai percakapan...</div>';
 
             } else {
-                // TUTUP Widget
+                // Jika Widget Terbuka (Display: Flex)
+                
+                // 1. TUTUP Widget (Display: None)
                 chatContainer.style.display = 'none'; 
             }
         };
 
-        // --- G. EVENT LISTENER ---
-        // 1. Tombol Chat Bulat
+        // --- G. HANDLE WALLET ---
+        window.handleProfileClick = async function() {
+            alert("Fitur koneksi wallet akan aktif saat WalletConnect dipasang.");
+        };
+
+        // --- H. EVENT LISTENER ---
+        
+        // 1. Tombol Chat Floating
         if (chatFloatBtn) {
             chatFloatBtn.addEventListener('click', window.toggleChat);
         }
+
         // 2. Tombol Close (X)
         if (closeChatBtn) {
             closeChatBtn.addEventListener('click', window.toggleChat);
         }
 
-        // --- H. KIRIM PESAN CHAT ---
+        // 3. Tombol Kirim (➤)
         if (sendChatBtn) {
             sendChatBtn.addEventListener('click', function() {
                 const q = chatInput.value;
                 if (!q.trim()) return;
 
-                // 1. Render Bubble User
+                // Tampilkan Bubble User (UI Cepat)
                 chatBox.innerHTML += `<div class="chat-bubble user">${q}</div>`;
                 chatBox.scrollTop = chatBox.scrollHeight;
 
-                // 2. Panggil Modular
+                // Panggil Modular AI
                 loadChatModule().then(chatModule => {
                     chatModule.handleChat(q, "Umum");
                 });
+
+                // Reset Input
                 chatInput.value = '';
             });
         }
 
-        // --- I. HANDLE WALLET ---
-        window.handleProfileClick = function() {
-            alert("Fitur koneksi wallet akan aktif saat Backend Server dinyalakan.");
-        };
+        // --- I. TOAST (Helper) ---
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            if(!toast) return;
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
     </script>
 </body>
 </html>
