@@ -541,28 +541,25 @@
                 </div>
 
                 <div class="card-grid" id="productList">
-                    <!-- Produk akan dirender otomatis via JS -->
                     <div style="text-align: center; color: #999; grid-column: 1 / -1; padding: 20px;">Memuat data pasar...</div>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- 1. FLOATING CHAT BUTTON (TOMBOL BULAT) -->
-    <!-- HAPUS ONCLICK="toggleChat()" DARI DIV INI! KITA ATUR DI SCRIPT -->
+    <!-- 1. FLOATING CHAT BUTTON -->
     <div id="chatFloatBtn" class="chat-float-btn">
         <!-- SVG Icon Chat -->
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-.7 5.2 8.5 8.5 0 0 1-7.8 4 8.5 8.5 0 0 1-4.7-4.5 8.5 8.5 0 0 1-1.3-1.7 8.5 8.5 0 0 1-5.5-2.3 2.9-2.9 5.9-3.5 4.1-1.3 4.8-2.8 1.5-3.3 1.5-6.6 0-10.6 4.2-10.6 8.4 0 1.3.5 1.6 3.2-2.3 5.2-4.1 5.5 7.3 0 9.6-2.3 9.6-6.5 0-8.4-2.3-8.4-4.8 0-3.1 1.1-5.5 3.3-4.1 5.5-3.7 5.2-8.2 2.3-9.6 2.3-8.4 0-6.5-4.2-10.6-8.4 0-1.3-.5-1.6-3.2-2.3-5.2-4.1-8.5-6.2 10.6-8.4-2.3-1.6-5.5-2.3-8.4-2.3z"></path><path d="M14.9 18c.1 0 .3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path></svg>
     </div>
 
-    <!-- 2. CHAT CONTAINER (POP UP) -->
+    <!-- 2. CHAT CONTAINER -->
     <div id="chatContainer" class="chat-container">
         <div class="chat-header">
             <span>💬 Tanya Ahli Tani</span>
             <span class="close-chat" id="closeChatBtn">&times;</span>
         </div>
         <div class="chat-messages" id="chatBox">
-            <!-- Chat history akan muncul di sini -->
             <div style="text-align: center; color: #999; margin-top: 20px;">Mulai percakapan...</div>
         </div>
         <div class="chat-input-area">
@@ -573,7 +570,7 @@
 
     <div id="toast" class="toast">Pesan notifikasi</div>
 
-    <!-- SCRIPT UTAMA (LOGIKA LOKAL + IMPORT) -->
+    <!-- SCRIPT UTAMA -->
     <script type="module">
         // DOM Elements
         const btnWallet = document.getElementById('btnWallet');
@@ -592,12 +589,10 @@
 
         if (!token || !userStr) {
             console.log("Belum login");
-            // window.location.href = 'login.html'; 
         } else {
             const user = JSON.parse(userStr);
-            walletText.textContent = user.full_name.split(' ')[0]; // Tampilkan nama depan
+            walletText.textContent = user.full_name.split(' ')[0];
 
-            // Cek Wallet Status
             const savedAddress = localStorage.getItem('user_wallet_address');
             if (savedAddress) {
                 walletText.textContent += ` (${savedAddress.substring(0,6)}...)`;
@@ -614,11 +609,11 @@
                         { id: 2, name: "Jagung Manis", price: 4000, img: "https://picsum.photos/seed/jagung/400/200" },
                         { id: 3, name: "Kopi Arabika", price: 45000, img: "https://picsum.photos/seed/kopi/400/200" }
                     ]);
-                }, 500); 
+                }, 500);
             });
         }
 
-        // --- C. IMPORT CHAT MODUL & HANDLE ERROR ---
+        // --- C. IMPORT CHAT MODUL ---
         async function loadChatModule() {
             try {
                 const module = await import('./src/appchat.js');
@@ -636,12 +631,10 @@
         // --- D. RENDER PRODUK ---
         getProducts().then(products => {
             productList.innerHTML = ''; 
-
             if (products.length === 0) {
                 productList.innerHTML = '<div style="text-align:center; padding:20px; color:#999;">Belum ada data panen.</div>';
                 return;
             }
-
             products.forEach(prod => {
                 const item = document.createElement('article');
                 item.className = 'card';
@@ -650,7 +643,6 @@
                     <div class="card-body">
                         <h3 class="card-title">${prod.name}</h3>
                         <div class="card-meta">
-                            <svg class="icon" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,1 2,12A10,10 0 0,1 2,12M12,2A10,10 0 0,1 2,12Z"/></svg>
                             <span>Update: 2 jam lalu</span>
                         </div>
                         <div class="card-price">Rp ${prod.price} / kg</div>
@@ -666,72 +658,67 @@
         // --- E. LOAD CHAT HISTORY ---
         loadChatModule().then(chatModule => {
             const history = chatModule.getChatHistory();
-            // Jangan render otomatis saat load agar UX sesuai permintaan
-            // if (history.length > 0) { chatModule.renderChatUI(history); }
+            // JANGAN RENDER HISTORY SAAT LOAD HALAMAN
+            // Biar chat box defaultnya kosong ("Mulai percakapan...")
+            if (history.length > 0) {
+                // chatModule.renderChatUI(history);
+            }
         });
 
-        // --- F. HANDLE WALLET ---
-        window.handleProfileClick = async function() {
-            alert("Fitur koneksi wallet akan aktif saat WalletConnect dipasang.");
-        };
-
-        // --- G. TOGGLE CHAT (FUNGSI BUKA/TUTUP) ---
+        // --- F. TOGGLE CHAT (BUKA/TUTUP + HAPUS VISUAL) ---
         window.toggleChat = function() {
-            // Kondisi: Widget Tertutup (Display: None)
             if (chatContainer.style.display === 'none' || chatContainer.style.display === '') {
                 
-                // 1. BUKA Widget (Display: Flex)
+                // 1. BUKA Widget
                 chatContainer.style.display = 'flex'; 
                 chatInput.focus();
 
-                // 2. BERSIHKAN LAYAR (Mulai Percakapan)
+                // 2. HAPUS SEMUA CHILD ELEMEN VISUAL (FORCE CLEAR)
+                while (chatBox.firstChild) {
+                    chatBox.removeChild(chatBox.firstChild);
+                }
+
+                // 3. MASUKKAN TEKS DEFAULT
                 chatBox.innerHTML = '<div style="text-align: center; color: #999; margin-top: 20px;">Mulai percakapan...</div>';
 
             } else {
-                // Kondisi: Widget Terbuka (Display: Flex)
-                // 1. TUTUP Widget (Display: None)
+                // TUTUP Widget
                 chatContainer.style.display = 'none'; 
             }
         };
 
-        // --- H. PASANG EVENT LISTENER (PERBAIKAN) ---
-        // 1. Event Listener Tombol Floating (Chat Bulat)
+        // --- G. EVENT LISTENER ---
+        // 1. Tombol Chat Bulat
         if (chatFloatBtn) {
             chatFloatBtn.addEventListener('click', window.toggleChat);
         }
-
-        // 2. Event Listener Tombol Close (X)
+        // 2. Tombol Close (X)
         if (closeChatBtn) {
             closeChatBtn.addEventListener('click', window.toggleChat);
         }
 
-        // 3. Event Listener Tombol Kirim
+        // --- H. KIRIM PESAN CHAT ---
         if (sendChatBtn) {
             sendChatBtn.addEventListener('click', function() {
                 const q = chatInput.value;
                 if (!q.trim()) return;
 
-                // 1. Tampilkan Pesan User (UI Cepat)
+                // 1. Render Bubble User
                 chatBox.innerHTML += `<div class="chat-bubble user">${q}</div>`;
                 chatBox.scrollTop = chatBox.scrollHeight;
 
-                // 2. Panggil fungsi modular
+                // 2. Panggil Modular
                 loadChatModule().then(chatModule => {
                     chatModule.handleChat(q, "Umum");
-                    chatInput.value = '';
                 });
+                chatInput.value = '';
             });
         }
 
-        // --- I. TOAST (Helper) ---
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            if(!toast) return;
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, 3000);
-        }
-
+        // --- I. HANDLE WALLET ---
+        window.handleProfileClick = function() {
+            alert("Fitur koneksi wallet akan aktif saat Backend Server dinyalakan.");
+        };
     </script>
 </body>
 </html>
