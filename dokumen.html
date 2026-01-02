@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dokumen Petani - AgriChain</title>
     
-    <!-- Library Blockchain -->
-    <script src="https://unpkg.com/@web3modal/web3modal"></script>
+    <!-- Library Blockchain (Opsional) & Supabase -->
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -89,12 +89,13 @@
             gap: 10px;
         }
         .btn-upload:hover { background-color: var(--dark-green); }
+        .btn-upload:disabled { background-color: #ccc; cursor: not-allowed; }
 
         /* --- TABLE --- */
         .table-responsive {
             overflow-x: auto;
-        margin-top: 30px;
-        border-radius: 8px;
+            margin-top: 30px;
+            border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             background: white;
         }
@@ -136,9 +137,8 @@
             gap: 5px;
         }
         .btn-preview { background: #e3f2fd; color: #1565c0; }
-        .btn-download { background: #e8f5e9; color: #2E7D32; }
         .btn-delete { background: #ffebee; color: #c62828; }
-        .btn-preview:hover, .btn-download:hover { filter: brightness(0.9); }
+        .btn-preview:hover { filter: brightness(0.9); }
         .btn-delete:hover { background: #ffcdd2; color: #d32f2f; }
 
         /* --- BADGE --- */
@@ -160,7 +160,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.7);
+            background-color: rgba(0,0,0,0.8);
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -174,9 +174,11 @@
             max-width: 600px;
             text-align: center;
             position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
-        .preview-img { max-width: 100%; max-height: 500px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); margin-bottom: 15px; }
+        .preview-img { max-width: 100%; border-radius: 8px; }
         .close-btn {
             position: absolute;
             top: 10px;
@@ -211,9 +213,9 @@
             <h2>📁 Arsip Dokumen Petani</h2>
             
             <!-- AREA UPLOAD -->
-            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-area" id="dropZone">
                 <div class="upload-icon">☁️</div>
-                <div class="upload-text">Klik untuk upload sertifikat / bukti panen</div>
+                <div class="upload-text">Klik atau Tarik File ke sini</div>
                 <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png">
             </div>
 
@@ -275,36 +277,20 @@
             <div id="previewContainer">
                 <!-- Gambar atau Ikon PDF akan muncul di sini -->
             </div>
-            <button onclick="closePreview()" style="margin-top: 15px; padding: 10px 20px; border: 1px solid #ddd; background: white; border-radius: 6px; cursor: pointer;">Tutup</button>
         </div>
     </div>
 
-    <script type="module">
-        // --- DATA DUMMY (Simulasi Supabase Storage) ---
-        // Karena backend offline, kita simpan file dalam objek JavaScript (Blob URL)
-        let fileDB = [
-            { 
-                id: 1, 
-                nama: "Sertifikat Lahan Sawah", 
-                kategori: "Sertifikat Tanah", 
-                namaFile: "sertifikat_lahan.jpg", 
-                type: "image/jpeg", 
-                size: 1024 * 500, // 500KB (dummy)
-                date: "2023-10-01" 
-            },
-            { 
-                id: 2, 
-                nama: "Bukti Panen Jagung", 
-                kategori: "Bukti Panen", 
-                namaFile: "bukti_jagung.pdf", 
-                type: "application/pdf", 
-                size: 1024 * 250, // 250KB (dummy)
-                date: "2023-10-15" 
-            }
-        ];
+    <script>
+        // --- 1. KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        const BUCKET_NAME = 'dokumen-petani'; // Pastikan bucket ini ada di Supabase Storage
 
         // --- DOM ELEMENTS ---
         const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('dropZone');
         const metadataForm = document.getElementById('metadataForm');
         const btnUpload = document.getElementById('btnUpload');
         const btnText = document.getElementById('btnText');
@@ -312,30 +298,40 @@
         const tabelBody = document.getElementById('tabelBody');
         const previewModal = document.getElementById('previewModal');
         const previewContainer = document.getElementById('previewContainer');
+        
+        let currentFile = null;
+        let userId = null;
 
-        // 1. FUNGSI TAMPILKAN FORM (Jika file dipilih)
+        // --- 2. CEK SESI & LOAD USER ---
+        document.addEventListener("DOMContentLoaded", async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                alert("Silakan login terlebih dahulu.");
+                window.location.href = 'login.html';
+                return;
+            }
+            userId = session.user.id;
+            loadDocuments();
+        });
+
+        // --- 3. HANDLER INPUT FILE ---
+        dropZone.addEventListener('click', () => fileInput.click());
+
         fileInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
+                currentFile = this.files[0];
                 metadataForm.style.display = 'block';
-                // Scroll ke bawah otomatis
                 metadataForm.scrollIntoView({ behavior: 'smooth' });
             }
         });
 
-        // 2. FUNGSI UPLOAD (Simulasi Supabase Storage)
-        window.handleUpload = function() {
-            const file = fileInput.files[0];
+        // --- 4. FUNGSI UPLOAD KE SUPABASE STORAGE ---
+        window.handleUpload = async function() {
             const nama = document.getElementById('namaDokumen').value;
             const kategori = document.getElementById('kategori').value;
 
-            if (!file || !nama || !kategori) {
-                alert("Harap pilih file dan isi nama dokumen!");
-                return;
-            }
-
-            // Validasi Tipe File (Hanya PDF dan Gambar)
-            if (file.type !== 'application/pdf' && !file.type.startsWith('image/')) {
-                alert("Hanya file PDF dan Gambar (JPG/PNG) yang diperbolehkan!");
+            if (!currentFile || !nama || !kategori) {
+                alert("Lengkapi data dan pilih file!");
                 return;
             }
 
@@ -345,38 +341,41 @@
             spinner.style.display = "inline-block";
 
             try {
-                // Simulasi Upload ke Supabase (Delay 1.5 detik)
-                await new Promise(r => setTimeout(r, 1500));
+                // A. Buat Nama File Unik (menggunakan Timestamp)
+                const fileExt = currentFile.name.split('.').pop();
+                const fileName = `${userId}/${Date.now()}.${fileExt}`;
 
-                // Convert File ke Blob URL (Untuk Preview Local)
-                const blobUrl = URL.createObjectURL(file);
+                // B. Upload File ke Supabase Storage
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from(BUCKET_NAME)
+                    .upload(fileName, currentFile);
+
+                if (uploadError) throw uploadError;
+
+                // C. Simpan Metadata Dokumen ke Tabel Database (opsional, tapi disarankan untuk search/filter)
+                // Misal ada tabel 'documents'
+                /* 
+                await supabase.from('documents').insert({
+                    user_id: userId,
+                    name: nama,
+                    category: kategori,
+                    storage_path: fileName
+                }); 
+                */
                 
-                const newId = fileDB.length + 1;
-                const newDoc = {
-                    id: newId,
-                    nama: nama,
-                    kategori: kategori,
-                    namaFile: file.name,
-                    type: file.type,
-                    size: file.size,
-                    blobUrl: blobUrl, // URL sementara untuk preview/download
-                    date: new Date().toLocaleDateString('id-ID')
-                };
-
-                fileDB.unshift(newDoc); // Tambah ke array
-
                 // Reset Form
                 fileInput.value = '';
                 document.getElementById('namaDokumen').value = '';
                 document.getElementById('kategori').value = '';
                 metadataForm.style.display = 'none';
+                currentFile = null;
 
-                renderTable(); // Update Tabel
-                alert("Dokumen berhasil diunggah ke Arsip!");
+                alert("Dokumen berhasil disimpan!");
+                loadDocuments(); // Refresh Tabel
 
             } catch (err) {
-                console.error(err);
-                alert("Gagal mengunggah dokumen.");
+                console.error("Upload Error:", err);
+                alert("Gagal mengunggah: " + err.message);
             } finally {
                 btnText.textContent = "Simpan Dokumen";
                 btnUpload.disabled = false;
@@ -384,110 +383,101 @@
             }
         };
 
-        // 3. FUNGSI PREVIEW (LIHAT FILE)
-        window.previewFile = function(id) {
-            const doc = fileDB.find(d => d.id === id);
-            if (!doc) return;
+        // --- 5. LOAD DOKUMEN (LIST FILES) ---
+        async function loadDocuments() {
+            tabelBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Memuat...</td></tr>';
 
-            if (doc.type === 'application/pdf') {
-                previewContainer.innerHTML = `
-                    <div style="font-size: 3rem; color: #c62828;">📄</div>
-                    <p style="margin-top: 10px;"><strong>${doc.namaFile}</strong></p>
-                    <p style="color: #666;">File PDF (Tidak bisa dipreview langsung di browser)</p>
-                    <a href="#" style="color: #2E7D32; font-weight: bold; text-decoration: underline;" onclick="downloadFile(${id})">Download untuk melihat</a>
-                `;
-            } else {
-                // Gambar
-                previewContainer.innerHTML = `
-                    <img src="${doc.blobUrl}" class="preview-img" alt="Preview">
-                    <p><strong>${doc.nama}</strong></p>
-                    <p style="color: #666;">${doc.kategori}</p>
-                `;
-            }
+            // Ambil daftar file dari folder user di storage
+            const { data, error } = await supabase.storage
+                .from(BUCKET_NAME)
+                .list(userId);
 
-            previewModal.style.display = "flex";
-        }
-
-        // 4. FUNGSI DOWNLOAD
-        window.downloadFile = function(id) {
-            const doc = fileDB.find(d => d.id === id);
-            if (!doc) return;
-
-            // Buat elemen link sementara untuk trigger download
-            const a = document.createElement('a');
-            a.href = doc.blobUrl;
-            a.download = doc.namaFile;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-        };
-
-        // 5. FUNGSI HAPUS
-        window.hapusDokumen = function(id) {
-            const confirmHapus = confirm("Hapus dokumen ini dari arsip? Anda tidak bisa memulihkannya.");
-            if (confirmHapus) {
-                fileDB = fileDB.filter(d => d.id !== id);
-                renderTable();
-            }
-        };
-
-        // 6. FUNGSI TUTUP PREVIEW
-        window.closePreview = function() {
-            previewModal.style.display = "none";
-            previewContainer.innerHTML = '';
-        }
-
-        // 7. RENDER TABEL
-        function renderTable() {
-            tabelBody.innerHTML = '';
-
-            if (fileDB.length === 0) {
-                tabelBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Belum ada dokumen yang diunggah.</td></tr>';
+            if (error) {
+                console.error(error);
+                tabelBody.innerHTML = '<tr><td colspan="6" style="text-align: center; color:red;">Gagal memuat data.</td></tr>';
                 return;
             }
 
-            fileDB.forEach(item => {
-                // Tentukan Badge berdasarkan Tipe File
-                const badgeClass = item.type === 'application/pdf' ? 'badge-pdf' : 'badge-img';
-                const badgeText = item.type === 'application/pdf' ? 'PDF' : 'IMG';
+            // Filter file (jangan tampilkan folder kosong)
+            const files = data.filter(f => f.name !== '.emptyFolderPlaceholder'); 
 
-                // Format Ukuran (KB / MB)
-                let size = item.size / 1024;
-                let sizeStr = size.toFixed(1) + ' KB';
-                if (size > 1024) {
-                    sizeStr = (size / 1024).toFixed(1) + ' MB';
-                }
+            if (files.length === 0) {
+                tabelBody.innerHTML = '<tr><td colspan="6" style="text-align: center;">Belum ada dokumen.</td></tr>';
+                return;
+            }
+
+            renderTable(files);
+        }
+
+        // --- 6. RENDER TABEL ---
+        function renderTable(files) {
+            tabelBody.innerHTML = '';
+            
+            // Urutkan dari yang terbaru (created_at descending)
+            files.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            files.forEach(file => {
+                // Generate Public URL untuk akses gambar/pdf
+                const { data: { publicUrl } } = supabase.storage
+                    .from(BUCKET_NAME)
+                    .getPublicUrl(`${userId}/${file.name}`);
+
+                const badgeClass = file.metadata.mimetype.includes('pdf') ? 'badge-pdf' : 'badge-img';
+                const badgeText = file.metadata.mimetype.includes('pdf') ? 'PDF' : 'IMG';
+                
+                const sizeKB = (file.metadata.size / 1024).toFixed(1) + ' KB';
+                const date = new Date(file.created_at).toLocaleDateString('id-ID');
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>
-                        <strong>${item.nama}</strong>
+                        <strong>${file.name}</strong>
                         <br><span class="badge-file ${badgeClass}">${badgeText}</span>
                     </td>
-                    <td>${item.kategori}</td>
-                    <td>${item.date}</td>
-                    <td>${sizeStr}</td>
+                    <td>-</td> <!-- Kategori butuh tabel DB terpisah untuk ditampilkan dinamis -->
+                    <td>${date}</td>
+                    <td>${sizeKB}</td>
                     <td>
-                        <a href="#" class="action-btn btn-preview" onclick="previewFile(${item.id})">Lihat</a>
-                        <a href="#" class="action-btn btn-download" onclick="downloadFile(${item.id})">Unduh</a>
-                        <a href="#" class="action-btn btn-delete" onclick="hapusDokumen(${item.id})">Hapus</a>
+                        <a href="${publicUrl}" target="_blank" class="action-btn btn-preview">Lihat</a>
+                        <a href="#" class="action-btn btn-delete" onclick="deleteFile('${file.name}')">Hapus</a>
                     </td>
                 `;
                 tabelBody.appendChild(row);
             });
         }
 
-        // 8. INIT
-        document.addEventListener("DOMContentLoaded", () => {
-            // Cek Login Sesi (Opsional)
-            const token = localStorage.getItem('agrichain_token');
-            if (!token) {
-                alert("Anda belum login. Silakan login terlebih dahulu.");
-                window.location.href = 'login.html';
+        // --- 7. FUNGSI PREVIEW ---
+        window.previewFile = function(fileName) {
+            const { data: { publicUrl } } = supabase.storage.from(BUCKET_NAME).getPublicUrl(`${userId}/${fileName}`);
+            
+            const isImg = fileName.match(/\.(jpeg|jpg|gif|png)$/) != null;
+
+            if (isImg) {
+                previewContainer.innerHTML = `<img src="${publicUrl}" class="preview-img">`;
             } else {
-                renderTable();
+                previewContainer.innerHTML = `<p>File PDF/Gambar tidak dapat dipreview langsung.</p><a href="${publicUrl}" target="_blank">Klik disini untuk melihat</a>`;
             }
-        });
+            previewModal.style.display = "flex";
+        };
+
+        window.closePreview = function() {
+            previewModal.style.display = "none";
+        }
+
+        // --- 8. FUNGSI HAPUS ---
+        window.deleteFile = async function(fileName) {
+            if(confirm("Hapus dokumen ini permanen?")) {
+                const { error } = await supabase.storage
+                    .from(BUCKET_NAME)
+                    .remove([`${userId}/${fileName}`]);
+                
+                if(error) alert("Gagal menghapus: " + error.message);
+                else {
+                    loadDocuments();
+                    alert("Dokumen dihapus.");
+                }
+            }
+        };
     </script>
 </body>
 </html>
