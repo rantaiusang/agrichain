@@ -9,17 +9,16 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        /* --- CSS GLOBAL RESPONSIVE (AMP - Aman Mobile Professional) --- */
+        /* --- CSS GLOBAL --- */
         :root {
             --primary-green: #2E7D32;
             --dark-green: #1B5E20;
             --light-green: #E8F5E9;
-            --text-dark: #1B1B1B;
-            --text-grey: #616161;
+            --text-dark: #333;
+            --text-grey: #666;
             --white: #ffffff;
             --radius: 12px;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         body {
@@ -27,14 +26,14 @@
             background-color: #f4f6f8;
             color: var(--text-dark);
             margin: 0;
-            padding-bottom: 80px;
+            padding-bottom: 80px; /* Space for navbar */
         }
 
-        /* --- HEADER --- */
+        /* --- NAVBAR --- */
         .navbar {
             background: var(--white);
             padding: 15px 20px;
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -48,38 +47,41 @@
             font-weight: 800;
             color: var(--primary-green);
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        /* --- CONTAINER RESPONSIVE --- */
+        /* --- CONTAINER & FILTER --- */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
 
-        /* --- FILTER BAR (FLEX RESPONSIVE) --- */
-        .filter-bar {
+        .filter-section {
             background: var(--white);
             padding: 20px;
             border-radius: var(--radius);
-            box-shadow: var(--shadow-sm);
-            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+            margin-bottom: 25px;
             display: flex;
-            gap: 12px;
+            gap: 15px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .search-box {
-            flex: 2; /* Mengambil proporsi lebar lebih besar */
+            flex: 2;
             min-width: 250px;
             position: relative;
         }
 
-        .search-box input {
+        .search-input {
             width: 100%;
-            padding: 12px 12px 12px 40px;
+            padding: 12px 15px 12px 40px;
             border: 1px solid #ddd;
-            border-radius: var(--radius);
+            border-radius: 8px;
             font-size: 1rem;
             box-sizing: border-box;
         }
@@ -93,21 +95,18 @@
         }
 
         .filter-select {
-            flex: 1;
-            min-width: 140px;
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
-            border-radius: var(--radius);
-            background: white;
+            border-radius: 8px;
+            background: var(--white);
             font-size: 0.95rem;
             cursor: pointer;
         }
 
-        /* --- GRID PRODUK (AUTO FIT) --- */
+        /* --- GRID PRODUCT --- */
         .product-grid {
             display: grid;
-            /* Kolom otomatis menyesuaikan layar, minimal lebar 220px */
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
 
@@ -116,21 +115,21 @@
             border: 1px solid #eee;
             border-radius: var(--radius);
             overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
             display: flex;
             flex-direction: column;
         }
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: var(--shadow-md);
-            border-color: var(--light-green);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            border-color: var(--primary-green);
         }
 
         .card-img-wrapper {
             width: 100%;
-            height: 160px;
-            background: #eee;
+            height: 200px;
+            background: #f0f0f0;
             position: relative;
         }
 
@@ -152,36 +151,36 @@
             color: var(--text-grey);
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
         }
 
         .card-title {
             font-size: 1.1rem;
             font-weight: 700;
             color: var(--text-dark);
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             line-height: 1.3;
         }
 
         .card-meta {
-            font-size: 0.85rem;
-            color: var(--text-grey);
+            font-size: 0.9rem;
+            color: #555;
             margin-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
         }
 
         .card-price {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: 800;
             color: var(--primary-green);
-            margin-top: auto; /* Push harga ke bawah */
-            margin-bottom: 10px;
+            margin-top: auto;
         }
 
         .card-actions {
-            border-top: 1px solid #f0f0f0;
+            margin-top: 15px;
+            border-top: 1px solid #f5f5f5;
             padding-top: 15px;
         }
 
@@ -192,7 +191,6 @@
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 0.95rem;
             font-weight: bold;
             cursor: pointer;
             transition: background 0.2s;
@@ -200,195 +198,239 @@
 
         .btn-buy:hover { background-color: var(--dark-green); }
 
-        .back-link {
-            display: block;
-            margin-top: 30px;
-            text-align: center;
-            color: var(--text-grey);
-            text-decoration: none;
-            font-weight: 600;
-            padding: 12px;
-            background: var(--white);
-            border-radius: var(--radius);
-            border: 1px solid #eee;
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
         }
-        .back-link:hover { background: #f9f9f9; }
+        .badge-pending { background: #FFF3E0; color: #F57C00; }
+        .badge-approved { background: #E8F5E9; color: #2E7D32; }
+        .badge-sold { background: #E3F2FD; color: #1976D2; }
 
-        /* --- LOADING & EMPTY --- */
+        /* --- STATUS MSG --- */
         .status-msg {
             text-align: center;
             padding: 40px;
             color: #999;
-            font-size: 1.1rem;
-            grid-column: 1 / -1;
+            font-style: italic;
             background: white;
-            border-radius: var(--radius);
+            border-radius: 8px;
             border: 1px dashed #ddd;
         }
 
-        /* --- RESPONSIVE ADJUSTMENTS (HP) --- */
-        @media (max-width: 600px) {
-            .filter-bar { 
-                flex-direction: column; 
-                align-items: stretch; 
-                gap: 10px;
-            }
-            .search-box, .filter-select { width: 100%; }
+        /* --- NAV BOTTOM --- */
+        .nav-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            background: var(--white);
+            border-top: 1px solid #ddd;
+            z-index: 99;
         }
+
+        .b-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-grey);
+            font-size: 0.8rem;
+        }
+
+        .b-item.active { color: var(--primary-green); }
+        .b-item svg { width: 24px; height: 24px; margin-bottom: 4px; }
+
     </style>
 </head>
 <body>
 
-    <!-- Header -->
+    <!-- Navbar -->
     <nav class="navbar">
         <a href="index.html" class="nav-brand">🌾 AgriChain</a>
-        <a href="profile.html" style="text-decoration:none; color:#333; font-weight:bold; padding:8px 16px; border:1px solid #ddd; border-radius:20px;">
-            👤 Profil
-        </a>
+        <div>
+            <a href="dashboard-petani.html" style="padding: 8px 16px; border: 1px solid var(--primary-green); color: var(--primary-green); border-radius: 20px; text-decoration: none; font-weight: bold;">Petani Panel</a>
+        </div>
     </nav>
 
     <div class="container">
         
         <!-- Filter Bar -->
-        <div class="filter-bar">
+        <div class="filter-section">
             <div class="search-box">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="Cari komoditas...">
+                <input type="text" id="searchInput" class="search-input" placeholder="Cari nama komoditas...">
             </div>
             
-            <!-- Filter Status (Pending/Sold) -->
+            <!-- Filter Status -->
             <select id="filterStatus" class="filter-select">
                 <option value="">Semua Status</option>
-                <option value="pending">Siap Jual (Pending)</option>
-                <option value="approved">Disetujui</option>
+                <option value="approved">Tersedia (Approved)</option>
+                <option value="sold">Terjual (Sold)</option>
             </select>
         </div>
 
         <!-- Grid Produk -->
-        <div class="product-grid" id="productList">
-            <div class="status-msg">Memuat data pasar...</div>
+        <div class="product-grid" id="productGrid">
+            <div class="status-msg">Memuat data panen...</div>
         </div>
 
-        <a href="index.html" class="back-link">← Kembali ke Beranda</a>
     </div>
 
-    <!-- SCRIPT UTAMA (FIXED LOGIC) -->
+    <!-- Navigasi Bawah -->
+    <div class="nav-bottom">
+        <a href="index.html" class="b-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2z"></path></svg>
+            Beranda
+        </a>
+        <a href="belanja.html" class="b-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><path d="M1 1h4l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            Belanja
+        </a>
+        <a href="profile.html" class="b-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
+            Profil
+        </a>
+    </div>
+
     <script>
-        // --- 1. KONFIGURASI SUPABASE (FIXED) ---
+        // --- 1. KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. DOM ELEMENTS ---
-        const productList = document.getElementById('productList');
+        const grid = document.getElementById('productGrid');
         const searchInput = document.getElementById('searchInput');
         const filterStatus = document.getElementById('filterStatus');
 
         let allProducts = [];
+        let currentUser = null;
 
-        // --- 3. LOAD DATA ---
+        // --- 3. INIT ---
         document.addEventListener("DOMContentLoaded", async () => {
-            await loadProducts();
+            const { data: { session } } = await supabase.auth.getSession();
+            if(!session) { alert("Silakan login untuk berbelanja."); window.location.href = 'login.html'; return; }
+            currentUser = session.user.id;
+            await loadPanenData();
         });
 
-        async function loadProducts() {
+        // --- 4. LOAD DATA (LOGIC MATCH DATABASE) ---
+        async function loadPanenData() {
             try {
-                // PERBAIKAN: Mengambil data dari tabel 'panen' (Bukan agrichain_product)
-                // Kita JOIN dengan tabel 'profiles' untuk mendapatkan nama petani
+                // PERBAIKAN: Ambil data dari tabel 'panen'
+                // Kolom mapping: panen.nama_komoditas (commodity_name), panen.kualitas (quality)
+                // JOIN: profiles (ambil full_name petani)
+                // JOIN: market_prices (ambil harga referensi current_price)
+                
                 const { data, error } = await supabase
                     .from('panen')
                     .select(`
                         id,
-                        commodity_name,
+                        nama_komoditas,
                         quantity,
                         unit,
-                        price_per_unit,
+                        harga_per_unit,
                         estimated_total,
-                        quality,
+                        kualitas,
                         status,
                         created_at,
-                        profiles!inner ( full_name ) 
+                        profiles!public ( full_name ),
+                        market_prices ( current_price )
                     `)
-                    .order('created_at', { ascending: false }); // Terbaru diatas
+                    .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
-                // Flatten data untuk kemudahan
+                // Mapping data agar mudah dibaca di UI
                 allProducts = data.map(item => ({
                     id: item.id,
-                    name: item.commodity_name,
-                    seller: item.profiles.full_name,
+                    name: item.nama_komoditas,
+                    seller: item.profiles ? item.profiles.full_name : 'Petani',
                     quantity: item.quantity,
                     unit: item.unit,
-                    price: item.price_per_unit,
+                    price: item.harga_per_unit || (item.current_price || 0), // Fallback price
                     total: item.estimated_total,
-                    quality: item.quality,
-                    status: item.status,
+                    quality: item.kualitas || 'Standard',
+                    status: item.status || 'pending',
                     created_at: item.created_at
                 }));
 
                 renderGrid(allProducts);
 
             } catch (err) {
-                console.error("Gagal load produk:", err);
-                productList.innerHTML = '<div class="status-msg" style="color:red;">Gagal memuat data produk.</div>';
+                console.error("Gagal load panen:", err);
+                grid.innerHTML = '<div class="status-msg" style="color:red;">Gagal memuat data. Cek struktur tabel panen.</div>';
             }
         }
 
-        // --- 4. RENDER GRID ---
+        // --- 5. RENDER GRID ---
         function renderGrid(products) {
-            productList.innerHTML = '';
+            grid.innerHTML = '';
 
             if (products.length === 0) {
-                productList.innerHTML = '<div class="status-msg">Belum ada hasil panen yang dijual.</div>';
+                grid.innerHTML = '<div class="status-msg">Belum ada panen yang tersedia di pasar.</div>';
                 return;
             }
 
             products.forEach(item => {
-                // Generate gambar placeholder dinamis
-                const imgUrl = `https://picsum.photos/seed/${item.id}/400/200`;
+                // Gambar Placeholder
+                const imgUrl = `https://picsum.photos/seed/${item.id}/400/300`;
                 
-                // Status Badge Color
-                let statusColor = '#FFA000'; // Orange (Pending)
-                let statusText = 'Menunggu';
-                if(item.status === 'approved') { statusColor = '#388E3C'; statusText = 'Tersedia'; }
-                if(item.status === 'sold') { statusColor = '#1976D2'; statusText = 'Terjual'; }
+                // Logic Badge Status
+                let badgeHTML = '<span class="status-badge badge-pending">Menunggu</span>';
+                if(item.status === 'approved') badgeHTML = '<span class="status-badge badge-approved">Tersedia</span>';
+                if(item.status === 'sold') badgeHTML = '<span class="status-badge badge-sold">Terjual</span>';
+
+                // Logic Tampilan (Hanya tampilkan yang approved/sold untuk pembeli)
+                // Jika status 'pending', card tetap muncul tapi tidak bisa dibeli (opsional)
+                let isDisabled = false;
+                if (item.status === 'pending') {
+                    isDisabled = true;
+                    // Anda bisa memilih untuk tidak merender item pending sama sekali:
+                    // if(item.status === 'pending') return; 
+                }
 
                 const card = document.createElement('div');
                 card.className = 'card';
+                card.style.opacity = isDisabled ? '0.6' : '1'; // Sedikit redup jika pending
+                
                 card.innerHTML = `
                     <div class="card-img-wrapper">
                         <img src="${imgUrl}" alt="${item.name}" class="card-img">
                     </div>
                     <div class="card-body">
-                        <div class="card-category">${item.quality} Quality</div>
+                        <div class="card-category">${item.quality}</div>
                         <h3 class="card-title">${item.name}</h3>
                         <div class="card-meta">
                             <span>👤 ${item.seller}</span>
                             <span>📦 ${item.quantity} ${item.unit}</span>
                         </div>
                         <div class="card-price">Rp ${item.price.toLocaleString('id-ID')} / ${item.unit}</div>
-                        <div style="font-size:0.8rem; color:#666; margin-bottom:10px;">
-                            Total Estimasi: <b>Rp ${item.total.toLocaleString('id-ID')}</b>
+                        <div class="card-meta" style="margin-top:5px;">
+                            Total: <b>Rp ${item.total.toLocaleString('id-ID')}</b>
                         </div>
-                        <div class="card-actions">
-                            <button class="btn-buy" onclick="buyProduct('${item.name}', '${item.seller}')">
+                        <div style="margin-top:10px; text-align:center;">${badgeHTML}</div>
+                        
+                        ${!isDisabled ? `
+                            <button class="btn-buy" onclick="handleBuy('${item.id}', '${item.name}')">
                                 Beli Sekarang
                             </button>
-                        </div>
-                        <div style="margin-top:10px; text-align:center;">
-                            <span style="font-size:0.75rem; background:${statusColor}; color:white; padding:2px 8px; border-radius:10px;">
-                                ${statusText}
-                            </span>
-                        </div>
+                        ` : ''}
+                        
                     </div>
                 `;
-                productList.appendChild(card);
+                grid.appendChild(card);
             });
         }
 
-        // --- 5. LOGIKA FILTER & SEARCH ---
-        function filterProducts() {
+        // --- 6. LOGIC FILTER & SEARCH ---
+        function filterData() {
             const searchVal = searchInput.value.toLowerCase();
             const statusVal = filterStatus.value;
 
@@ -402,16 +444,16 @@
         }
 
         // Event Listeners
-        searchInput.addEventListener('input', filterProducts);
-        filterStatus.addEventListener('change', filterProducts);
+        searchInput.addEventListener('input', filterData);
+        filterStatus.addEventListener('change', filterData);
 
-        // --- 6. INTERAKSI BELI ---
-        window.buyProduct = function(productName, sellerName) {
-            // Simulasi beli
-            const confirmBuy = confirm(`Apakah Anda ingin membeli ${productName} dari petani ${sellerName}?`);
+        // --- 7. LOGIC BELI ---
+        window.handleBuy = function(id, name) {
+            const confirmBuy = confirm(`Apakah Anda ingin membeli ${name}?`);
             if(confirmBuy) {
-                alert("Fitur pembayaran sedang diproses...");
-                // Nanti logika insert ke tabel 'orders' di sini
+                alert("Fitur pembayaran akan terhubung ke sistem order. (Simulasi)");
+                // Di sini Anda bisa insert ke tabel 'orders'
+                // await supabase.from('orders').insert(...)
             }
         };
 
