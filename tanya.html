@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tanya Konsultan - AgriChain</title>
     
-    <!-- Library Blockchain -->
-    <script src="https://unpkg.com/@web3modal/web3modal"></script>
-    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <!-- Library Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -53,8 +52,7 @@
             border-radius: 8px;
             font-size: 1rem;
             box-sizing: border-box;
-            -moz-appearance: none;
-            -webkit-appearance: none;
+            font-family: inherit;
         }
         input:focus, textarea:focus, select:focus {
             border-color: var(--primary-green);
@@ -75,9 +73,14 @@
             transition: background 0.2s;
         }
         .btn-submit:hover { background-color: var(--dark-green); }
-
         .btn-loading { background-color: #81C784; cursor: not-allowed; }
-        .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s ease-in-out infinite; margin-right: 8px; vertical-align: middle; display: none; }
+        
+        .spinner { 
+            display: inline-block; width: 20px; height: 20px; 
+            border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; 
+            border-top-color: #fff; animation: spin 1s ease-in-out infinite; 
+            margin-right: 8px; vertical-align: middle; display: none; 
+        }
         @keyframes spin { to { transform: rotate(360deg); } }
 
         /* --- LIST PERTANYAAN --- */
@@ -87,16 +90,38 @@
             border-radius: 8px;
             margin-bottom: 15px;
             border-left: 4px solid var(--light-green);
+            transition: transform 0.2s;
         }
+        .qa-item:hover { transform: translateX(5px); background: #fff; box-shadow: var(--shadow); }
 
         .qa-header { display: flex; justify-content: space-between; align-items: center; }
         .qa-question { font-weight: bold; font-size: 1.05rem; color: var(--text-dark); }
-        .qa-meta { font-size: 0.8rem; color: var(--text-grey); }
-        .qa-answer { margin-top: 10px; color: var(--text-dark); line-height: 1.5; padding: 10px; background: white; border-radius: 6px; border: 1px solid #eee; font-style: italic; }
-        .badge-answer { background: var(--light-green); color: var(--primary-green); padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; font-style: normal; display: inline-block; margin-bottom: 5px; }
+        .qa-meta { font-size: 0.8rem; color: var(--text-grey); margin-top: 4px; }
+        
+        .qa-answer { 
+            margin-top: 12px; color: var(--text-dark); 
+            padding: 12px; background: white; 
+            border-radius: 6px; border: 1px solid #eee; 
+            position: relative;
+        }
+        
+        .qa-answer::before {
+            content: "JAWABAN AI:";
+            display: block;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: var(--primary-green);
+            margin-bottom: 4px;
+        }
 
-        /* --- NAV --- */
-        .back-link { display: block; text-align: center; margin-top: 20px; color: #666; text-decoration: none; }
+        .badge { 
+            display: inline-block; padding: 4px 8px; 
+            border-radius: 4px; font-size: 0.75rem; 
+            font-weight: bold; background: var(--light-green); 
+            color: var(--primary-green); margin-left: 10px;
+        }
+
+        .nav-link { display: block; text-align: center; margin-top: 20px; color: #666; text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -126,7 +151,7 @@
 
                 <div class="form-group">
                     <label for="wallet">Dompet Anda (Opsional)</label>
-                    <input type="text" id="wallet" placeholder="0x... (Jika ingin tuntutan hadiah token)">
+                    <input type="text" id="wallet" placeholder="0x... (Jika ingin klaim token reward)">
                 </div>
 
                 <button type="submit" id="btnSubmit" class="btn-submit">
@@ -138,87 +163,103 @@
 
         <!-- LIST RIWAYAT -->
         <div class="card">
-            <h3>Riwayat Pertanyaan & Jawaban</h3>
+            <h3>Riwayat Konsultasi</h3>
             <div id="qaList">
                 <!-- Render JS -->
+                <div style="text-align: center; color: #999;">Memuat diskusi...</div>
             </div>
         </div>
 
-        <a href="index.html" class="back-link">Kembali ke Beranda</a>
+        <a href="index.html" class="nav-link">← Kembali ke Beranda</a>
     </div>
 
-    <!-- SCRIPT UTAMA (MEMANGGIL FILE MODULAR) -->
-    <script type="module">
-        // Import fungsi dari src/api.js (Yang sudah kita buat sebelumnya)
-        import { loginUser, getProducts, getAllProducts } from './src/api.js';
+    <script>
+        // --- 1. KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Karena API `/api/questions` belum kita buat di server.js, 
-        // kita buat function frontend khusus untuk mengirim ke endpoint tersebut.
-        
-        // URL Backend
-        const BACKEND_URL = "http://localhost:3000/api"; // Ubah ini jika backend sudah di hosting (Render)
-        
-        // --- DOM ELEMENTS ---
+        let currentUserId = null;
+
+        // --- 2. DOM ELEMENTS ---
         const form = document.getElementById('formTanya');
         const qaList = document.getElementById('qaList');
         const btnSubmit = document.getElementById('btnSubmit');
-        const spinner = document.getElementById('spinner');
         const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('spinner');
 
-        // --- DATA DUMMY (MENSIMULASI TABEL 'konsultasi') ---
-        // Ini menggantikan fetch ke tabel 'konsultasi' Supabase yang belum ada.
-        let konsultasiDB = [
-            { 
-                id: 1, 
-                pertanyaan: "Kenapa daun padi saya berwarna kuning?", 
-                kategori: "Hama & Penyakit", 
-                wallet: "0x123...abc",
-                jawaban: "Kemungkinan tanaman kekurangan Nitrogen. Gunakan pupuk Urea yang kaya akan Nitrogen.",
-                tanya: "2023-10-25"
-            },
-            { 
-                id: 2, 
-                pertanyaan: "Kapan waktu terbaik untuk memanen jagung?", 
-                kategori: "Pascapanen",
-                wallet: "-",
-                jawaban: "Jagung manis sebaiknya dipanen pada pagi hari (sebelum jam 10) kadar air 20-25%.",
-                tanya: "2023-10-24"
-            },
-            { 
-                id: 3, 
-                pertanyaan: "Harga jagung hari ini stabil?", 
-                kategori: "Harga Pasar",
-                wallet: "0x456...def",
-                jawaban: "Harga sedang fluktuatif disebab cuaca ekstrem. Disarankan tahan stok jika harga bagus.",
-                tanya: "2023-10-26"
-            }
-        ];
-
-        // --- RENDER LIST ---
-        function renderList() {
-            qaList.innerHTML = '';
+        // --- 3. LOGIKA AI SIMULATOR ---
+        function generateAIAnswer(question, category) {
+            const q = question.toLowerCase();
             
-            if (konsultasiDB.length === 0) {
-                qaList.innerHTML = '<div style="text-align: center; color: #999;">Belum ada pertanyaan.</div>';
+            // Logika Sederhana Berbasis Kata Kunci (Keyword Matching)
+            if (category === 'Hama & Penyakit') {
+                if (q.includes('kuning') || q.includes('layu')) return "Kemungkinan tanaman kekurangan Nitrogen (daun menguning tua) atau kena busuk daun. Cek bagian bawah daun, jika ada bercak coklat mungkin busuk daun.";
+                if (q.includes('ulat') || q.includes('cacing')) return "Untuk ulat grayak/penggerek, gunakan insektisida kontak atau sistemik. Jangan lupa rotasi tanam.";
+            }
+            
+            if (category === 'Pupuk & Nutrisi') {
+                if (q.includes('kuning') || q.includes('daun')) return "Daun menguning biasanya karena kekurangan Nitrogen. Disarankan beri pupuk Urea atau ZA.";
+                if (q.includes('pupuk')) return "Gunakan pupuk NPK berimbang. Jangan beri pupuk saat hujan deras karena terbawa air.";
+            }
+
+            if (category === 'Harga Pasar') {
+                return "Harga pasar fluktuatif. Cek fitur 'Info Harga' di aplikasi untuk harga rata-rata terkini agar bisa menjual saat harga tinggi.";
+            }
+
+            // Jawaban Default
+            return "Pertanyaan Anda telah diterima. Konsultan ahli kami sedang menganalisis kondisi lahan Anda. Mohon tunggu update berikutnya.";
+        }
+
+        // --- 4. LOAD PERTANYAAN ---
+        async function loadQuestions() {
+            qaList.innerHTML = '<div style="text-align: center; color: #999;">Memuat diskusi...</div>';
+            
+            // Ambil semua pertanyaan (user bisa baca semua pertanyaan orang lain)
+            const { data, error } = await supabase
+                .from('qa_forum')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) {
+                console.error(error);
+                qaList.innerHTML = '<div style="text-align: center; color: red;">Gagal memuat diskusi.</div>';
                 return;
             }
 
-            konsultasiDB.forEach(item => {
+            renderList(data);
+        }
+
+        // --- 5. RENDER LIST ---
+        function renderList(questions) {
+            qaList.innerHTML = '';
+
+            if (questions.length === 0) {
+                qaList.innerHTML = '<div style="text-align: center;">Belum ada diskusi.</div>';
+                return;
+            }
+
+            questions.forEach(item => {
+                const dateObj = new Date(item.created_at);
+                const tglStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long' });
+                const jamStr = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
                 const el = document.createElement('div');
                 el.className = 'qa-item';
                 el.innerHTML = `
                     <div class="qa-header">
-                        <div class="qa-question">${item.pertanyaan}</div>
-                        <div class="qa-meta">Kategori: ${item.kategori} | Tanya: ${item.tanya}</div>
+                        <div class="qa-question">${item.question} <span class="badge">${item.category}</span></div>
+                        <div class="qa-meta">${tglStr}, ${jamStr}</div>
                     </div>
-                    <div class="badge-answer">JAWABAN AHLI</div>
-                    <div class="qa-answer">${item.jawaban}</div>
+                    ${item.answer ? `
+                        <div class="qa-answer">${item.answer}</div>
+                    ` : '<div style="margin-top:10px; font-size:0.9rem; color:#666; font-style:italic;">Menunggu jawaban ahli...</div>'}
                 `;
                 qaList.appendChild(el);
             });
         }
 
-        // --- HANDLE SUBMIT FORM ---
+        // --- 6. HANDLE SUBMIT ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -230,46 +271,51 @@
             btnSubmit.classList.add('btn-loading');
             btnSubmit.disabled = true;
             spinner.style.display = 'inline-block';
-            btnText.textContent = 'MENGIRIM KE PAKAR...';
+            btnText.textContent = 'MENGANALISIS...';
 
             try {
-                // SIMULASI MENGIRIM KE BACKEND (/api/questions)
-                // Karena backend belum memiliki route ini, kita simulasi delay network
+                // 1. Simpan ke Database (Status: Menunggu Jawaban)
+                const { data: insertData, error: insertError } = await supabase
+                    .from('qa_forum')
+                    .insert([{
+                        user_id: currentUserId,
+                        question: pertanyaan,
+                        category: kategori,
+                        wallet_address: wallet,
+                        answer: null // Belum ada jawaban
+                    }]);
+
+                if (insertError) throw insertError;
+
+                // 2. Simulasi AI Thinking (Delay 1.5 detik)
                 await new Promise(r => setTimeout(r, 1500));
 
-                // Simulasi Jawaban AI Sederhana (Kata Kunci)
-                let aiJawaban = "Mohon maaf, sistem AI kami sedang dipelajari. Silakan konsultasi ke penyuluh lokal.";
-                
-                if (pertanyaan.toLowerCase().includes("kuning")) aiJawaban = "Tanaman kemungkinan kekurangan Nitrogen atau Magnesium.";
-                if (pertanyaan.toLowerCase().includes("pupuk")) aiJawaban = "Gunakan pupuk NPK berimbang sesuai rekomendasi ahli.";
-                if (kategori === "Harga") aiJawaban = "Cek fitur Info Harga Pasar di AgriChain untuk update harga terkini.";
+                // 3. Generate Jawaban AI Lokal
+                const aiJawaban = generateAIAnswer(pertanyaan, kategori);
 
-                // Tambahkan ke Database Dummy
-                const newId = konsultasiDB.length > 0 ? konsultasiDB[konsultasiDB.length - 1].id + 1 : 1;
-                const dateObj = new Date();
-                const tglIndo = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-                
-                konsultasiDB.unshift({
-                    id: newId,
-                    pertanyaan: pertanyaan,
-                    kategori: kategori,
-                    wallet: wallet || "-",
-                    jawaban: aiJawaban,
-                    tanya: tglIndo
-                });
+                // 4. Update Database dengan Jawaban AI
+                const { error: updateError } = await supabase
+                    .from('qa_forum')
+                    .update({ 
+                        answer: aiJawaban, 
+                        answered_at: new Date().toISOString() 
+                    })
+                    .eq('id', insertData[0].id);
 
-                // Render Ulang
-                renderList();
-                
-                // Reset Form
+                if (updateError) console.warn("Gagal update jawaban DB:", updateError);
+
+                // 5. Refresh List
+                loadQuestions();
+
+                // 6. Reset Form
                 form.reset();
-                alert(`Pertanyaan terkirim! AI: ${aiJawaban}`);
+                alert(`Pertanyaan terkirim!\n\nJawaban AI: ${aiJawaban}`);
 
             } catch (err) {
                 console.error(err);
-                alert("Gagal mengirim pertanyaan.");
+                alert("Gagal mengirim pertanyaan: " + err.message);
             } finally {
-                // Reset UI Tombol
+                // Reset UI
                 btnSubmit.classList.remove('btn-loading');
                 btnSubmit.disabled = false;
                 spinner.style.display = 'none';
@@ -277,9 +323,18 @@
             }
         });
 
-        // Init
-        document.addEventListener("DOMContentLoaded", () => {
-            renderList();
+        // --- 7. INIT ---
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Cek Login
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+            currentUserId = session.user.id;
+
+            // Load Data
+            loadQuestions();
         });
 
     </script>
