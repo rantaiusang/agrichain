@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Riwayat Pertanian - AgriChain</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Riwayat Panen - AgriChain</title>
     
     <!-- Library Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -17,11 +17,11 @@
             --text-grey: #666;
             --white: #ffffff;
             --shadow: 0 2px 8px rgba(0,0,0,0.08);
-            --radius: 8px;
+            --radius: 12px;
         }
 
         body {
-            font-family: "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: #f4f6f8;
             margin: 0;
             padding: 20px;
@@ -35,38 +35,19 @@
         .card {
             background: var(--white);
             padding: 25px;
-            border-radius: 12px;
+            border-radius: var(--radius);
             box-shadow: var(--shadow);
             margin-bottom: 20px;
         }
 
-        h2 { color: var(--primary-green); margin-top: 0; }
-        h3 { color: var(--text-dark); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; font-size: 1.1rem; }
-
-        /* --- FILTER --- */
-        .filter-section {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            align-items: center;
-        }
+        h2 { color: var(--primary-green); margin-top: 0; font-size: 1.5rem; }
         
-        label { font-weight: bold; color: var(--text-dark); }
-        
-        select {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 1rem;
-            width: 100%;
-        }
-
         /* --- TIMELINE --- */
         .timeline {
             position: relative;
             padding-left: 30px;
             margin-top: 20px;
-            border-left: 2px solid var(--light-green);
+            border-left: 3px solid var(--light-green);
         }
 
         .timeline-item {
@@ -76,21 +57,23 @@
 
         .timeline-dot {
             position: absolute;
-            left: -38px;
-            top: 5px;
-            width: 14px;
-            height: 14px;
+            left: -40px;
+            top: 10px;
+            width: 16px;
+            height: 16px;
             background: var(--primary-green);
-            border: 2px solid white;
+            border: 3px solid white;
             border-radius: 50%;
-            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.3);
+            box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.2);
         }
 
         .timeline-date {
             font-size: 0.85rem;
             color: var(--text-grey);
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .timeline-content {
@@ -106,187 +89,163 @@
             border-color: var(--light-green);
         }
 
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
         .timeline-title {
             font-weight: bold;
             color: var(--text-dark);
-            margin-bottom: 5px;
+            font-size: 1.1rem;
         }
 
         .timeline-desc {
             font-size: 0.9rem;
             color: #555;
+            line-height: 1.5;
+        }
+
+        .price-tag {
+            font-weight: 800;
+            color: var(--primary-green);
+            font-size: 1.1rem;
+            margin-top: 8px;
+            display: block;
         }
 
         .badge {
             display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 4px 10px;
+            border-radius: 20px;
             font-size: 0.75rem;
             font-weight: bold;
-            margin-left: 10px;
         }
-        .badge-panen { background: #E8F5E9; color: #2E7D32; }
-        .badge-kegiatan { background: #E3F2FD; color: #1565C0; }
-        .badge-catatan { background: #FFF8E1; color: #FFA000; }
+        .badge-pending { background: #FFF3E0; color: #F57C00; }
+        .badge-approved { background: #E8F5E9; color: #2E7D32; }
+        .badge-sold { background: #E3F2FD; color: #1976D2; }
 
-        /* Loading & Empty */
-        .loading-text, .empty-text { text-align: center; color: #999; font-style: italic; padding: 20px; }
+        /* --- EMPTY & LOADING --- */
+        .status-text {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-style: italic;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-bottom: 15px;
+            color: var(--text-grey);
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .back-link:hover { color: var(--primary-green); }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2>📓 Riwayat Pertanian</h2>
-            <a href="index.html" style="color: #666; text-decoration: none; font-weight: bold;">&larr; Kembali</a>
-        </div>
+        <a href="dashboard-petani.html" class="back-link">← Kembali ke Dashboard</a>
+        
+        <div class="card">
+            <h2>📓 Riwayat Penjualan Panen</h2>
+            <p style="color: #666; font-size: 0.9rem;">Daftar lengkap hasil panen yang Anda inputkan ke sistem.</p>
 
-        <!-- Filter -->
-        <div class="card filter-section">
-            <label for="filterLahan">Filter berdasarkan Lahan:</label>
-            <select id="filterLahan">
-                <option value="all">Semua Lahan</option>
-                <!-- Opsi lahan akan di-load dari Database -->
-            </select>
-        </div>
-
-        <!-- Timeline -->
-        <div id="timelineContainer">
-            <div class="loading-text">Memuat riwayat kegiatan...</div>
+            <!-- Timeline Container -->
+            <div id="timelineContainer">
+                <div class="status-text">Memuat riwayat...</div>
+            </div>
         </div>
     </div>
 
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        // --- 1. KONFIGURASI SUPABASE (FIXED) ---
+        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let allLahan = [];
-        let currentUserId = null;
+        let currentUser = null;
 
         // --- 2. DOM ELEMENTS ---
         const timelineContainer = document.getElementById('timelineContainer');
-        const filterLahan = document.getElementById('filterLahan');
 
-        // --- 3. LOAD DATA & INIT ---
+        // --- 3. INIT ---
         document.addEventListener("DOMContentLoaded", async () => {
-            // Cek Login
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
                 window.location.href = 'login.html';
                 return;
             }
-            currentUserId = session.user.id;
+            currentUser = session.user;
 
-            // A. Load Data Lahan (untuk Filter)
-            const { data: lahanData, error: lahanError } = await supabase
-                .from('farmlands')
-                .select('id, name')
-                .eq('user_id', currentUserId); // Ambil lahan user login saja
-
-            if (lahanData) {
-                allLahan = lahanData;
-                
-                // Isi Dropdown Filter
-                filterLahan.innerHTML = '<option value="all">Semua Lahan</option>';
-                allLahan.forEach(l => {
-                    const opt = document.createElement('option');
-                    opt.value = l.id;
-                    opt.textContent = l.name;
-                    filterLahan.appendChild(opt);
-                });
-            }
-
-            // B. Load & Render Timeline
-            await loadTimeline('all');
+            loadHistory();
         });
 
-        // --- 4. LOAD TIMELINE ---
-        async function loadTimeline(farmlandIdFilter) {
-            timelineContainer.innerHTML = '<div class="loading-text">Memuat riwayat...</div>';
+        // --- 4. LOAD HISTORY (LOGIC FIXED) ---
+        async function loadHistory() {
+            try {
+                // PERBAIKAN: Ambil data dari tabel 'panen' milik user yang login
+                const { data: panenList, error } = await supabase
+                    .from('panen')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('created_at', { ascending: false }); // Terbaru di atas
 
-            let query = supabase
-                .from('farmer_schedules')
-                .select('*, farmlands ( name, location )') // JOIN manual ke tabel lahan
-                .order('schedule_date', { ascending: false });
+                if (error) throw error;
 
-            // Filter Logic
-            if (farmlandIdFilter !== 'all') {
-                query = query.eq('farmland_id', farmlandIdFilter);
-            } else {
-                // Jika 'all', ambil semua jadwal user ini (pastikan policy RLS benar)
-                query = query; 
+                renderTimeline(panenList);
+
+            } catch (err) {
+                console.error(err);
+                timelineContainer.innerHTML = '<div class="status-text" style="color:red;">Gagal memuat riwayat.</div>';
             }
-
-            const { data: jadwalData, error } = await query;
-
-            if (error) {
-                console.error("Error load jadwal:", error);
-                timelineContainer.innerHTML = '<div class="empty-text" style="color:red;">Gagal memuat data.</div>';
-                return;
-            }
-
-            renderTimelineHTML(jadwalData);
         }
 
-        // --- 5. RENDER HTML ---
-        function renderTimelineHTML(schedules) {
+        // --- 5. RENDER TIMELINE ---
+        function renderTimeline(data) {
             timelineContainer.innerHTML = '';
 
-            if (!schedules || schedules.length === 0) {
-                timelineContainer.innerHTML = '<div class="empty-text">Belum ada riwayat kegiatan.</div>';
+            if (!data || data.length === 0) {
+                timelineContainer.innerHTML = '<div class="status-text">Belum ada riwayat penjualan panen.</div>';
                 return;
             }
 
-            schedules.forEach(item => {
-                const dateObj = new Date(item.schedule_date);
-                const tglStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-                const jamStr = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+            data.forEach(item => {
+                const dateObj = new Date(item.created_at);
+                const dateStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                const timeStr = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-                // Ambil nama lahan dari relasi (join)
-                // Jika item.farmlands kosong (data lama), cari manual di array allLahan
-                let lahanName = "Lahan Tidak Diketahui";
-                let lahanLokasi = "-";
-
-                if (item.farmlands) {
-                    lahanName = item.farmlands.name;
-                    lahanLokasi = item.farmlands.location;
-                }
-
-                // Tentukan Badge
-                let badge = '<span class="badge badge-kegiatan">Catatan</span>';
-                const actName = item.activity_name.toLowerCase();
-                if (actName.includes('panen') || actName.includes('jual')) {
-                    badge = '<span class="badge badge-panen">Panen</span>';
-                } else if (actName.includes('tanam') || actName.includes('pupuk')) {
-                    badge = '<span class="badge badge-kegiatan">Perawatan</span>';
-                }
+                // Tentukan Status Badge
+                let badgeClass = 'badge-pending';
+                let statusText = 'Menunggu';
+                if(item.status === 'approved') { badgeClass = 'badge-approved'; statusText = 'Disetujui'; }
+                if(item.status === 'sold') { badgeClass = 'badge-sold'; statusText = 'Terjual'; }
 
                 const el = document.createElement('div');
                 el.className = 'timeline-item';
                 el.innerHTML = `
                     <div class="timeline-dot"></div>
-                    <div class="timeline-date">${tglStr}, ${jamStr}</div>
+                    <div class="timeline-date">${dateStr}, ${timeStr}</div>
                     <div class="timeline-content">
-                        <div class="timeline-title">
-                            ${item.activity_name} ${badge}
+                        <div class="timeline-header">
+                            <div class="timeline-title">${item.commodity_name}</div>
+                            <span class="badge ${badgeClass}">${statusText}</span>
                         </div>
                         <div class="timeline-desc">
-                            <strong>Lahan:</strong> ${lahanName} (${lahanLokasi})<br>
-                            ${item.notes ? `<em>"${item.notes}"</em>` : ''}
+                            <div>Jumlah: <b>${item.quantity} ${item.unit}</b></div>
+                            <div>Kualitas: <b>${item.quality}</b></div>
+                            <div>Estimasi Total:</div>
+                            <div class="price-tag">Rp ${item.estimated_total.toLocaleString('id-ID')}</div>
                         </div>
                     </div>
                 `;
                 timelineContainer.appendChild(el);
             });
         }
-
-        // --- 6. HANDLE FILTER CHANGE ---
-        filterLahan.addEventListener('change', (e) => {
-            loadTimeline(e.target.value);
-        });
-
     </script>
 </body>
 </html>
