@@ -34,7 +34,7 @@
             color: var(--text-dark);
             line-height: 1.6;
             overflow-x: hidden;
-            padding-bottom: 100px; /* Jaga chat tidak ketutup footer */
+            padding-bottom: 100px; 
         }
 
         /* --- HEADER LANDING PAGE --- */
@@ -205,7 +205,7 @@
             100% { transform: translateY(0px); }
         }
 
-        /* --- FEATURES (DARI KODE PERTAMA) --- */
+        /* --- FEATURES --- */
         .features {
             padding: 60px 20px;
             text-align: center;
@@ -233,7 +233,7 @@
 
         .feature-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-md);
         }
 
         .feature-icon {
@@ -265,12 +265,12 @@
             border-bottom: 2px solid var(--light-green);
             box-shadow: var(--shadow-sm);
             
-            /* --- PERBAIKAN NAV (STICKY & Z-INDEX) --- */
+            /* --- PERBAIKAN: TAB MENUMPUK HEADER --- */
             position: sticky;
-            top: 0; /* GANTI DARI 60px MENJADI 0 AGAR MENUMPUK HEADER */
-            z-index: 101; /* Z-index LEBIH TINGGI DARI HEADER (100) AGAR SELALU DI DEPAN */
-            margin-top: 15px; /* Tambah margin atas agar tidak menempel header */
-            /* ------------------------------------------------------- */
+            top: 0; /* Mengunci di 0 agar di atas header */
+            z-index: 101; /* Layer di atas header (100) */
+            margin-top: 15px; /* Jarak agar tidak menempel logo */
+            /* ------------------------------------------- */
         }
 
         .monitor-tab {
@@ -355,7 +355,7 @@
             cursor: pointer;
             font-size: 0.9rem;
             color: var(--text-grey);
-            transition: all 0.2s;
+            transition: var(--transition);
         }
 
         .monitor-sub-btn:hover {
@@ -380,7 +380,7 @@
         /* Canvas Container for Chart.js */
         .canvas-container {
             position: relative;
-            height: 300px;
+            height: 300px; /* Tinggi fix agar grafik tidak gepeng */
             width: 100%;
         }
 
@@ -653,7 +653,7 @@
             .hero-image { display: none; }
             .chat-container { width: 90%; right: 5%; bottom: 80px; }
             .monitoring-nav { flex-wrap: wrap; gap: 5px; }
-            .monitor-tab { flex: 1; padding: 6px 10px; font-size: 0.8rem; text-align: center; }
+            .monitor-tab { flex: 1; padding: 6px 10px; font-size: 0.85rem; text-align: center; }
         }
     </style>
 </head>
@@ -715,7 +715,7 @@
             </div>
         </section>
 
-        <!-- FEATURES SECTION -->
+        <!-- Features -->
         <section class="features">
             <div class="container">
                 <h2 style="font-size: 2rem; color: var(--primary-green); margin-bottom: 20px;">Keunggulan AgriChain</h2>
@@ -826,7 +826,7 @@
                                     <span style="font-size:0.8rem; color: var(--primary-green);">Status: Selesai Ditangani</span>
                                 </div>
                                 <button onclick="showHamaDetail('Ulat Grayak', '1 Februari', 'Serangan di blok A2. Tanaman padi usia 45 HST. Ditemukan 5 ula per rumpun.', 'Serius')" 
-                                        style="padding: 4px 8px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
+                                        style="padding: 5px 12px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
                                     Detail
                                 </button>
                             </li>
@@ -836,7 +836,7 @@
                                     <span style="font-size:0.8rem; color: #999;">Status: Pemantauan</span>
                                 </div>
                                 <button onclick="showHamaDetail('Kutu Daun', '3 Januari', 'Ditemukan sedikit di daun muda. Level bahaya rendah.', 'Ringan')" 
-                                        style="padding: 4px 8px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
+                                        style="padding: 5px 12px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
                                     Detail
                                 </button>
                             </li>
@@ -846,7 +846,7 @@
                                     <span style="font-size:0.8rem; color: #999;">Status: Sembuh</span>
                                 </div>
                                 <button onclick="showHamaDetail('Walang Sangit', '5 Januari', 'Serangan di malam hari. Penyemprotan insektisida berhasil.', 'Ringan')" 
-                                        style="padding: 4px 8px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
+                                        style="padding: 5px 12px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
                                     Detail
                                 </button>
                             </li>
@@ -878,7 +878,7 @@
 
     <!-- 1. FLOATING CHAT BUTTON -->
     <div id="chatFloatBtn" class="chat-float-btn">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-.7 5.2 8.5 8.5 0 0 1-7.8 4 8.5 8.5 0 0 1-4.7-4.5 8.5 8.5 0 0 1-1.3-1.7 8.5 8.5 0 0 1-5.5-2.3 2.9-2.9 5.9-3.5 4.1-1.3 4.8-2.8 1.5-3.3 1.5-6.6 0-10.6 4.2-10.6 8.4 0 1.3-.5-1.6-3.2-2.3-5.2-4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3-1.3 0-.3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path><path d="M14.9 18c.1 0 .3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3-1.3 0-.3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3-1.3 0-.3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path></svg>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-.7 5.2 8.5 8.5 0 0 1-7.8 4 8.5 8.5 0 0 1-4.7-4.5 8.5 8.5 0 0 1-1.3-1.7 8.5 8.5 0 0 1-5.5-2.3 2.9-2.9 5.9-3.5 4.1-1.3 4.8-2.8 1.5-3.3 1.5-6.6 0-10.6 4.2-10.6 8.4 0 1.3-.5-1.6-3.2-2.3-5.2-4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3-1.3 0-.3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path><path d="M14.9 18c.1 0 .3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3-1.3 0-.3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3-1.3 0-.3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3-1.3 0-.3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path></svg>
     </div>
 
     <!-- 2. CHAT CONTAINER -->
@@ -974,10 +974,11 @@
             if (data) {
                 marketData = data;
                 // Update kedua tab (Beranda & Monitor) secara bersamaan
-                renderCharts(); 
                 renderProducts(data);
             } else {
                 console.error("Gagal load harga:", error);
+                // JANGAN BUAT ERROR JANGKA CHART, BIARKAN SAAJA ARRAY KOSONG
+                marketData = []; 
             }
         }
 
@@ -986,7 +987,7 @@
             productList.innerHTML = ''; 
 
             if (prices.length === 0) {
-                productList.innerHTML = '<div style="text-align: center; color: #999;">Belum ada produk.</div>';
+                productList.innerHTML = '<div style="text-align: center; color: #999;">Belum ada produk di database.</div>';
                 return;
             }
 
@@ -1014,14 +1015,27 @@
             });
         }
 
-        // --- 7. RENDER CHARTS (MONITOR TAB) ---
+        // --- 7. RENDER CHARTS (MONITOR TAB) - FALLBACK LOGIC ---
         function renderCharts() {
             // Hapus chart lama jika ada
             for (let key in chartInstances) {
                 if (chartInstances[key]) chartInstances[key].destroy();
             }
 
-            // A. Chart Harga Padi (Dummy data)
+            // --- LOGIKA FALLBACK (PENTING!) ---
+            // Jika marketData kosong, gunakan data dummy agar grafik tetap muncul dan tidak error
+            let chartLabels = ['Padi', 'Jagung', 'Kopi', 'Cabai', 'Kedelai'];
+            let chartPrices = [6200, 3500, 45000, 15000, 9000];
+            let chartTitle = "Perbandingan Harga (Demo)";
+
+            // Jika marketData ADA, timpa data dummy dengan data asli
+            if (marketData.length > 0) {
+                chartLabels = marketData.map(d => d.commodity_name);
+                chartPrices = marketData.map(d => d.current_price);
+                chartTitle = "Top Komoditas (Real Data)";
+            }
+
+            // A. Chart Harga Padi (Selalu Dummy)
             const ctxPadi = document.getElementById('chartHargaPadi');
             if (ctxPadi) {
                 chartInstances['chartHargaPadi'] = new Chart(ctxPadi, {
@@ -1040,26 +1054,23 @@
                     options: { 
                         responsive: true, 
                         maintainAspectRatio: false,
-                        plugins: {
+                        plugins: { 
                             legend: { position: 'bottom' }
                         }
                     }
                 });
             }
 
-            // B. Chart Komoditas (Real Data)
+            // B. Chart Komoditas (Real Data Fallback)
             const ctxKomoditas = document.getElementById('chartKomoditas');
             if (ctxKomoditas) {
-                const labels = marketData.map(d => d.commodity_name);
-                const prices = marketData.map(d => d.current_price);
-
                 chartInstances['chartKomoditas'] = new Chart(ctxKomoditas, {
                     type: 'bar',
                     data: {
-                        labels: labels,
+                        labels: chartLabels, // Gunakan label yang sudah diset
                         datasets: [{
                             label: 'Harga Saat Ini (Rp/Kg)',
-                            data: prices,
+                            data: chartPrices, // Gunakan data yang sudah diset
                             backgroundColor: 'rgba(46, 125, 50, 0.7)',
                             borderColor: 'rgba(46, 125, 50, 1)',
                             borderWidth: 1,
@@ -1072,7 +1083,7 @@
                         scales: { y: { beginAtZero: true } },
                         plugins: {
                             legend: { display: false },
-                            title: { display: true, text: 'Top Komoditas' }
+                            title: { display: true, text: chartTitle } // Judul dinamis
                         }
                     }
                 });
@@ -1127,7 +1138,7 @@
                         walletText.textContent = profile.full_name.split(' ')[0]; // Tampilkan nama depan
                     }
                     
-                    // Load data market DI BACKGROUND agar semua tab siap
+                    // Load data market DI BACKGROUND agar data siap saat klik monitor
                     loadMarketData();
                 }
             } else {
@@ -1167,7 +1178,7 @@
 
             // Simulasi AI balas
             setTimeout(() => {
-                const aiResponse = "Pertanyaan Anda menarik. Sistem kami sedang mencari referensi hukum tanam tersebut.";
+                const aiResponse = "Pertanyaan Anda menarik. Sistem kami sedang menganalisis kondisi lahan Anda.";
                 addChatMessage('ai', aiResponse);
             }, 1000);
         });
@@ -1182,9 +1193,8 @@
 
             const modalDiv = document.createElement('div');
             modalDiv.id = 'hamaModal';
-            // PERBAIKAN FATAL: Style ditulis lengkap di dalam backticks string HTML
             modalDiv.innerHTML = `
-                <div id="hamaModalInner" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; display:flex; justify-content:center; align-items:center;">
+                <div id="hamaModalInner" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; display:flex; justify-content:center; align-items:center;">
                     <div style="background:white; padding:25px; border-radius:12px; max-width:400px; width:90%; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
                         <h3 style="margin:0 0 10px 0; color:var(--primary-green);">🐛 Detail Laporan</h3>
                         <div style="margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid #eee;">
