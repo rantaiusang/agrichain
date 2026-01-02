@@ -1,56 +1,364 @@
-<script>
-const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X'; // PASTIKAN anon public
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Masuk - AgriChain</title>
+    
+    <!-- Library Blockchain (WalletConnect) -->
+    <script src="https://unpkg.com/@walletconnect/web3-provider@1.7.1/dist/index.min.js"></script>
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    
+    <!-- Library Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-const supabaseClient = supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-);
-
-const form = document.getElementById('loginForm');
-const identifierInput = document.getElementById('identifier');
-const passInput = document.getElementById('password');
-const errorMsg = document.getElementById('errorMsg');
-
-form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const identifier = identifierInput.value.trim();
-    const password = passInput.value.trim();
-
-    if (!identifier || !password) {
-        errorMsg.textContent = "Lengkapi data login";
-        errorMsg.style.display = "block";
-        return;
-    }
-
-    try {
-        // ADMIN LOGIN WAJIB EMAIL
-        const { data, error } = await supabaseClient.auth.signInWithPassword({
-            email: identifier,
-            password: password
-        });
-
-        if (error) throw error;
-
-        const { data: profile, error: profileError } = await supabaseClient
-            .from('profiles')
-            .select('role')
-            .eq('id', data.user.id)
-            .single();
-
-        if (profileError) throw profileError;
-
-        if (profile.role === 'ADMIN') {
-            window.location.href = 'dashboard-admin.html';
-        } else {
-            window.location.href = 'index.html';
+    <style>
+        :root { --primary-green: #2E7D32; --light-green: #E8F5E9; --text-dark: #333; --white: #ffffff; --error-red: #D32F2F; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--light-green);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
 
-    } catch (err) {
-        console.error(err);
-        errorMsg.textContent = err.message;
-        errorMsg.style.display = "block";
-    }
-});
-</script>
+        .login-card {
+            background: var(--white);
+            width: 100%;
+            max-width: 380px;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .logo {
+            color: var(--primary-green);
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .form-group { margin-bottom: 1.2rem; text-align: left; }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+            background: #fff;
+        }
+
+        .form-input:focus {
+            border-color: var(--primary-green);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: background 0.2s;
+        }
+
+        .btn-login:hover { background-color: #1B5E20; }
+        .btn-loading { background-color: #81C784; cursor: not-allowed; }
+
+        .error-msg {
+            color: var(--error-red);
+            font-size: 0.85rem;
+            margin-top: 10px;
+            text-align: center;
+            display: none;
+            padding: 10px;
+            background: #FFEBEE;
+            border-radius: 8px;
+        }
+
+        /* --- DOMPET --- */
+        .wallet-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px dashed #ccc;
+            text-align: center;
+        }
+
+        .wallet-status-title {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: 600;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .wallet-status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #ccc;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
+            transition: background-color 0.3s;
+        }
+
+        #wallet-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #ffffff;
+            border: 1px solid #3B99FC;
+            color: #3B99FC;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 2px 5px rgba(59, 153, 252, 0.1);
+        }
+
+        #wallet-btn:hover { background-color: #eff6ff; border-color: #2196F3; color: #2196F3; }
+        #wallet-btn.connected { background-color: #E8F5E9; border-color: #2E7D32; color: #2E7D32; cursor: default; }
+
+        .extra-links {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 0.9rem;
+        }
+
+        .link-home {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-weight: bold;
+            display: block;
+            text-align: center;
+            margin-top: 10px;
+        }
+        
+        .forgot-link { color: #666; text-decoration: none; }
+        .register-link { color: var(--primary-green); font-weight: bold; text-decoration: none; }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+            display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="logo">AgriChain</div>
+        <div class="subtitle">Masuk untuk mulai bertransaksi</div>
+
+        <form id="loginForm">
+            <!-- HANYA EMAIL -->
+            <div class="form-group">
+                <label for="identifier">Alamat Email</label>
+                <input type="email" id="identifier" class="form-input" placeholder="contoh@email.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Kata Sandi</label>
+                <input type="password" id="password" class="form-input" placeholder="Masukkan kata sandi" required>
+            </div>
+
+            <button type="submit" id="btnSubmit" class="btn-login">
+                <span class="spinner" id="spinner"></span>
+                <span id="btnText">MASUK</span>
+            </button>
+            <div id="errorMsg" class="error-msg"></div>
+        </form>
+
+        <!-- DOMPET -->
+        <div class="wallet-section">
+            <div class="wallet-status-title">
+                <div class="wallet-status-dot" id="walletDot"></div>
+                <span id="walletStatusText">Hubungkan Dompet (Opsional)</span>
+            </div>
+            <button id="wallet-btn" type="button">
+                Hubungkan Dompet (Web3)
+            </button>
+        </div>
+
+        <div class="extra-links">
+            <a href="forgot-password.html" class="forgot-link">Lupa kata sandi?</a>
+            <a href="register.html" class="register-link">Daftar Akun</a>
+        </div>
+
+        <a href="index.html" class="link-home">← Kembali ke Beranda</a>
+    </div>
+
+    <!-- SCRIPT UTAMA (SIMPLIFIED - EMAIL ONLY) -->
+    <script>
+        // --- 1. KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
+        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
+
+        const supabaseClient = supabase.createClient(
+            SUPABASE_URL,
+            SUPABASE_KEY
+        );
+
+        // --- 2. DOM ELEMENTS ---
+        const form = document.getElementById('loginForm');
+        const identifierInput = document.getElementById('identifier');
+        const passInput = document.getElementById('password');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const btnText = document.getElementById('btnText');
+        const spinner = document.getElementById('spinner');
+        const errorMsg = document.getElementById('errorMsg');
+        
+        // Wallet Elements (Disimpan agar fungsi wallet tetap jalan)
+        const walletBtn = document.getElementById('wallet-btn');
+        const walletDot = document.getElementById('walletDot');
+        const walletStatusText = document.getElementById('walletStatusText');
+        let userWalletAddress = null;
+        let provider = null;
+
+        // --- 3. LOGIKA WALLET CONNECT (Tetap Sama) ---
+        if (typeof WalletConnectProvider !== 'undefined') {
+            provider = new WalletConnectProvider.default({
+                rpc: {
+                    137: "https://polygon-rpc.com",
+                    80001: "https://rpc-mumbai.maticvigil.com"
+                },
+                bridge: "https://bridge.walletconnect.org" 
+            });
+        }
+
+        walletBtn.addEventListener('click', async function(e) {
+            e.preventDefault();
+            if (!provider) { alert("Library gagal dimuat."); return; }
+            if (provider.connected) return;
+
+            const originalContent = walletBtn.innerHTML;
+            walletBtn.innerHTML = "Membuka Aplikasi...";
+
+            try {
+                await provider.enable();
+                const web3Provider = new ethers.providers.Web3Provider(provider);
+                const address = await web3Provider.getSigner().getAddress();
+                userWalletAddress = address;
+                
+                const shortAddress = `${address.substring(0,6)}...${address.substring(address.length-4)}`;
+                walletBtn.innerHTML = `🔗 Terhubung (${shortAddress})`;
+                walletBtn.classList.add('connected');
+                walletDot.style.backgroundColor = "#00C851";
+                walletStatusText.textContent = "Dompet Terhubung";
+                walletStatusText.style.color = "#00C851";
+
+            } catch (error) {
+                console.error("Wallet Error:", error);
+                walletBtn.innerHTML = "Coba Lagi";
+                setTimeout(() => { walletBtn.innerHTML = originalContent; }, 2000);
+            }
+        });
+
+        // --- 4. LOGIKA LOGIN EMAIL ONLY (DIPERBAIKI) ---
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = identifierInput.value.trim();
+            const password = passInput.value.trim();
+
+            if(!email || !password) {
+                errorMsg.textContent = "Mohon lengkapi data login";
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            // Loading UI
+            btnSubmit.classList.add('btn-loading');
+            btnSubmit.disabled = true;
+            btnText.textContent = 'MEMPROSES...';
+            spinner.style.display = 'inline-block';
+            errorMsg.style.display = 'none';
+
+            try {
+                // LANGSUNG LOGIN TANPA KONVERSI
+                const { data, error } = await supabaseClient.auth.signInWithPassword({
+                    email: email, // Pakai email langsung dari input
+                    password: password
+                });
+
+                if (error) throw error;
+
+                console.log("✅ Login Sukses:", data.user.id);
+
+                // Cek Role
+                const { data: profile, error: profileError } = await supabaseClient
+                    .from('profiles')
+                    .select('role, full_name')
+                    .eq('id', data.user.id)
+                    .single();
+
+                if (profileError) throw profileError;
+
+                console.log("Role User:", profile.role);
+
+                // Redirect
+                if (profile.role === 'ADMIN') {
+                    window.location.href = 'dashboard-admin.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
+
+            } catch (err) {
+                console.error(err);
+                errorMsg.textContent = "Email atau Kata Sandi salah.";
+                errorMsg.style.display = 'block';
+            } finally {
+                // Reset Tombol
+                btnSubmit.classList.remove('btn-loading');
+                btnSubmit.disabled = false;
+                btnText.textContent = 'MASUK';
+                spinner.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
