@@ -5,74 +5,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Daftar Akun - AgriChain</title>
     
-    <!-- Library Supabase -->
+    <!-- Library Supabase v2 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
             --primary-green: #2E7D32;
+            --primary-dark: #1B5E20;
+            --primary-light: #E8F5E9;
             --bg-color: #F1F8E9;
             --text-dark: #333333;
             --text-grey: #666666;
             --white: #ffffff;
             --error: #D32F2F;
+            --border: #ddd;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-color);
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 16px;
+            padding: 20px;
+            color: var(--text-dark);
         }
 
         .register-card {
             background: var(--white);
             width: 100%;
-            max-width: 400px;
-            padding: 2rem;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            max-width: 420px;
+            padding: 2.5rem 2rem;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
             text-align: center;
             position: relative;
+            animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .logo {
             color: var(--primary-green);
             font-size: 2rem;
             margin-bottom: 0.5rem;
-            font-weight: bold;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
 
         .subtitle {
-            color: #666;
-            font-size: 0.9rem;
+            color: var(--text-grey);
+            font-size: 0.95rem;
             margin-bottom: 2rem;
+            line-height: 1.5;
         }
 
-        .form-group { margin-bottom:1.2rem; text-align: left; position: relative; }
-        label { display: block; margin-bottom:0.5rem; font-size:0.9rem; font-weight:600; color: var(--text-dark); }
+        .form-group { 
+            margin-bottom: 1.25rem; 
+            text-align: left; 
+            position: relative; 
+        }
+
+        label { 
+            display: block; 
+            margin-bottom: 0.5rem; 
+            font-size: 0.85rem; 
+            font-weight: 700; 
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
 
         .form-input, .form-select {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            padding: 14px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
             font-size: 1rem;
             box-sizing: border-box;
             background: #fff;
+            transition: all 0.3s ease;
         }
 
         .form-input:focus, .form-select:focus {
             border-color: var(--primary-green);
             outline: none;
-            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
+            box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.1);
+            transform: translateY(-1px);
         }
 
-        /* --- STYLING IKON PASSWORD --- */
+        /* Password Validation Styling */
         .input-wrapper { position: relative; }
         
         .pass-icon {
@@ -84,44 +111,73 @@
             pointer-events: none; 
             display: none; 
             font-weight: bold;
+            transition: all 0.3s ease;
         }
-        .icon-success { color: var(--primary-green); }
-        .icon-error { color: var(--error); }
-
-        .info-box {
-            background-color: #E3F2FD;
-            color: #1565C0;
-            font-size: 0.8rem;
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 1.5rem;
-            text-align: left;
-            line-height: 1.4;
-        }
-
-        .btn-register {
-            width: 100%;
-            padding: 14px;
-            background-color: var(--primary-green);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            font-weight: bold;
-            margin-top: 1rem;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-register:hover { background-color: #1B5E20; }
-        .btn-loading { background-color: #81C784; cursor: not-allowed; }
+        
+        .icon-success { color: var(--primary-green); animation: popIn 0.3s ease; }
+        .icon-error { color: var(--error); animation: shake 0.3s ease; }
 
         .error-msg {
             color: var(--error);
             font-size: 0.8rem;
-            margin-top: 5px;
+            margin-top: 6px;
             display: none;
+            font-weight: 500;
         }
 
+        /* Info Boxes */
+        .info-box {
+            background-color: #E3F2FD;
+            color: #1565C0;
+            font-size: 0.8rem;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: left;
+            line-height: 1.5;
+            border-left: 4px solid #1565C0;
+        }
+        .info-box.wallet {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+            border-left-color: var(--primary-green);
+        }
+
+        /* Button */
+        .btn-register {
+            width: 100%;
+            padding: 16px;
+            background-color: var(--primary-green);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-top: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 6px rgba(46, 125, 50, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-register:hover { 
+            background-color: var(--primary-dark); 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(46, 125, 50, 0.3);
+        }
+        
+        .btn-register:active { transform: translateY(0); }
+
+        .btn-loading { 
+            background-color: #81C784; 
+            cursor: not-allowed; 
+            pointer-events: none;
+        }
+
+        /* Spinner */
         .spinner {
             display: inline-block;
             width: 20px;
@@ -129,84 +185,96 @@
             border: 3px solid rgba(255,255,255,0.3);
             border-radius: 50%;
             border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 8px;
-            vertical-align: middle;
-            display: none;
+            animation: spin 0.8s linear infinite;
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
-        
+
+        /* Links */
         .back-link {
             display: inline-block;
-            margin-top: 1.5rem;
+            margin-top: 2rem;
             color: var(--primary-green);
             text-decoration: none;
             font-weight: 600;
             font-size: 0.9rem;
+            transition: color 0.2s;
         }
+        .back-link:hover { color: var(--primary-dark); text-decoration: underline; }
 
-        /* --- MODAL POPUP --- */
+        /* --- MODAL --- */
         .status-modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 9999;
+            z-index: 10000;
             animation: fadeIn 0.3s ease;
         }
 
         .status-box {
             background: var(--white);
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            padding: 40px 30px;
+            border-radius: 24px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
             text-align: center;
-            max-width: 350px;
+            max-width: 380px;
             width: 90%;
-            animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: scaleUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .status-icon { font-size: 3rem; margin-bottom: 15px; display: block; }
-        .status-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; }
-        .status-desc { color: var(--text-grey); font-size: 1rem; line-height: 1.5; margin-bottom: 20px; }
+        .status-icon { font-size: 4rem; margin-bottom: 20px; display: block; animation: bounce 1s infinite; }
+        .status-title { font-size: 1.5rem; font-weight: 800; margin-bottom: 10px; }
+        .status-desc { color: var(--text-grey); font-size: 1rem; line-height: 1.6; margin-bottom: 25px; }
 
         .btn-modal {
-            padding: 10px 30px;
+            padding: 12px 40px;
             background: var(--primary-green);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 50px;
             font-weight: bold;
+            font-size: 1rem;
             cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+            transition: transform 0.2s;
         }
+        .btn-modal:hover { transform: scale(1.05); }
+        .btn-modal.close { background: #eee; color: #555; box-shadow: none; }
 
-        @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        /* --- ANIMATIONS --- */
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleUp {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
         }
+        @keyframes popIn { 0% { transform: scale(0); } 80% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
     </style>
 </head>
 <body>
 
     <div class="register-card">
-        <div class="logo">AgriChain</div>
-        <div class="subtitle">Buat akun baru untuk mulai bertransaksi</div>
+        <div class="logo">
+            <span>🌱</span> AgriChain
+        </div>
+        <div class="subtitle">Gabung ekosistem pertanian digital masa depan.</div>
 
-        <form id="registerForm">
+        <form id="registerForm" autocomplete="off">
             
-            <!-- 1. PILIHAN PERAN (OPSI ADMIN DIHAPUS) -->
+            <!-- 1. ROLE -->
             <div class="form-group">
                 <label for="role">Saya mendaftar sebagai:</label>
                 <select id="role" class="form-select" required>
@@ -222,40 +290,37 @@
                 <input type="text" id="fullname" class="form-input" placeholder="Contoh: Budi Santoso" required>
             </div>
 
-            <!-- 3. EMAIL LOGIN KEY (PENTING: DIUBAH DARI HP) -->
+            <!-- 3. EMAIL -->
             <div class="form-group">
                 <label for="email">Alamat Email</label>
-                <input type="email" id="email" class="form-input" placeholder="contoh@email.com" required>
+                <input type="email" id="email" class="form-input" placeholder="nama@email.com" required>
                 <div class="info-box">
-                    ℹ️ Alamat Email ini akan digunakan untuk Login Anda.
+                    ℹ️ Email ini akan menjadi ID Login Anda.
                 </div>
             </div>
 
             <!-- 4. PASSWORD -->
             <div class="form-group">
                 <label for="password">Kata Sandi</label>
-                <input type="password" id="password" class="form-input" placeholder="Buat kata sandi" required minlength="6">
+                <input type="password" id="password" class="form-input" placeholder="Minimal 6 karakter" required minlength="6">
             </div>
 
-            <!-- 5. KONFIRMASI PASSWORD (INDIKATOR TAMBAHAN) -->
+            <!-- 5. KONFIRMASI PASSWORD -->
             <div class="form-group">
-                <label for="confirmPassword">Ulangi Kata Sandi</label>
-                <!-- WRAPPER AGAR IKON BISA DIPASANG DI DALAM INPUT -->
+                <label for="confirmPassword">Konfirmasi Kata Sandi</label>
                 <div class="input-wrapper">
-                    <input type="password" id="confirmPassword" class="form-input" placeholder="Ketik ulang kata sandi" required>
+                    <input type="password" id="confirmPassword" class="form-input" placeholder="Ulangi kata sandi" required>
                     
-                    <!-- IKON SUKSES (CENTANG) -->
+                    <!-- Indikator Real-time -->
                     <span id="passMatchIcon" class="pass-icon icon-success">✓</span>
-                    <!-- IKON GAGAL (SILANG) -->
                     <span id="passMismatchIcon" class="pass-icon icon-error">✗</span>
                 </div>
-                
                 <div id="passError" class="error-msg">Kata sandi tidak cocok!</div>
             </div>
 
-            <!-- 6. INFO WALLET -->
-            <div class="info-box" style="background-color: #E8F5E9; color: #2E7D32;">
-                🛡️ <strong>Aman & Mudah:</strong> Dompet Blockchain (Wallet) akan dibuat otomatis oleh sistem nanti. Anda tidak perlu mengingat kode rahasia saat ini.
+            <!-- 6. WALLET INFO -->
+            <div class="info-box wallet">
+                🛡️ <strong>Keamanan Blockchain:</strong> Dompet digital Anda akan dibuat otomatis dan diamankan oleh sistem setelah pendaftaran berhasil.
             </div>
 
             <button type="submit" id="btnSubmit" class="btn-register">
@@ -264,44 +329,47 @@
             </button>
         </form>
 
-        <a href="login.html" class="back-link">← Sudah punya akun? Masuk</a>
+        <a href="login.html" class="back-link">← Sudah punya akun? Masuk sekarang</a>
     </div>
 
-    <!-- MODAL PROFESIONAL (WARNING POPUP) -->
+    <!-- MODAL POPUP -->
     <div id="statusModal" class="status-modal">
         <div class="status-box">
             <div id="modalIcon" class="status-icon"></div>
             <div id="modalTitle" class="status-title"></div>
             <div id="modalDesc" class="status-desc"></div>
-            <button id="modalBtn" class="btn-modal" style="display:none;">Oke</button>
+            <button id="modalBtn" class="btn-modal"></button>
         </div>
     </div>
 
-    <!-- SCRIPT UTAMA (LOGIKA REGISTER + SUPABASE + CEK PASSWORD) -->
+    <!-- SCRIPT UTAMA (AI OPTIMIZED) -->
     <script>
-        // --- KONFIGURASI SUPABASE (ANON KEY) ---
+        // --- 1. KONFIGURASI SUPABASE ---
+        // GANTI URL DAN KEY INI DENGAN MILIK ANDA
         const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
-        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X'; // ANON KEY
+        // PENTING: Key ini harus 'public/anon', JANGAN gunakan 'service_role' di HTML!
+        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X'; 
 
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- DOM ELEMENTS ---
+        // --- 2. DOM ELEMENTS ---
         const form = document.getElementById('registerForm');
         const roleSelect = document.getElementById('role');
-        const emailInput = document.getElementById('email'); // Mengambil ID email
+        const emailInput = document.getElementById('email');
+        const fullnameInput = document.getElementById('fullname');
+        
         const btnSubmit = document.getElementById('btnSubmit');
         const spinner = document.getElementById('spinner');
         const btnText = document.getElementById('btnText');
         const passError = document.getElementById('passError');
 
-        // --- ELEMENTS UNTUK CEK PASSWORD (REALTIME) ---
         const passInput = document.getElementById('password');
         const confirmInput = document.getElementById('confirmPassword');
-        const matchIcon = document.getElementById('passMatchIcon'); // Tanda ✓
-        const mismatchIcon = document.getElementById('passMismatchIcon'); // Tanda ✗
+        const matchIcon = document.getElementById('passMatchIcon');
+        const mismatchIcon = document.getElementById('passMismatchIcon');
 
-        // --- FUNGSI MODAL ---
-        function showModal(type, title, desc, redirectUrl) {
+        // --- 3. FUNGSI MODAL ---
+        function showModal(type, title, desc, btnText = null, action = null) {
             const modal = document.getElementById('statusModal');
             const icon = document.getElementById('modalIcon');
             const titleEl = document.getElementById('modalTitle');
@@ -310,132 +378,161 @@
 
             modal.style.display = 'flex';
 
+            // Reset Animasi
+            icon.style.animation = 'none';
+            icon.offsetHeight; /* trigger reflow */
+            icon.style.animation = null; 
+
             if (type === 'success') {
-                icon.textContent = '✅';
+                icon.textContent = '🎉'; // Icon Emoji lebih modern
                 titleEl.textContent = title;
                 titleEl.style.color = 'var(--primary-green)';
                 descEl.textContent = desc;
                 btnModal.style.display = 'none'; 
-                
-                if (redirectUrl) {
-                    setTimeout(() => {
-                        window.location.href = redirectUrl;
-                    }, 2000);
-                }
             } else {
-                icon.textContent = '⚠️'; // Gunakan icon Peringatan untuk email sudah ada
+                icon.textContent = '⚠️';
                 titleEl.textContent = title;
                 titleEl.style.color = 'var(--error)';
                 descEl.textContent = desc;
                 btnModal.style.display = 'inline-block';
-                btnModal.textContent = 'Tutup';
-                btnModal.onclick = function() {
+                btnModal.textContent = btnText || 'Tutup';
+                btnModal.className = 'btn-modal close'; // Style tombol close
+                
+                // Hapus event listener lama jika ada
+                const newBtn = btnModal.cloneNode(true);
+                btnModal.parentNode.replaceChild(newBtn, btnModal);
+                
+                newBtn.onclick = function() {
                     modal.style.display = 'none';
+                    if (action) action();
                 };
             }
         }
 
-        // --- EVENT LISTENER SAAT LOAD ---
-        document.addEventListener("DOMContentLoaded", () => {
-            roleSelect.value = "PETANI";
-            emailInput.value = ""; 
-        });
+        // --- 4. VALIDASI PASSWORD REAL-TIME ---
+        function checkPasswordMatch() {
+            const p1 = passInput.value;
+            const p2 = confirmInput.value;
 
-        // --- LOGIKA SUBMIT FORM ---
+            // Reset jika kosong
+            if (p2.length === 0) {
+                matchIcon.style.display = 'none';
+                mismatchIcon.style.display = 'none';
+                passError.style.display = 'none';
+                confirmInput.style.borderColor = 'var(--border)';
+                return false;
+            }
+
+            // Cek Kecocokan
+            if (p1 === p2) {
+                matchIcon.style.display = 'block';
+                mismatchIcon.style.display = 'none';
+                passError.style.display = 'none';
+                confirmInput.style.borderColor = 'var(--primary-green)';
+                return true;
+            } else {
+                matchIcon.style.display = 'none';
+                mismatchIcon.style.display = 'block';
+                passError.style.display = 'block';
+                confirmInput.style.borderColor = 'var(--error)';
+                return false;
+            }
+        }
+
+        // Pasang Listener agar mengecek saat mengetik
+        passInput.addEventListener('input', checkPasswordMatch);
+        confirmInput.addEventListener('input', checkPasswordMatch);
+
+        // --- 5. LOGIKA UTAMA REGISTER ---
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const fullname = document.getElementById('fullname').value;
-            const email = document.getElementById('email').value; // Mengambil value email
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            const role = document.getElementById('role').value;
+            const fullname = fullnameInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passInput.value;
+            const confirmPassword = confirmInput.value;
+            const role = roleSelect.value;
 
-            // 1. Validasi Password Sederhana
-            if(password !== confirmPassword) {
-                passError.style.display = 'block';
-                showModal('error', 'Konfirmasi Gagal', 'Kata sandi yang Anda masukkan tidak cocok.', null);
+            // Validasi Akhir
+            if (password !== confirmPassword) {
+                showModal('error', 'Password Salah', 'Pastikan kata sandi dan konfirmasi sama.', 'Koreksi');
                 return;
-            } else {
-                passError.style.display = 'none';
             }
 
-            // 2. Tampilkan UI Loading
+            // UI Loading State
             btnSubmit.classList.add('btn-loading');
             btnSubmit.disabled = true;
-            btnText.textContent = 'MENDAFTARKAN...';
+            btnText.textContent = 'MEMPROSES DATA...';
             spinner.style.display = 'inline-block';
 
             try {
-                // EMAIL ONLY: LANGSUNG PAKAI EMAIL TANPA KONFIRMASI
-                console.log("Mendaftarkan:", email);
+                // Kita mengirim data ke Supabase Auth.
+                // Metadata (role, fullname) akan tertangkap oleh Trigger SQL
+                // untuk otomatis disimpan ke tabel 'profiles'.
+                
+                console.log(`[System] Mencoba mendaftarkan: ${email} sebagai ${role}`);
 
-                // LANGKAH 1: Buat Akun Otentikasi Supabase
-                const { data: authData, error: authError } = await supabase.auth.signUp({
-                    email: email, // Langsung pakai email
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
                     password: password,
                     options: {
                         data: {
                             full_name: fullname,
-                            role: role
+                            role: role,
+                            // Data default lainnya
+                            phone: '-',
+                            desa: '-',
+                            luas_lahan: 0
                         }
                     }
                 });
 
-                // Cek error dari Auth
-                if (authError) {
-                    throw authError;
-                }
+                if (error) throw error;
 
-                console.log("✅ Auth Berhasil. ID User:", authData.user.id);
+                console.log("[System] Sukses Auth:", data.user);
 
-                // LANGKAH 2: Simpan Data Detail ke 'profiles'
-                if (authData.user && authData.user.id) {
-                    const { error: profileError } = await supabase
-                        .from('profiles')
-                        .insert([
-                            { 
-                                id: authData.user.id,    
-                                full_name: fullname,
-                                phone: '-', // Kolom phone diisi tanda strip karena tidak pakai HP
-                                role: role,
-                                desa: "-",              
-                                luas_lahan: 0
-                            }
-                        ]);
+                // SUKSES
+                showModal(
+                    'success', 
+                    'Pendaftaran Berhasil!', 
+                    'Akun Anda siap digunakan. Anda akan dialihkan ke halaman Login.', 
+                    null
+                );
 
-                    if (profileError) {
-                        console.error("Gagal insert profile:", profileError);
-                        throw new Error("Akun dibuat, tapi data profil gagal disimpan.");
-                    }
-                }
-
-                // --- SUKSES ---
-                showModal('success', 'Registrasi Berhasil!', 'Akun Anda telah aktif. Halaman akan dialihkan ke Login.', 'login.html');
+                // Redirect halus
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2500);
 
             } catch (err) {
-                console.error("Gagal Register:", err);
+                console.error("[System] Error Register:", err);
                 
-                let failTitle = 'Pendaftaran Gagal';
-                let failDesc = err.message || 'Terjadi kesalahan tak terduga pada sistem.';
+                let title = 'Pendaftaran Gagal';
+                let desc = err.message;
 
-                // --- CEK ERROR SUDAH DAFTAR (LOGIKA TAMBAHAN) ---
-                if (failDesc.includes('already registered')) {
-                    // Ganti pesan error menjadi lebih sopan dan jelas
-                    failDesc = 'Email ' + email + ' sudah terdaftar. Silakan Login langsung.';
-                } else if (failDesc.includes('Database error') || failDesc.includes('Failed to fetch')) {
-                    failDesc = 'Gagal menyimpan data ke database. Pastikan tabel "profiles" sudah dibuat.';
+                // Deteksi Error Spesifik untuk User Friendly Message
+                if (desc.toLowerCase().includes('already registered') || desc.toLowerCase().includes('user already registered')) {
+                    title = 'Email Sudah Terdaftar';
+                    desc = 'Alamat email ini sudah memiliki akun. Silakan Login langsung.';
+                } else if (desc.toLowerCase().includes('invalid email')) {
+                    desc = 'Format alamat email tidak valid.';
                 }
 
-                showModal('error', failTitle, failDesc, null);
+                showModal('error', title, desc, 'Coba Lagi');
 
             } finally {
-                // Reset Tombol
+                // Reset UI Button
                 btnSubmit.classList.remove('btn-loading');
                 btnSubmit.disabled = false;
                 btnText.textContent = 'DAFTAR SEKARANG';
                 spinner.style.display = 'none';
             }
+        });
+
+        // Init Default Values
+        document.addEventListener("DOMContentLoaded", () => {
+            roleSelect.value = "PETANI";
+            checkPasswordMatch(); // Cek awal
         });
     </script>
 </body>
