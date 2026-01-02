@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Manajemen Lahan - AgriChain</title>
     
-    <!-- Library Blockchain -->
-    <script src="https://unpkg.com/@web3modal/web3modal"></script>
-    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <!-- Library Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         /* --- CSS VARIABLES --- */
@@ -121,10 +120,7 @@
             box-shadow: var(--shadow);
         }
 
-        thead {
-            background: var(--light-green);
-            color: var(--primary-green);
-        }
+        thead { background: var(--light-green); }
 
         th, td {
             padding: 15px;
@@ -132,7 +128,7 @@
             border-bottom: 1px solid #eee;
         }
 
-        th { font-weight: 700; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; }
+        th { font-weight: 700; color: var(--primary-green); text-transform: uppercase; font-size: 0.85rem; }
         tr:last-child td { border-bottom: none; }
         tr:hover { background-color: #fafafa; }
 
@@ -246,7 +242,7 @@
                 <tbody>
                     <!-- Data akan di-render via JavaScript -->
                     <tr>
-                        <td colspan="7" style="text-align: center; color: #999;">Memuat data...</td>
+                        <td colspan="7" style="text-align: center; color: #999;">Memuat data lahan...</td>
                     </tr>
                 </tbody>
             </table>
@@ -256,41 +252,56 @@
     <!-- Elemen Toast Notifikasi -->
     <div id="toast" class="toast">Data berhasil disimpan!</div>
 
-    <!-- SCRIPT UTAMA -->
-    <script type="module">
-        // Import dari file modular (src/)
-        // Kita mengimpor fungsi supabase di masa depan, tapi sekarang pakai local array
-        import { connectWallet } from './src/connectWallet.js';
+    <!-- Script Utama -->
+    <script>
+        // --- 1. KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 1. DATA DUMMY (Simulasi Database Supabase karena Backend Offline)
-        let lahanDB = [
-            { id: 1, nama: "Sawah Bakti I", luas: 5000, lokasi: "Cianjur, Warungkondang", jenis: "Sawah Irigasi", komoditas: "Padi Cianjur" },
-            { id: 2, nama: "Kebun Cabai Merah", luas: 1500, lokasi: "Bogor, Citeureup", jenis: "Kebun Sayur", komoditas: "Cabai Merah" }
-        ];
+        let currentUserId = null;
 
-        // 2. DOM ELEMENTS
+        // --- 2. DOM ELEMENTS ---
         const formLahan = document.getElementById('lahanForm');
         const tabelBody = document.querySelector('#tabelLahan tbody');
         const formTitle = document.getElementById('formTitle');
-        const btnSubmit = document.querySelector('.btn-save');
-        
-        // 3. RENDER TABEL
-        function renderTable() {
-            tabelBody.innerHTML = ''; // Bersihkan tabel
+        const toast = document.getElementById('toast');
+
+        // --- 3. LOAD DATA LAHAN ---
+        async function loadLahan() {
+            tabelBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">Memuat data lahan...</td></tr>';
             
-            if (lahanDB.length === 0) {
+            const { data, error } = await supabase
+                .from('farmlands')
+                .select('*')
+                .order('name', { ascending: true });
+
+            if (error) {
+                console.error(error);
+                tabelBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">Gagal memuat data.</td></tr>';
+                return;
+            }
+
+            renderTable(data);
+        }
+
+        // --- 4. RENDER TABEL ---
+        function renderTable(lahanList) {
+            tabelBody.innerHTML = '';
+
+            if (lahanList.length === 0) {
                 tabelBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Belum ada data lahan.</td></tr>';
                 return;
             }
 
-            lahanDB.forEach(item => {
+            lahanList.forEach(item => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><strong>${item.nama}</strong></td>
-                    <td>${item.luas.toLocaleString()} m²</td>
-                    <td>${item.lokasi}</td>
-                    <td>${item.jenis}</td>
-                    <td>${item.komoditas}</td>
+                    <td><strong>${item.name}</strong></td>
+                    <td>${item.area_size.toLocaleString()} m²</td>
+                    <td>${item.location}</td>
+                    <td>${item.soil_type}</td>
+                    <td>${item.commodity}</td>
                     <td>
                         <button class="action-btn btn-edit" onclick="editLahan(${item.id})">Edit</button>
                         <button class="action-btn btn-delete" onclick="hapusLahan(${item.id})">Hapus</button>
@@ -300,7 +311,7 @@
             });
         }
 
-        // 4. TAMPILKAN FORM (Mode Add)
+        // --- 5. TAMPILKAN FORM (Mode Add) ---
         function showForm() {
             formLahan.style.display = 'block';
             formTitle.innerText = "Input Data Lahan Baru";
@@ -308,13 +319,13 @@
             document.getElementById('lahanId').value = ''; // Kosongkan ID untuk mode Add
         }
 
-        // 5. SEMBUNYIKAN FORM
+        // --- 6. SEMBUNYIKAN FORM ---
         function hideForm() {
             formLahan.style.display = 'none';
         }
 
-        // 6. LOGIKA SIMPAN (ADD / EDIT)
-        document.getElementById('formLahan').addEventListener('submit', function(e) {
+        // --- 7. LOGIKA SIMPAN (ADD / UPDATE) ---
+        document.getElementById('formLahan').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const id = document.getElementById('lahanId').value;
@@ -324,72 +335,113 @@
             const jenis = document.getElementById('jenisTanah').value;
             const komoditas = document.getElementById('komoditas').value;
 
-            // Jika ID ada = UPDATE, jika ID kosong = ADD
-            if (id) {
-                // UPDATE (Edit)
-                const index = lahanDB.findIndex(l => l.id == id);
-                if (index !== -1) {
-                    lahanDB[index] = { id, nama, luas, lokasi, jenis, komoditas };
-                    showToast("Data lahan berhasil diperbarui!", "success");
-                }
-            } else {
-                // ADD (Tambah)
-                const newId = lahanDB.length > 0 ? lahanDB[lahanDB.length - 1].id + 1 : 1;
-                lahanDB.push({ id: newId, nama, luas, lokasi, jenis, komoditas });
-                showToast("Lahan baru berhasil ditambahkan!", "success");
-            }
+            try {
+                // Mapping Kolom HTML -> Kolom Database
+                const dataPayload = {
+                    user_id: currentUserId,
+                    name: nama,
+                    area_size: parseInt(luas),
+                    location: lokasi,
+                    soil_type: jenis,
+                    commodity: komoditas
+                };
 
-            hideForm();
-            renderTable();
+                if (id) {
+                    // UPDATE (Edit Mode)
+                    const { error } = await supabase
+                        .from('farmlands')
+                        .update(dataPayload)
+                        .eq('id', id);
+                    
+                    if (error) throw error;
+                    showToast("Data lahan berhasil diperbarui!", "success");
+
+                } else {
+                    // INSERT (Add Mode)
+                    const { error } = await supabase
+                        .from('farmlands')
+                        .insert([dataPayload]);
+                    
+                    if (error) throw error;
+                    showToast("Lahan baru berhasil ditambahkan!", "success");
+                }
+
+                hideForm();
+                loadLahan(); // Refresh tabel
+
+            } catch (err) {
+                console.error(err);
+                alert("Gagal menyimpan: " + err.message);
+            }
         });
 
-        // 7. LOGIKA EDIT
-        function editLahan(id) {
-            const lahan = lahanDB.find(l => l.id == id);
-            if (!lahan) return;
-
-            showForm(); // Tampilkan form
-            formTitle.innerText = "Edit Data Lahan";
-
-            // Isi form dengan data yang ada
-            document.getElementById('lahanId').value = lahan.id;
-            document.getElementById('namaLahan').value = lahan.nama;
-            document.getElementById('luas').value = lahan.luas;
-            document.getElementById('lokasi').value = lahan.lokasi;
-            document.getElementById('jenisTanah').value = lahan.jenis;
-            document.getElementById('komoditas').value = lahan.komoditas;
+        // --- 8. LOGIKA EDIT ---
+        window.editLahan = function(id) {
+            // Kita ambil data dari elemen DOM atau query ulang ke DB.
+            // Untuk efisiensi demo, kita asumsi data DOM terbaru, tapi idealnya query DB.
+            // Di sini saya gunakan trik membaca data dari input form hidden logic atau query.
+            // Agar aman, kita query ulang 1 data saja.
             
-            window.scrollTo({ top: 0, behavior: 'smooth' }); // Scroll ke atas
-        }
+            supabase
+                .from('farmlands')
+                .select('*')
+                .eq('id', id)
+                .single()
+                .then(({ data, error }) => {
+                    if (error) return;
+                    
+                    showForm(); // Tampilkan form
+                    formTitle.innerText = "Edit Data Lahan";
 
-        // 8. LOGIKA HAPUS
-        function hapusLahan(id) {
+                    // Isi form dengan data
+                    document.getElementById('lahanId').value = data.id;
+                    document.getElementById('namaLahan').value = data.name;
+                    document.getElementById('luas').value = data.area_size;
+                    document.getElementById('lokasi').value = data.location;
+                    document.getElementById('jenisTanah').value = data.soil_type;
+                    document.getElementById('komoditas').value = data.commodity;
+                    
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+        };
+
+        // --- 9. LOGIKA HAPUS ---
+        window.hapusLahan = async function(id) {
             const confirmDelete = confirm("Apakah Anda yakin ingin menghapus data lahan ini?");
             if (confirmDelete) {
-                lahanDB = lahanDB.filter(l => l.id != id);
-                renderTable();
-                showToast("Data lahan berhasil dihapus.");
-            }
-        }
+                const { error } = await supabase
+                    .from('farmlands')
+                    .delete()
+                    .eq('id', id);
 
-        // 9. FUNGSI HELPER NOTIFIKASI
+                if (error) {
+                    alert("Gagal menghapus: " + error.message);
+                } else {
+                    showToast("Data lahan berhasil dihapus.");
+                    loadLahan(); // Refresh tabel
+                }
+            }
+        };
+
+        // --- 10. HELPER NOTIFIKASI ---
         function showToast(message, type = "success") {
-            const toast = document.getElementById('toast');
             toast.innerText = message;
             toast.className = 'toast show ' + type;
             setTimeout(() => { toast.className = 'toast'; }, 3000);
         }
 
-        // 10. INIT: Render Saat Halaman Dimuat
-        document.addEventListener("DOMContentLoaded", () => {
-            // Cek Login Sesi (Opsional, jika ingin membatasi akses)
-            const token = localStorage.getItem('agrichain_token');
-            if (!token) {
-                // Jika belum login, lempar ke login (opsional, sesuaikan kebutuhan)
-                // window.location.href = 'login.html';
+        // --- 11. INIT ---
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Cek Login
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
             }
+            currentUserId = session.user.id;
 
-            renderTable();
+            // Load Data
+            loadLahan();
         });
 
     </script>
