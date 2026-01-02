@@ -69,7 +69,7 @@
         .form-input:focus, .form-select:focus {
             border-color: var(--primary-green);
             outline: none;
-            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
         }
 
         .info-box {
@@ -157,24 +157,9 @@
             animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        .status-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        .status-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .status-desc {
-            color: var(--text-grey);
-            font-size: 1rem;
-            line-height: 1.5;
-            margin-bottom: 20px;
-        }
+        .status-icon { font-size: 3rem; margin-bottom: 15px; display: block; }
+        .status-title { font-size: 1.5rem; font-weight: bold; margin-bottom: 10px; }
+        .status-desc { color: var(--text-grey); font-size: 1rem; line-height: 1.5; margin-bottom: 20px; }
 
         .btn-modal {
             padding: 10px 30px;
@@ -206,7 +191,7 @@
 
         <form id="registerForm">
             
-            <!-- 1. Pilihan Peran (OPSI ADMIN DIHAPUS) -->
+            <!-- 1. PILIHAN PERAN (OPSION ADMIN DIHAPUS) -->
             <div class="form-group">
                 <label for="role">Saya mendaftar sebagai:</label>
                 <select id="role" class="form-select" required>
@@ -216,7 +201,7 @@
                 </select>
             </div>
 
-            <!-- 2. Nama Lengkap -->
+            <!-- 2. NAMA LENGKAP -->
             <div class="form-group">
                 <label for="fullname">Nama Lengkap</label>
                 <input type="text" id="fullname" class="form-input" placeholder="Contoh: Budi Santoso" required>
@@ -231,20 +216,20 @@
                 </div>
             </div>
 
-            <!-- 4. Password -->
+            <!-- 4. PASSWORD -->
             <div class="form-group">
                 <label for="password">Kata Sandi</label>
                 <input type="password" id="password" class="form-input" placeholder="Buat kata sandi" required minlength="6">
             </div>
 
-            <!-- 5. Konfirmasi Password -->
+            <!-- 5. KONFIRMASI PASSWORD -->
             <div class="form-group">
                 <label for="confirmPassword">Ulangi Kata Sandi</label>
                 <input type="password" id="confirmPassword" class="form-input" placeholder="Ketik ulang kata sandi" required>
                 <div id="passError" class="error-msg">Kata sandi tidak cocok!</div>
             </div>
 
-            <!-- 6. Info Wallet -->
+            <!-- 6. INFO WALLET -->
             <div class="info-box" style="background-color: #E8F5E9; color: #2E7D32;">
                 🛡️ <strong>Aman & Mudah:</strong> Dompet Blockchain (Wallet) akan dibuat otomatis oleh sistem nanti. Anda tidak perlu mengingat kode rumit saat ini.
             </div>
@@ -270,7 +255,7 @@
 
     <!-- SCRIPT UTAMA (LOGIKA REGISTER + SUPABASE - EMAIL ONLY) -->
     <script>
-        // --- KONFIGURASI SUPABASE ---
+        // --- KONFIGURASI SUPABASE (ANON KEY) ---
         const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X'; // ANON KEY
 
@@ -337,7 +322,7 @@
             const role = document.getElementById('role').value;
 
             // 1. Validasi Password Sederhana
-            if (password !== confirmPassword) {
+            if(password !== confirmPassword) {
                 passError.style.display = 'block';
                 showModal('error', 'Konfirmasi Gagal', 'Kata sandi yang Anda masukkan tidak cocok.', null);
                 return;
@@ -348,12 +333,12 @@
             // 2. Tampilkan UI Loading
             btnSubmit.classList.add('btn-loading');
             btnSubmit.disabled = true;
-            spinner.style.display = 'inline-block';
             btnText.textContent = 'MENDAFTARKAN...';
+            spinner.style.display = 'inline-block';
 
             try {
-                // EMAIL ONLY: LANGSUNG PAKAI EMAIL TANPA KONVERSI
-                console.log("Mencoba mendaftarkan:", email);
+                // EMAIL ONLY: LANGSUNG PAKAI EMAIL TANPA KONFIRMASI
+                console.log("Mendaftarkan:", email);
 
                 // LANGKAH 1: Buat Akun Autentikasi Supabase
                 const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -362,7 +347,6 @@
                     options: {
                         data: {
                             full_name: fullname,
-                            phone_number: '-', // Diset kosong/dash karena tidak input HP
                             role: role
                         }
                     }
@@ -373,9 +357,9 @@
                     throw authError;
                 }
 
-                console.log("Auth Berhasil. ID User:", authData.user.id);
+                console.log("✅ Auth Berhasil. ID User:", authData.user.id);
 
-                // LANGKAH 2: Simpan data detail ke tabel 'profiles'
+                // LANGKAH 2: Simpan Data Detail ke 'profiles'
                 if (authData.user && authData.user.id) {
                     const { error: profileError } = await supabase
                         .from('profiles')
@@ -392,32 +376,35 @@
 
                     if (profileError) {
                         console.error("Gagal insert profile:", profileError);
-                        throw new Error("Gagal menyimpan data profil. Periksa tabel database.");
+                        // Jika gagal insert profile tapi auth berhasil, user tetap bisa login
+                        // tapi error ditampilkan
+                        throw new Error("Akun dibuat, tapi data profil gagal disimpan. Silakan cek tabel database.");
                     }
                 }
 
-                // LANGKAH 3: Tampilkan Sukses
-                showModal('success', 'Registrasi Berhasil!', 'Akun Anda telah aktif. Silakan Login untuk memulai.', 'login.html');
+                // --- SUKSES ---
+                showModal('success', 'Registrasi Berhasil!', 'Akun Anda telah aktif. Halaman akan dialihkan ke Login.', 'login.html');
 
             } catch (err) {
-                console.error("Error Register:", err);
+                console.error("Gagal Register:", err);
                 
                 let failTitle = 'Pendaftaran Gagal';
                 let failDesc = err.message || 'Terjadi kesalahan tak terduga pada sistem.';
 
                 if (failDesc.includes('already registered')) {
                     failDesc = 'Email ' + email + ' sudah terdaftar. Silakan Login langsung.';
-                } else if (failDesc.includes('Database error')) {
+                } else if (failDesc.includes('Database error') || failDesc.includes('Failed to fetch')) {
                     failDesc = 'Gagal menyimpan data ke database. Pastikan tabel "profiles" sudah dibuat.';
                 }
 
                 showModal('error', failTitle, failDesc, null);
 
             } finally {
+                // Reset Tombol
                 btnSubmit.classList.remove('btn-loading');
                 btnSubmit.disabled = false;
-                spinner.style.display = 'none';
                 btnText.textContent = 'DAFTAR SEKARANG';
+                spinner.style.display = 'none';
             }
         });
     </script>
