@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Riwayat Pertanian - AgriChain</title>
     
-    <!-- Library Blockchain -->
-    <script src="https://unpkg.com/@web3modal/web3modal"></script>
-    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <!-- Library Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -51,6 +50,8 @@
             margin-bottom: 20px;
             align-items: center;
         }
+        
+        label { font-weight: bold; color: var(--text-dark); }
         
         select {
             padding: 10px;
@@ -97,6 +98,12 @@
             padding: 15px;
             border-radius: 8px;
             border: 1px solid #eee;
+            transition: transform 0.2s;
+        }
+
+        .timeline-content:hover {
+            transform: translateX(5px);
+            border-color: var(--light-green);
         }
 
         .timeline-title {
@@ -122,6 +129,8 @@
         .badge-kegiatan { background: #E3F2FD; color: #1565C0; }
         .badge-catatan { background: #FFF8E1; color: #FFA000; }
 
+        /* Loading & Empty */
+        .loading-text, .empty-text { text-align: center; color: #999; font-style: italic; padding: 20px; }
     </style>
 </head>
 <body>
@@ -134,79 +143,123 @@
 
         <!-- Filter -->
         <div class="card filter-section">
-            <label for="filterLahan" style="font-weight: bold; color: #333;">Filter berdasarkan Lahan:</label>
+            <label for="filterLahan">Filter berdasarkan Lahan:</label>
             <select id="filterLahan">
                 <option value="all">Semua Lahan</option>
-                <option value="Sawah Bakti I">Sawah Bakti I</option>
-                <option value="Kebun Cabai Merah">Kebun Cabai Merah</option>
+                <!-- Opsi lahan akan di-load dari Database -->
             </select>
         </div>
 
         <!-- Timeline -->
         <div id="timelineContainer">
-            <!-- Data akan dirender JS -->
-            <div style="text-align: center; color: #999;">Memuat riwayat...</div>
+            <div class="loading-text">Memuat riwayat kegiatan...</div>
         </div>
     </div>
 
-    <script type="module">
-        // --- DATA DUMMY (MENSIMULASI SUPABASE) ---
-        // Mengambil data 'lahan' dan 'jadwal' yang sudah dibuat sebelumnya
-        const dataLahan = [
-            { id: 1, nama: "Sawah Bakti I", luas: 5000, lokasi: "Cianjur" },
-            { id: 2, nama: "Kebun Cabai Merah", luas: 1500, lokasi: "Bogor" }
-        ];
+    <script>
+        // --- 1. KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const dataJadwal = [
-            { id: 1, kegiatan: "Tanam Benih Padi", tanggal: "2023-10-01T07:00", lahanId: 1 },
-            { id: 2, kegiatan: "Pupuk Sawah", tanggal: "2023-10-05T15:00", lahanId: 1 },
-            { id: 3, kegiatan: "Catat Hasil Panen", tanggal: "2023-11-01T08:00", lahanId: 1 },
-            { id: 4, kegiatan: "Bibit Cabai", tanggal: "2023-10-10T06:00", lahanId: 2 },
-            { id: 5, kegiatan: "Panen Cabai", tanggal: "2023-11-20T09:00", lahanId: 2 }
-        ];
+        let allLahan = [];
+        let currentUserId = null;
 
-        // --- DOM ELEMENTS ---
+        // --- 2. DOM ELEMENTS ---
         const timelineContainer = document.getElementById('timelineContainer');
         const filterLahan = document.getElementById('filterLahan');
 
-        // --- FUNGSI UTAMA ---
+        // --- 3. LOAD DATA & INIT ---
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Cek Login
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+            currentUserId = session.user.id;
 
-        // 1. Render Timeline
-        function renderTimeline(filterId) {
-            timelineContainer.innerHTML = '';
+            // A. Load Data Lahan (untuk Filter)
+            const { data: lahanData, error: lahanError } = await supabase
+                .from('farmlands')
+                .select('id, name')
+                .eq('user_id', currentUserId); // Ambil lahan user login saja
 
-            // Gabungkan Jadwal berdasarkan Lahan dan Filter
-            let filteredJadwal = dataJadwal;
-            
-            if (filterId !== 'all') {
-                filteredJadwal = dataJadwal.filter(j => {
-                    // Cari nama lahan berdasarkan ID di jadwal
-                    const lahan = dataLahan.find(l => l.id == j.lahanId);
-                    return lahan && lahan.nama === filterId;
+            if (lahanData) {
+                allLahan = lahanData;
+                
+                // Isi Dropdown Filter
+                filterLahan.innerHTML = '<option value="all">Semua Lahan</option>';
+                allLahan.forEach(l => {
+                    const opt = document.createElement('option');
+                    opt.value = l.id;
+                    opt.textContent = l.name;
+                    filterLahan.appendChild(opt);
                 });
             }
 
-            if (filteredJadwal.length === 0) {
-                timelineContainer.innerHTML = '<div style="text-align: center; color: #999;">Belum ada riwayat kegiatan.</div>';
+            // B. Load & Render Timeline
+            await loadTimeline('all');
+        });
+
+        // --- 4. LOAD TIMELINE ---
+        async function loadTimeline(farmlandIdFilter) {
+            timelineContainer.innerHTML = '<div class="loading-text">Memuat riwayat...</div>';
+
+            let query = supabase
+                .from('farmer_schedules')
+                .select('*, farmlands ( name, location )') // JOIN manual ke tabel lahan
+                .order('schedule_date', { ascending: false });
+
+            // Filter Logic
+            if (farmlandIdFilter !== 'all') {
+                query = query.eq('farmland_id', farmlandIdFilter);
+            } else {
+                // Jika 'all', ambil semua jadwal user ini (pastikan policy RLS benar)
+                query = query; 
+            }
+
+            const { data: jadwalData, error } = await query;
+
+            if (error) {
+                console.error("Error load jadwal:", error);
+                timelineContainer.innerHTML = '<div class="empty-text" style="color:red;">Gagal memuat data.</div>';
                 return;
             }
 
-            // Render Item
-            filteredJadwal.forEach(item => {
-                const dateObj = new Date(item.tanggal);
+            renderTimelineHTML(jadwalData);
+        }
+
+        // --- 5. RENDER HTML ---
+        function renderTimelineHTML(schedules) {
+            timelineContainer.innerHTML = '';
+
+            if (!schedules || schedules.length === 0) {
+                timelineContainer.innerHTML = '<div class="empty-text">Belum ada riwayat kegiatan.</div>';
+                return;
+            }
+
+            schedules.forEach(item => {
+                const dateObj = new Date(item.schedule_date);
                 const tglStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
                 const jamStr = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 
-                const lahanItem = dataLahan.find(l => l.id == item.lahanId);
-                const namaLahan = lahanItem ? lahanItem.nama : "Lahan Dihapus";
-                const lokasiLahan = lahanItem ? lahanItem.lokasi : "-";
+                // Ambil nama lahan dari relasi (join)
+                // Jika item.farmlands kosong (data lama), cari manual di array allLahan
+                let lahanName = "Lahan Tidak Diketahui";
+                let lahanLokasi = "-";
 
-                // Tentukan Badge berdasarkan kata kunci sederhana
+                if (item.farmlands) {
+                    lahanName = item.farmlands.name;
+                    lahanLokasi = item.farmlands.location;
+                }
+
+                // Tentukan Badge
                 let badge = '<span class="badge badge-kegiatan">Catatan</span>';
-                const lowerKegiatan = item.kegiatan.toLowerCase();
-                if (lowerKegiatan.includes('panen') || lowerKegiatan.includes('jual')) {
+                const actName = item.activity_name.toLowerCase();
+                if (actName.includes('panen') || actName.includes('jual')) {
                     badge = '<span class="badge badge-panen">Panen</span>';
-                } else if (lowerKegiatan.includes('tanam') || lowerKegiatan.includes('pupuk')) {
+                } else if (actName.includes('tanam') || actName.includes('pupuk')) {
                     badge = '<span class="badge badge-kegiatan">Perawatan</span>';
                 }
 
@@ -217,10 +270,11 @@
                     <div class="timeline-date">${tglStr}, ${jamStr}</div>
                     <div class="timeline-content">
                         <div class="timeline-title">
-                            ${item.kegiatan} ${badge}
+                            ${item.activity_name} ${badge}
                         </div>
                         <div class="timeline-desc">
-                            <strong>Lahan:</strong> ${namaLahan} (${lokasiLahan})
+                            <strong>Lahan:</strong> ${lahanName} (${lahanLokasi})<br>
+                            ${item.notes ? `<em>"${item.notes}"</em>` : ''}
                         </div>
                     </div>
                 `;
@@ -228,16 +282,9 @@
             });
         }
 
-        // --- EVENT LISTENER ---
-
-        // 1. Saat Pilihan Filter Berubah
+        // --- 6. HANDLE FILTER CHANGE ---
         filterLahan.addEventListener('change', (e) => {
-            renderTimeline(e.target.value);
-        });
-
-        // 2. Inisialisasi Halaman
-        document.addEventListener("DOMContentLoaded", () => {
-            renderTimeline('all'); // Default tampilkan semua
+            loadTimeline(e.target.value);
         });
 
     </script>
