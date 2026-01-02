@@ -54,7 +54,7 @@
             padding: 20px;
         }
 
-        /* --- FILTER SECTION --- */
+        /* --- FILTER SECTION (PERBAIKAN MUALOKASI) --- */
         .filter-bar {
             background: var(--white);
             padding: 20px;
@@ -64,35 +64,57 @@
             display: flex;
             gap: 15px;
             align-items: center;
-            flex-wrap: wrap;
+            flex-wrap: wrap; /* Pindah ke bawah di HP */
         }
 
+        /* Kotak Pencarian: Mengambil proporsi lebih besar */
         .search-box {
-            flex: 2;
+            flex: 3; /* Mengambil 3 bagian dari lebar */
+            min-width: 200px;
             position: relative;
         }
+
         .search-box input {
             width: 100%;
-            padding: 12px 12px 12px 40px;
+            padding: 12px 12px 12px 40px; /* Padding kiri lebar untuk ikon */
             border: 1px solid #ddd;
             border-radius: 8px;
             font-size: 1rem;
+            box-sizing: border-box;
         }
+
+        .search-box input:focus {
+            border-color: var(--primary-green);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+        }
+
         .search-icon {
             position: absolute;
             left: 12px;
             top: 50%;
             transform: translateY(-50%);
             color: #999;
+            font-size: 1.1rem;
         }
 
+        /* Dropdown Filter: Mengambil proporsi lebih kecil, LEBAR DIBATASI */
         select {
+            flex: 1; /* Mengambil sisa proporsi (lebih kecil) */
+            min-width: 150px;
             padding: 12px;
             border: 1px solid #ddd;
             border-radius: 8px;
             font-size: 0.95rem;
             background: white;
             cursor: pointer;
+            box-sizing: border-box;
+            
+            /* --- FIX UTAMA UNTUK MENGHINDARI KOTAK MELEBAR --- */
+            max-width: 280px; /* Batasi lebar maksimal kotak dropdown */
+            text-overflow: ellipsis; /* Tambahkan titik tiga jika teks sangat panjang */
+            white-space: nowrap; /* Paksa satu baris */
+            /* ----------------------------------------------------- */
         }
 
         /* --- GRID PRODUK --- */
@@ -168,7 +190,7 @@
             font-size: 1.2rem;
             font-weight: 800;
             color: var(--primary-green);
-            margin-top: auto; /* Push to bottom */
+            margin-top: auto; /* Push ke bawah */
         }
 
         .card-actions {
@@ -184,6 +206,7 @@
             color: white;
             border: none;
             border-radius: 8px;
+            font-size: 0.9rem;
             font-weight: bold;
             cursor: pointer;
             transition: background 0.2s;
@@ -196,6 +219,9 @@
             color: var(--text-grey);
             text-decoration: none;
             font-weight: bold;
+            text-align: center;
+            width: 100%;
+            display: block; /* Block agar tombol mudah diklik di HP */
         }
         .back-link:hover { color: var(--primary-green); }
 
@@ -206,6 +232,9 @@
             color: #999;
             font-size: 1.1rem;
             grid-column: 1 / -1;
+            background: #fff;
+            border-radius: 12px;
+            border: 1px dashed #ddd;
         }
         .empty-msg {
             text-align: center;
@@ -224,10 +253,15 @@
             font-weight: bold;
         }
 
-        /* Responsive */
+        /* --- RESPONSIVE --- */
         @media (max-width: 600px) {
-            .filter-bar { flex-direction: column; align-items: stretch; }
+            .filter-bar { 
+                flex-direction: column; 
+                align-items: stretch; /* Stretch agar full width di HP */
+                gap: 10px;
+            }
             .search-box { width: 100%; }
+            select { width: 100%; max-width: 100%; }
         }
     </style>
 </head>
@@ -250,7 +284,7 @@
         <div class="filter-bar">
             <div class="search-box">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="Cari komoditas (Padi, Jagung...)">
+                <input type="text" id="searchInput" placeholder="Cari komoditas atau lokasi...">
             </div>
             
             <select id="filterLokasi">
@@ -272,9 +306,7 @@
             <div class="loading-msg">Memuat produk dari petani...</div>
         </div>
 
-        <div style="text-align: center;">
-            <a href="index.html" class="back-link">← Kembali ke Beranda</a>
-        </div>
+        <a href="index.html" class="back-link">← Kembali ke Beranda</a>
     </div>
 
     <script>
@@ -302,7 +334,7 @@
             // Ambil daftar lokasi unik dari tabel produk
             const { data, error } = await supabase
                 .from('agrichain_product')
-                .select('location');
+                .select('location')
                 .order('location', { ascending: true });
 
             if (data) {
@@ -387,6 +419,7 @@
                             <span>👤 ${item.seller_name}</span>
                         </div>
                         <div class="card-price">Rp ${priceStr} / ${item.unit}</div>
+                        ${sellerBadge}
                         <div class="card-actions">
                             <button class="btn-buy" onclick="contactSeller('${item.seller_name}', '${item.id}')">Beli / Tanya</button>
                         </div>
@@ -405,8 +438,13 @@
 
             // Filter array allProducts
             const filtered = allProducts.filter(item => {
+                // Cek Nama Produk atau Lokasi saat mencari
                 const matchSearch = item.name.toLowerCase().includes(searchVal) || item.location.toLowerCase().includes(searchVal);
+                
+                // Cek Lokasi Dropdown
                 const matchLoc = locVal === '' || item.location === locVal;
+                
+                // Cek Jenis Dropdown (Case insensitive)
                 const matchType = typeVal === '' || item.type.toLowerCase() === typeVal;
 
                 return matchSearch && matchLoc && matchType;
@@ -423,7 +461,7 @@
         // --- 9. FUNGSI BELI ---
         window.contactSeller = function(sellerName, productId) {
             alert(`Menghubungi ${sellerName} untuk produk ID: ${productId}...`);
-            // Nanti di sini bisa logika redirect ke Chat atau Notif
+            // Nanti di sini bisa logika redirect ke Chat atau Notifikasi
         };
 
     </script>
