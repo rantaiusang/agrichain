@@ -4,415 +4,278 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Input Panen - AgriChain</title>
-    
-    <!-- Library Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
     <style>
-        /* --- CSS VARIABLES & RESET --- */
         :root {
             --primary: #2E7D32;
             --primary-dark: #1B5E20;
-            --primary-light: #E8F5E9;
-            --accent: #FFA000;
-            --text-main: #333333;
-            --text-sub: #666666;
-            --bg-body: #F4F6F8;
+            --bg: #F4F6F8;
             --white: #ffffff;
-            --border-radius: 12px;
-            --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
-            --transition: all 0.2s ease-in-out;
+            --text: #333;
+            --blur: blur(4px);
         }
-
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             margin: 0;
-            padding: 0;
-            padding-bottom: 70px; /* Space for navbar */
+            padding: 20px 10px;
+            padding-bottom: 80px; /* Space for navbar */
         }
 
-        /* --- NAVBAR --- */
-        .navbar {
-            background: var(--white);
-            padding: 15px 20px;
-            box-shadow: var(--shadow-sm);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .nav-brand {
-            font-size: 1.3rem;
-            font-weight: 800;
-            color: var(--primary);
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-profile {
-            padding: 8px 16px;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-            border-radius: 20px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: var(--transition);
-        }
-        .btn-profile:hover { background: var(--primary-light); color: var(--primary-dark); }
-
-        /* --- MAIN CONTAINER --- */
         .container {
-            max-width: 600px;
+            max-width: 500px;
             margin: 20px auto;
-            padding: 20px;
         }
 
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .page-header h2 {
-            margin: 0;
-            color: var(--primary);
-            font-size: 1.5rem;
-        }
-
-        .back-link {
-            color: var(--text-sub);
-            text-decoration: none;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.9rem;
-            transition: color 0.2s;
-        }
-        .back-link:hover { color: var(--primary); }
-
-        /* --- FORM CARD --- */
         .card {
             background: var(--white);
-            padding: 30px;
             border-radius: 16px;
-            box-shadow: var(--shadow-md);
+            padding: 30px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
             border-top: 6px solid var(--primary);
+            transition: filter 0.3s ease;
         }
 
-        .form-group { margin-bottom: 25px; }
+        /* --- EFEK BLUR (KEAMANAN) --- */
+        .card.blurred {
+            /* Jika belum login, konten akan kabur */
+        }
+        .card.blurred .content-box,
+        .card.blurred input,
+        .card.blurred select,
+        .card.blurred .estimation-box {
+            filter: blur(8px);
+            user-select: none;
+            opacity: 0.7;
+        }
         
-        label {
-            display: block;
-            font-size: 0.9rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--text-main);
-            letter-spacing: 0.5px;
+        .lock-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(1px);
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            transition: opacity 0.3s;
         }
+        .lock-overlay.hidden { display: none; }
 
-        .input-wrapper { position: relative; }
+        .lock-icon { font-size: 3rem; color: var(--text); margin-bottom: 15px; opacity: 0.3; }
+        .lock-msg { font-weight: bold; color: var(--text); margin-bottom: 10px; }
+        
+        .btn-login-cta {
+            padding: 12px 30px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3);
+            transition: transform 0.2s;
+            z-index: 20;
+            position: relative;
+        }
+        .btn-login-cta:hover { transform: scale(1.05); box-shadow: 0 6px 15px rgba(46, 125, 50, 0.4); }
 
+        /* --- FORM ELEMENTS --- */
+        h2 { margin-bottom: 25px; color: var(--primary-dark); position: relative; z-index: 11; }
+        .back-link { display: inline-block; color: #999; text-decoration: none; margin-bottom: 20px; font-weight: 600; position: relative; z-index: 11; }
+        .back-link:hover { color: var(--primary); }
+
+        .form-group { text-align: left; margin-bottom: 25px; position: relative; z-index: 11; }
+        label { display: block; font-weight: 700; margin-bottom: 8px; font-size: 0.9rem; }
+        
         select, input {
             width: 100%;
-            padding: 14px 16px;
-            border: 2px solid #E5E7EB;
+            padding: 14px;
+            border: 2px solid #E0E0E0;
             border-radius: 10px;
             font-size: 1rem;
-            color: var(--text-main);
             background: #FAFAFA;
-            transition: var(--transition);
-            appearance: none;
+            color: #333;
             outline: none;
+            transition: all 0.2s;
         }
-
-        select:focus, input:focus {
-            border-color: var(--primary);
-            background: var(--white);
-        }
-
-        /* Custom Select Arrow */
-        .input-wrapper::after {
-            content: "▼";
-            font-size: 0.8rem;
-            color: #999;
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            pointer-events: none;
-        }
-        
-        .hint-text {
-            font-size: 0.8rem;
-            color: var(--text-sub);
-            margin-top: 6px;
-            display: block;
-        }
+        select:focus, input:focus { border-color: var(--primary); background: white; }
 
         /* --- ESTIMATION BOX --- */
         .estimation-box {
-            background: linear-gradient(135deg, #FFF3E0 0%, #FFF9C4 100%);
-            border: 1px solid #FFECB3;
-            border-radius: 10px;
-            padding: 20px;
-            margin-bottom: 25px;
-            text-align: center;
-        }
-
-        .est-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #B7791F;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .est-total {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #B45309;
-            margin: 10px 0;
-        }
-
-        .est-detail {
-            font-size: 0.9rem;
-            color: #B7791F;
-            background: rgba(255,255,255,0.6);
-            padding: 4px 12px;
-            border-radius: 20px;
-            display: inline-block;
-        }
-
-        /* --- CHECKBOX --- */
-        .checkbox-group {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin: 20px 0;
-            padding: 12px;
-            background: var(--primary-light);
-            border-radius: 8px;
-            border: 1px solid #C8E6C9;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        .checkbox-group:hover { background: #C8E6C9; }
-
-        .checkbox-group input {
-            width: 20px; height: 20px;
-            accent-color: var(--primary);
-            cursor: pointer;
-            margin-top: 2px;
-        }
-
-        .checkbox-label {
-            font-size: 0.85rem;
-            line-height: 1.4;
-            color: var(--primary-dark);
-        }
-
-        /* --- BUTTONS --- */
-        .action-row {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 15px;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 16px;
+            background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+            border: 1px dashed var(--primary);
             border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-secondary {
-            background: #E5E7EB;
-            color: var(--text-main);
-        }
-        .btn-secondary:hover { background: #D1D5DB; }
-
-        .btn-primary {
-            background: #E5E7EB; /* Grey by default */
-            color: #999;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        .btn-primary.ready {
-            background: var(--primary);
-            color: var(--white);
-            box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3);
-            cursor: pointer;
-        }
-        .btn-primary.ready:hover { background: var(--primary-dark); transform: translateY(-2px); }
-
-        /* Loading Spinner */
-        .spinner {
-            width: 20px; height: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* --- TOAST --- */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: #fff;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-size: 0.9rem;
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: 999;
-            pointer-events: none;
-        }
-        .toast.show { opacity: 1; }
-        .toast.success { background: var(--primary); }
-        .toast.error { background: var(--danger); }
-
-        /* --- NAV BOTTOM --- */
-        .nav-bottom {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            background: var(--white);
-            border-top: 1px solid #ddd;
-            z-index: 99;
-        }
-        .b-item {
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+            position: relative; /* relative untuk icon mata */
             display: flex;
             flex-direction: column;
             align-items: center;
-            text-decoration: none;
-            color: var(--text-sub);
-            font-size: 0.75rem;
         }
-        .b-item svg { width: 24px; height: 24px; margin-bottom: 4px; }
-        .b-item.active { color: var(--primary); }
 
-        /* --- RESPONSIVE --- */
-        @media (max-width: 480px) {
-            .action-row { grid-template-columns: 1fr; }
-            .est-total { font-size: 1.6rem; }
+        .eye-icon {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #999;
+            z-index: 50; /* Di atas blur */
+            background: rgba(255,255,255,0.5);
+            border-radius: 50%;
+            width: 30px; height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+        .eye-icon:hover { background: #ddd; color: #333; }
+
+        .est-value {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin: 10px 0;
+            /* Teknik Blur Parsial pada Angka */
+            transition: filter 0.3s ease;
+        }
+        .est-value.blurred-text {
+            filter: blur(10px);
+            color: transparent;
+            text-shadow: 0 0 0px #333;
+        }
+
+        .est-label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); font-weight: 700; }
+        .est-detail { font-size: 0.85rem; color: #666; background: rgba(255,255,255,0.5); padding: 4px 12px; border-radius: 15px; display: inline-block; }
+
+        /* --- BUTTONS --- */
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: #E0E0E0;
+            color: #999;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            cursor: not-allowed;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-submit.ready {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+            cursor: pointer;
+        }
+        .btn-submit.ready:hover { background: var(--primary-dark); transform: translateY(-2px); }
+
+        /* --- SPINNER --- */
+        .spinner {
+            width: 20px; height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- NAVBAR BOTTOM --- */
+        .nav-bottom {
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            background: white;
+            border-top: 1px solid #ddd;
+            z-index: 99;
+        }
+        .b-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #999; font-size: 0.8rem; }
+        .b-item.active { color: var(--primary); }
+        .b-item svg { width: 24px; height: 24px; margin-bottom: 4px; }
     </style>
 </head>
 <body>
 
-    <!-- Navbar -->
-    <nav class="navbar">
-        <a href="index.html" class="nav-brand">🌾 AgriChain</a>
-        <a href="profile.html" class="btn-profile">👤 Profil Saya</a>
-    </nav>
-
-    <!-- Container -->
     <div class="container">
-        <div class="page-header">
-            <h2>Input Data Panen</h2>
-            <a href="dashboard-petani.html" class="back-link">← Kembali ke Dashboard</a>
-        </div>
+        <a href="dashboard-petani.html" class="back-link">← Kembali ke Dashboard</a>
+        
+        <div class="card blurred" id="mainCard">
+            <div class="lock-overlay" id="lockOverlay">
+                <div class="lock-icon">🔒</div>
+                <div class="lock-msg">Fitur Khusus Petani</div>
+                <div style="color:#666; margin-bottom:20px; font-size:0.9rem;">Silakan login untuk menginput hasil panen.</div>
+                <button class="btn-login-cta" onclick="window.location.href='../login.html'">🔓 Login Sekarang</button>
+            </div>
 
-        <div class="card">
-            <form id="harvestForm">
-                <!-- 1. Jenis Tanaman -->
-                <div class="form-group">
-                    <label>Jenis Komoditas</label>
-                    <div class="input-wrapper">
-                        <select id="cropType" required onchange="HarvestLogic.updateEstimation()">
-                            <option value="" disabled selected>Pilih jenis tanaman...</option>
-                            <option value="loading" disabled>Memuat data harga...</option>
+            <div class="content-box">
+                <h2>📦 Input Hasil Panen</h2>
+
+                <form id="harvestForm">
+                    <!-- Jenis Tanaman -->
+                    <div class="form-group">
+                        <label>Jenis Panen</label>
+                        <select id="cropType" onchange="HarvestLogic.calc()">
+                            <option value="" disabled selected>Pilih jenis panen...</option>
+                            <option value="loading" disabled>Memuat data...</option>
                         </select>
                     </div>
-                    <span class="hint-text">Harga referensi pasar otomatis diambil.</span>
-                </div>
 
-                <!-- 2. Jumlah -->
-                <div class="form-group">
-                    <label>Jumlah Total</label>
-                    <div class="input-wrapper">
-                        <input type="number" id="quantity" placeholder="Contoh: 500" min="1" step="1" oninput="HarvestLogic.updateEstimation()">
+                    <!-- Jumlah -->
+                    <div class="form-group">
+                        <label>Berat / Jumlah</label>
+                        <input type="number" id="quantity" placeholder="Contoh: 500" min="1" oninput="HarvestLogic.calc()">
                     </div>
-                    <span class="hint-text" id="unitHint">Masukkan jumlah sesuai satuan (Kg/Ton).</span>
-                </div>
 
-                <!-- 3. Kualitas -->
-                <div class="form-group">
-                    <label>Grade Kualitas</label>
-                    <div class="input-wrapper">
-                        <select id="quality" onchange="HarvestLogic.updateEstimation()">
-                            <option value="standard" data-multiplier="1">Standar (Kualitas Biasa)</option>
-                            <option value="premium" data-multiplier="1.3">Premium (Ukuran Besar, Segar)</option>
-                            <option value="standard_minus" data-multiplier="0.8">Kurang (Kecil, Patah, Busuk)</option>
+                    <!-- Estimation -->
+                    <div class="estimation-box" id="estBox">
+                        <div class="eye-icon" id="toggleEye" title="Tampil/Sembunyi Nominal" onclick="toggleBlurEffect()">👁</div>
+                        <div class="est-label">ESTIMASI HARGA</div>
+                        <div class="est-value blurred-text" id="estTotal">Rp 0</div>
+                        <div class="est-detail" id="estDetail">Rp 0 / Kg</div>
+                    </div>
+
+                    <!-- Kualitas -->
+                    <div class="form-group">
+                        <label>Grade Kualitas</label>
+                        <select id="quality" onchange="HarvestLogic.calc()">
+                            <option value="standar" data-multiplier="1">Standar</option>
+                            <option value="premium" data-multiplier="1.3">Premium</option>
+                            <option value="minus" data-multiplier="0.8">Kurang (Patah/Kecil)</option>
                         </select>
                     </div>
-                    <span class="hint-text">Grade akan mempengaruhi estimasi harga jual.</span>
-                </div>
 
-                <!-- Estimation Box -->
-                <div class="estimation-box" id="estBox">
-                    <div class="est-label">Estimasi Nilai Jual</div>
-                    <div class="est-total" id="totalDisplay">Rp 0</div>
-                    <div class="est-detail" id="basePriceDisplay">Rp 0 / unit</div>
-                </div>
-
-                <!-- Agreement -->
-                <label class="checkbox-group">
-                    <input type="checkbox" id="confirmCheck" onchange="HarvestLogic.toggleSubmit()">
-                    <div class="checkbox-label">
-                        Saya menyatakan bahwa estimasi harga di atas adalah benar sesuai kualitas barang dan menyetujui panen ini dijual di pasar.
-                    </div>
-                </label>
-
-                <!-- Action Buttons -->
-                <div class="action-row">
-                    <button type="button" class="btn btn-secondary" onclick="window.location.href='index.html'">Batal</button>
-                    <button type="button" id="btnSubmit" class="btn btn-primary" onclick="HarvestLogic.submit()">
-                        <span class="spinner" id="spinner" style="display:none;"></span>
-                        <span id="btnText">Input Data Panen</span>
+                    <!-- Submit -->
+                    <button type="button" id="btnSubmit" class="btn-submit" onclick="HarvestLogic.submit()">
+                        <span class="spinner" id="spinner"></span>
+                        <span id="btnText">Simpan Data</span>
                     </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 
     <!-- Nav Bottom -->
     <div class="nav-bottom">
-        <a href="index.html" class="b-item">
+        <a href="../index.html" class="b-item">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2z"></path></svg>
             Beranda
         </a>
-        <a href="belanja.html" class="b-item">
+        <a href="../belanja.html" class="b-item">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><path d="M1 1h4l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
             Belanja
         </a>
@@ -420,252 +283,201 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
             Panen
         </a>
-        <a href="dashboard-petani.html" class="b-item">
+        <a href="../profile.html" class="b-item">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
             Profil
         </a>
     </div>
 
-    <!-- TOAST -->
-    <div id="toast" class="toast">Pesan notifikasi</div>
-
-    <!-- SCRIPT UTAMA (FIXED LOGIC) -->
+    <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. MODULE & STATE ---
-        const AppState = {
-            prices: {}, // Menyimpan harga dari market_prices
-            currentUser: null,
-            isSubmitting: false
+        const State = {
+            isLoggedIn: false,
+            prices: {},
+            user: null
         };
 
-        const Utils = {
-            formatRupiah: (number) => {
-                return new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR',
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0
-                }).format(number);
-            },
-            showToast: (msg, type = 'normal') => {
-                const t = document.getElementById('toast');
-                t.textContent = msg;
-                t.className = 'toast show';
-                if (type === 'error') t.classList.add('error');
-                else if (type === 'success') t.classList.add('success');
-                setTimeout(() => { t.classList.remove('show'); }, 3500);
-            }
-        };
-
-        // --- 3. INIT ---
         document.addEventListener("DOMContentLoaded", async () => {
-            // Cek Login (Role PETANI WAJIB)
-            const { data: { session }, error } = await supabase.auth.getSession();
-            if (error || !session) {
-                Utils.showToast("Akses Ditolak: Silakan login sebagai Petani.", "error");
-                setTimeout(() => { window.location.href = 'login.html'; }, 2000);
-                return;
+            // 1. CEK LOGIN (KEAMANAN PERTAMA)
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (session) {
+                const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
+                if (profile.role === 'PETANI') {
+                    State.isLoggedIn = true;
+                    State.user = session.user.id;
+                    unlockUI();
+                }
             }
 
-            // Cek Role Petani
-            const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
-            if (!profile || profile.role !== 'PETANI') {
-                alert("Akses Ditolak: Halaman ini khusus Petani.");
-                window.location.href = 'index.html';
-                return;
-            }
-
-            AppState.currentUser = session.user.id;
+            // Jika tidak login, biarkan UI terkunci (default CSS .blurred)
+            
+            // 2. LOAD DATA (TETAP JALAN MESKIPUN TIDAK LOGIN)
+            // Harga adalah data publik, tapi dropdownnya dikunci jika belum login
             await MarketModule.init();
         });
 
-        // --- 4. MARKET MODULE (FETCH HARGA) ---
+        // --- MODULE MARKET ---
         const MarketModule = {
             init: async () => {
-                const cropSelect = document.getElementById('cropType');
-                cropSelect.innerHTML = '<option value="" disabled selected>Pilih jenis tanaman...</option>';
+                const select = document.getElementById('cropType');
+                select.innerHTML = '<option value="" disabled selected>Pilih jenis panen...</option>';
+                select.disabled = !State.isLoggedIn; // Kunci dropdown jika belum login
 
                 try {
-                    // Mengambil harga referensi dari tabel market_prices
-                    const { data, error } = await supabase
-                        .from('market_prices')
-                        .select('commodity_name, current_price')
-                        .order('commodity_name', { ascending: true });
-
-                    if (error) throw error;
-
-                    if (data.length === 0) {
-                        cropSelect.innerHTML = '<option value="" disabled selected>Belum ada data harga di sistem.</option>';
-                        return;
+                    const { data, error } = await supabase.from('market_prices').select('nama_komoditas, current_price').order('nama_komoditas', { ascending: true });
+                    
+                    if (data && data.length > 0) {
+                        data.forEach(item => {
+                            const key = item.nama_komoditas.toLowerCase();
+                            State.prices[key] = {
+                                name: item.nama_komoditas,
+                                price: item.current_price,
+                                unit: 'Kg'
+                            };
+                            const opt = document.createElement('option');
+                            opt.value = key;
+                            opt.textContent = `${item.nama_komoditas} (Rp ${item.current_price.toLocaleString()}/Kg)`;
+                            select.appendChild(opt);
+                        });
+                    } else {
+                        // Fallback jika database kosong
+                        const fallbacks = [
+                            { nama_komoditas: 'Padi Giling', current_price: 6200 },
+                            { nama_komoditas: 'Jagung Pipil', current_price: 3500 },
+                            { nama_komoditas: 'Kelapa', current_price: 2500 }
+                        ];
+                        fallbacks.forEach(item => {
+                            const key = item.nama_komoditas.toLowerCase();
+                            State.prices[key] = { name: item.nama_komoditas, price: item.current_price, unit: 'Kg' };
+                            const opt = document.createElement('option');
+                            opt.value = key;
+                            opt.textContent = `${item.nama_komoditas} (Rp ${item.current_price.toLocaleString()}/Kg)`;
+                            select.appendChild(opt);
+                        });
                     }
-
-                    // Populate Select & State
-                    data.forEach(item => {
-                        const key = item.commodity_name.toLowerCase().replace(/[^a-z0-9]/g, '');
-                        
-                        // Simpan harga di State
-                        AppState.prices[key] = {
-                            name: item.commodity_name,
-                            price: item.current_price,
-                            unit: 'Kg' // Default (bisa diubah jika ada kolom unit di market_prices)
-                        };
-
-                        const opt = document.createElement('option');
-                        opt.value = key;
-                        opt.textContent = `${item.commodity_name} (${Utils.formatRupiah(item.current_price)}/Kg)`;
-                        cropSelect.appendChild(opt);
-                    });
-
-                } catch (err) {
-                    console.error("Gagal load harga:", err);
-                    Utils.showToast("Gagal memuat data pasar. Menggunakan mode demo.", "error");
+                } catch (e) {
+                    console.error(e);
+                    select.innerHTML = '<option disabled selected>Gagal memuat data</option>';
                 }
             }
         };
 
-        // --- 5. FORM LOGIC (HANDLER) ---
+        // --- MODULE HARVEST (LOGIC UTAMA) ---
         const HarvestLogic = {
-            updateEstimation: () => {
-                const cropSelect = document.getElementById('cropType');
-                const quantityInput = document.getElementById('quantity');
-                const qualitySelect = document.getElementById('quality');
-                const estBox = document.getElementById('estBox');
-                const totalDisplay = document.getElementById('totalDisplay');
-                const baseDisplay = document.getElementById('basePriceDisplay');
-                const unitHint = document.getElementById('unitHint');
+            calc: () => {
+                if (!State.isLoggedIn) return;
 
-                const selectedOpt = cropSelect.options[cropSelect.selectedIndex];
-                const qualityOpt = qualitySelect.options[qualitySelect.selectedIndex];
+                const cropKey = document.getElementById('cropType').value;
+                const qty = parseFloat(document.getElementById('quantity').value) || 0;
+                const qual = document.getElementById('quality').value;
+                const estVal = document.getElementById('estTotal');
+                const estDetail = document.getElementById('estDetail');
 
-                const basePrice = parseInt(selectedOpt?.dataset.price) || 0;
-                const unitName = 'Kg'; // Bisa dinamis jika database punya kolom unit
+                const cropData = State.prices[cropKey];
+                const mult = qual === 'premium' ? 1.3 : (qual === 'minus' ? 0.8 : 1);
+                const finalPrice = Math.round(cropData.price * mult);
+                const total = qty * finalPrice;
 
-                if (cropSelect.value !== "") {
-                    unitHint.textContent = `Masukkan jumlah dalam satuan ${unitName}.`;
-                } else {
-                    unitHint.textContent = "Pilih jenis tanaman terlebih dahulu.";
-                }
-
-                const quantity = parseFloat(quantityInput.value) || 0;
-                const multiplier = parseFloat(qualityOpt.dataset.multiplier) || 1;
-
-                if (quantity > 0 && basePrice > 0) {
-                    estBox.classList.add('active'); // Tambah style visual
-                    const finalPricePerUnit = Math.round(basePrice * multiplier);
-                    const total = quantity * finalPricePerUnit;
-
-                    totalDisplay.textContent = Utils.formatRupiah(total);
-                    baseDisplay.textContent = `Dasar: ${Utils.formatRupiah(finalPricePerUnit)} / ${unitName}`;
-                } else {
-                    estBox.classList.remove('active');
-                    totalDisplay.textContent = 'Rp 0';
-                    baseDisplay.textContent = 'Rp 0 / unit';
-                }
-
-                // Reset checkbox
-                document.getElementById('confirmCheck').checked = false;
-                HarvestLogic.toggleSubmit();
-            },
-
-            toggleSubmit: () => {
-                const cropVal = document.getElementById('cropType').value;
-                const qtyVal = document.getElementById('quantity').value;
-                const check = document.getElementById('confirmCheck');
-                const btn = document.getElementById('btnSubmit');
-
-                const isValid = cropVal !== "" && qtyVal > 0 && check.checked;
-
-                if (isValid) {
-                    btn.classList.add('ready');
-                    btn.disabled = false;
-                } else {
-                    btn.classList.remove('ready');
-                    if (!AppState.isSubmitting) btn.disabled = true;
-                }
+                estVal.textContent = "Rp " + total.toLocaleString('id-ID');
+                estDetail.textContent = "Dasar: Rp " + finalPrice.toLocaleString() + " / Kg";
             },
 
             submit: async () => {
-                if (!AppState.currentUser) return;
+                if (!State.isLoggedIn) { alert("Silakan login terlebih dahulu!"); return; }
 
-                const cropKey = document.getElementById('cropType').value;
-                const qty = document.getElementById('quantity').value;
-                const quality = document.getElementById('quality').value;
-
-                // Loading State
-                HarvestLogic.setLoading(true);
-
-                try {
-                    // Ambil data harga dari State
-                    const priceData = AppState.prices[cropKey];
-
-                    // PERBAIKAN LOGIC: Menggunakan kolom 'nama_komoditas' & 'kualitas' sesuai DB
-                    // Dan kolom 'price_per_unit' yang baru (misal: panen.harga_per_unit)
-                    // Jika table panen belum ada kolom baru ini, kita gunakan logika fallback:
-                    // 1. Coba simpan harga per unit baru (priceData.price * multiplier)
-                    // 2. Jika kolom di DB belum ada (error), fallback ke 'estimated_total' saja.
-
-                    const finalPricePerUnit = Math.round(priceData.price * (quality === 'premium' ? 1.3 : (quality === 'standard_minus' ? 0.8 : 1)));
-                    const estimatedTotal = parseFloat(qty) * finalPricePerUnit;
-
-                    const payload = {
-                        user_id: AppState.currentUser.id,
-                        nama_komoditas: priceData.name, // FIX: Kolom 'commodity_name' diubah jadi 'nama_komoditas'
-                        price_per_unit: finalPricePerUnit, // FIX: Harga satuan yang sudah di-adjust
-                        unit: priceData.unit || 'Kg',
-                        quantity: parseFloat(qty),
-                        kualitas: quality,
-                        estimated_total: estimatedTotal,
-                        status: 'pending' // Default status
-                    };
-
-                    // Insert ke tabel 'panen'
-                    const { error } = await supabase
-                        .from('panen')
-                        .insert([payload]);
-
-                    if (error) throw error;
-
-                    Utils.showToast("✅ Data panen berhasil disimpan!", "success");
-                    
-                    // Reset Form
-                    document.getElementById('harvestForm').reset();
-                    document.getElementById('estBox').classList.remove('active');
-                    document.getElementById('totalDisplay').textContent = 'Rp 0';
-                    
-                    // Redirect
-                    setTimeout(() => { window.location.href = 'dashboard-petani.html'; }, 1500);
-
-                } catch (err) {
-                    console.error("Submit Error:", err);
-                    Utils.showToast("Gagal menyimpan data: " + err.message, "error");
-                } finally {
-                    HarvestLogic.setLoading(false);
-                }
-            },
-
-            setLoading: (isLoading) => {
                 const btn = document.getElementById('btnSubmit');
                 const spinner = document.getElementById('spinner');
-                const text = document.getElementById('btnText');
-                AppState.isSubmitting = isLoading;
-                btn.disabled = isLoading;
+                const txt = document.getElementById('btnText');
 
-                if (isLoading) {
-                    spinner.style.display = 'inline-block';
-                    text.textContent = 'Menyimpan...';
-                    btn.classList.remove('ready'); // Hilangkan warna hijau saat loading
-                } else {
+                // Validasi Form
+                const cropKey = document.getElementById('cropType').value;
+                const qty = document.getElementById('quantity').value;
+
+                if (!cropKey || !qty) { alert("Mohon lengkapi data!"); return; }
+
+                // Loading
+                btn.disabled = true;
+                spinner.style.display = 'inline-block';
+                txt.textContent = 'Menyimpan...';
+
+                try {
+                    const cropData = State.prices[cropKey];
+                    const qual = document.getElementById('quality').value;
+                    const mult = qual === 'premium' ? 1.3 : (qual === 'minus' ? 0.8 : 1);
+                    const finalPrice = Math.round(cropData.price * mult);
+
+                    // Mapping ke kolom database yang benar
+                    const payload = {
+                        user_id: State.user.id,
+                        nama_komoditas: cropData.name,
+                        quantity: parseFloat(qty),
+                        unit: 'Kg',
+                        kualitas: qual,
+                        harga_per_unit: finalPrice,
+                        estimated_total: parseFloat(qty) * finalPrice,
+                        status: 'pending'
+                    };
+
+                    const { error } = await supabase.from('panen').insert([payload]);
+                    if (error) throw error;
+
+                    alert("✅ Data panen berhasil disimpan!");
+                    document.getElementById('harvestForm').reset();
+                    document.getElementById('estTotal').textContent = "Rp 0";
+                    document.getElementById('estDetail').textContent = "Rp 0 / Kg";
+                    location.href = 'dashboard-petani.html';
+
+                } catch (err) {
+                    console.error(err);
+                    alert("Gagal menyimpan data.");
+                } finally {
+                    btn.disabled = false;
                     spinner.style.display = 'none';
-                    text.textContent = 'Input Data Panen';
-                    HarvestLogic.toggleSubmit(); // Cek ulang tombol ready
+                    txt.textContent = 'Simpan Data';
                 }
             }
         };
+
+        // --- HELPER FUNCTIONS ---
+        function unlockUI() {
+            const card = document.getElementById('mainCard');
+            const overlay = document.getElementById('lockOverlay');
+            const select = document.getElementById('cropType');
+
+            // Hapus blur
+            card.classList.remove('blurred');
+            overlay.classList.add('hidden');
+            
+            // Buka dropdown
+            select.disabled = false;
+            
+            // Fokus otomatis
+            if(select.value === "") select.focus();
+        }
+
+        // --- FUNGSI BLUR (MATA) ---
+        let isPriceVisible = false;
+        function toggleBlurEffect() {
+            const estVal = document.getElementById('estTotal');
+            const eye = document.getElementById('toggleEye');
+            
+            isPriceVisible = !isPriceVisible;
+
+            if (isPriceVisible) {
+                estVal.classList.remove('blurred-text');
+                eye.textContent = "🙈"; // Mata tertutup
+                eye.style.color = "#333";
+            } else {
+                estVal.classList.add('blurred-text');
+                eye.textContent = "👁"; // Mata terbuka
+                eye.style.color = "#999";
+            }
+        }
 
     </script>
 </body>
