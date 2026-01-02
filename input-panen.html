@@ -11,11 +11,11 @@
     <style>
         /* --- 1. CSS VARIABLES & RESET --- */
         :root {
-            --primary: #2E7D32;       /* Hijau Utama */
-            --primary-dark: #1B5E20;  /* Hijau Tua */
-            --primary-light: #E8F5E9; /* Hijau Muda */
-            --accent: #FFA000;        /* Kuning/Oranye */
-            --danger: #D32F2F;        /* Merah Error */
+            --primary: #2E7D32;
+            --primary-dark: #1B5E20;
+            --primary-light: #E8F5E9;
+            --accent: #FFA000;
+            --danger: #D32F2F;
             --text-main: #1F2937;
             --text-sub: #6B7280;
             --bg-body: #F3F4F6;
@@ -34,7 +34,7 @@
             color: var(--text-main);
             margin: 0;
             padding: 0;
-            padding-bottom: 80px; /* Ruang untuk toast di bawah */
+            padding-bottom: 80px;
         }
 
         /* --- 2. NAVBAR --- */
@@ -130,7 +130,7 @@
             color: var(--text-main);
             background: #FAFAFA;
             transition: var(--transition);
-            appearance: none; /* Hilangkan default style browser */
+            appearance: none;
         }
 
         select {
@@ -154,13 +154,9 @@
             display: block;
         }
 
-        /* Quality Badges inside Select (Optional visual enhancement) */
-        option[value="premium"] { font-weight: bold; color: var(--accent); }
-        option[value="standard_minus"] { color: var(--text-sub); }
-
         /* --- 5. ESTIMATION BOX --- */
         .estimation-card {
-            background: linear-gradient(to right, #FFFBEB, #FEF3C7); /* Kuning muda */
+            background: linear-gradient(to right, #FFFBEB, #FEF3C7);
             border: 1px solid #FCD34D;
             border-radius: var(--border-radius);
             padding: 20px;
@@ -254,7 +250,7 @@
         .btn-secondary:hover { background-color: #D1D5DB; }
 
         .btn-primary {
-            background-color: #9CA3AF; /* Disabled color initially */
+            background-color: #9CA3AF;
             color: white;
             cursor: not-allowed;
             opacity: 0.7;
@@ -325,7 +321,6 @@
     <!-- NAVBAR -->
     <nav class="navbar">
         <a href="index.html" class="nav-brand">
-            <!-- Icon Daun SVG -->
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
             AgriChain
         </a>
@@ -356,13 +351,14 @@
                     <span class="input-hint">Pilih komoditas yang paling mirip dengan hasil panen Anda.</span>
                 </div>
 
-                <!-- Input 2: Berat -->
+                <!-- Input 2: Jumlah / Berat (Label Dinamis) -->
                 <div class="form-group">
-                    <label for="quantity">Berat Total (Kg)</label>
+                    <!-- ID 'quantityLabel' akan diubah teksnya oleh JS -->
+                    <label for="quantity" id="quantityLabel">Jumlah Total (Satuan)</label>
                     <div class="input-wrapper">
-                        <input type="number" id="quantity" placeholder="Contoh: 100" min="1" step="0.1">
+                        <input type="number" id="quantity" placeholder="Masukkan jumlah..." min="1" step="1">
                     </div>
-                    <span class="input-hint">Masukkan berat dalam kilogram (Kg).</span>
+                    <span class="input-hint" id="quantityHint">Masukkan jumlah sesuai satuan barang.</span>
                 </div>
 
                 <!-- Input 3: Kualitas -->
@@ -381,7 +377,8 @@
                 <div class="estimation-card" id="estimationCard">
                     <div class="est-label">Estimasi Nilai Jual</div>
                     <div class="est-total" id="totalPriceDisplay">Rp 0</div>
-                    <div class="est-detail" id="basePriceDisplay">Rp 0 /kg</div>
+                    <!-- ID basePriceDisplay akan diupdate unitnya -->
+                    <div class="est-detail" id="basePriceDisplay">Rp 0 /unit</div>
                 </div>
 
                 <!-- Checkbox Agreement -->
@@ -420,12 +417,14 @@
         const AppState = {
             currentUser: null,
             prices: {},
-            isSubmitting: false
+            isSubmitting: false,
+            // Variabel untuk menyimpan satuan saat ini
+            currentUnit: 'unit' 
         };
 
         // --- MODULES ---
 
-        // 1. UTILS (Helper Functions)
+        // 1. UTILS
         const Utils = {
             formatRupiah: (number) => {
                 return new Intl.NumberFormat('id-ID', {
@@ -439,14 +438,12 @@
             showToast: (msg, type = 'normal') => {
                 const toast = document.getElementById('toast');
                 toast.textContent = msg;
-                toast.className = 'toast show'; // Reset class
+                toast.className = 'toast show';
                 
                 if (type === 'error') toast.classList.add('error');
                 else if (type === 'success') toast.classList.add('success');
 
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                }, 3500);
+                setTimeout(() => { toast.classList.remove('show'); }, 3500);
             },
 
             setLoading: (isLoading) => {
@@ -465,21 +462,19 @@
                     spinner.style.display = 'none';
                     text.textContent = 'Masukkan Penjualan';
                     btn.style.opacity = '1';
-                    HarvestModule.toggleSubmit(); // Re-check state
+                    HarvestModule.toggleSubmit();
                 }
             }
         };
 
-        // 2. MARKET DATA (Fetching Prices)
+        // 2. MARKET DATA
         const MarketModule = {
             init: async () => {
                 try {
-                    // Simulasi jika belum ada database, uncomment ini untuk dummy data:
-                    // MarketModule.loadDummyData(); return;
-
+                    // PENTING: Kita select kolom 'unit' juga
                     const { data, error } = await supabase
                         .from('market_prices')
-                        .select('commodity_name, current_price')
+                        .select('commodity_name, current_price, unit') 
                         .order('commodity_name', { ascending: true });
 
                     if (error) throw error;
@@ -493,39 +488,54 @@
                 } catch (err) {
                     console.error("Gagal load harga:", err);
                     Utils.showToast("Gagal memuat data harga pasar", "error");
-                    document.getElementById('cropType').innerHTML = 
-                        `<option disabled selected>Error memuat data</option>`;
+                    // Gunakan Dummy Data agar UI tidak rusak
+                    MarketModule.loadDummyData();
                 }
             },
 
             populateSelect: (data) => {
                 const select = document.getElementById('cropType');
-                select.innerHTML = '<option value="" disabled selected>Pilih tanaman...</option>';
+                select.innerHTML = '<option value="" disabled selected>Pilih jenis tanaman...</option>';
                 
                 data.forEach(item => {
+                    // Normalisasi key
                     const key = item.commodity_name.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    AppState.prices[key] = item.current_price;
+                    
+                    // Simpan data harga dan SATUAN di State
+                    AppState.prices[key] = {
+                        price: item.current_price,
+                        unit: item.unit || 'unit' // Fallback jika unit null di DB
+                    };
 
                     const opt = document.createElement('option');
                     opt.value = key;
-                    opt.dataset.price = item.current_price; // Simpan harga di DOM
-                    opt.textContent = `${item.commodity_name} (${Utils.formatRupiah(item.current_price)}/kg)`;
+                    // Simpan unit di dataset untuk akses cepat saat onChange
+                    opt.dataset.unit = item.unit || 'unit'; 
+                    opt.dataset.price = item.current_price;
+                    
+                    // Tampilkan di dropdown: "Padi (Rp 5.000 / Karung)"
+                    const unitText = (item.unit || 'unit').toUpperCase();
+                    opt.textContent = `${item.commodity_name} (${Utils.formatRupiah(item.current_price)}/${unitText})`;
+                    
                     select.appendChild(opt);
                 });
             },
 
-            // Fungsi Dummy untuk testing tanpa Supabase connection
             loadDummyData: () => {
+                // Data Dummy dengan satuan berbeda-beda
                 const data = [
-                    { commodity_name: 'Padi', current_price: 5000 },
-                    { commodity_name: 'Jagung', current_price: 4000 },
-                    { commodity_name: 'Cabai Merah', current_price: 45000 }
+                    { commodity_name: 'Padi Gabah', current_price: 5000, unit: 'Kg' },
+                    { commodity_name: 'Jagung Pipil', current_price: 4000, unit: 'Kg' },
+                    { commodity_name: 'Kelapa', current_price: 2500, unit: 'Pcs' }, // Contoh Pcs
+                    { commodity_name: 'Padi Beras', current_price: 12000, unit: 'Karung' } // Contoh Karung
                 ];
                 MarketModule.populateSelect(data);
+                document.getElementById('cropType').innerHTML = 
+                    `<option disabled selected>Mode Demo: Data Palsu</option>` + document.getElementById('cropType').innerHTML;
             }
         };
 
-        // 3. FORM HANDLER (Logic Input & Submit)
+        // 3. FORM HANDLER
         const HarvestModule = {
             updateEstimate: () => {
                 const cropSelect = document.getElementById('cropType');
@@ -535,26 +545,46 @@
                 const totalDisplay = document.getElementById('totalPriceDisplay');
                 const baseDisplay = document.getElementById('basePriceDisplay');
 
-                // Ambil values
+                // Ambil Option yang dipilih
                 const selectedOpt = cropSelect.options[cropSelect.selectedIndex];
                 const qualityOpt = qualitySelect.options[qualitySelect.selectedIndex];
                 
+                // Ambil harga & satuan dari State atau dataset
                 const basePrice = parseInt(selectedOpt?.dataset.price) || 0;
+                // Ambil satuan dari dataset option, jika tidak ada ambil dari state
+                const unitName = selectedOpt?.dataset.unit || AppState.prices[cropSelect.value]?.unit || 'unit';
+                
+                // Simpan satuan global untuk label hint
+                AppState.currentUnit = unitName;
+
+                // Update UI Label Satuan (Bagian Perbaikan Utama)
+                const labelEl = document.getElementById('quantityLabel');
+                const hintEl = document.getElementById('quantityHint');
+                
+                if (cropSelect.value !== "") {
+                    labelEl.textContent = `Jumlah Total (${unitName})`;
+                    hintEl.textContent = `Masukkan jumlah dalam satuan ${unitName}.`;
+                } else {
+                    labelEl.textContent = "Jumlah Total";
+                    hintEl.textContent = "Pilih jenis tanaman terlebih dahulu.";
+                }
+
                 const quantity = parseFloat(quantityInput.value) || 0;
                 const multiplier = parseFloat(qualityOpt.dataset.multiplier) || 1;
 
-                // Kalkulasi
+                // Kalkulasi Harga
                 if (quantity > 0 && basePrice > 0) {
                     estCard.classList.add('active');
-                    const finalPricePerKg = Math.round(basePrice * multiplier);
-                    const total = quantity * finalPricePerKg;
+                    const finalPricePerUnit = Math.round(basePrice * multiplier);
+                    const total = quantity * finalPricePerUnit;
 
                     totalDisplay.textContent = Utils.formatRupiah(total);
-                    baseDisplay.textContent = `Dasar: ${Utils.formatRupiah(finalPricePerKg)} /kg`;
+                    // Update label harga dasar dengan satuan yang tepat
+                    baseDisplay.textContent = `Dasar: ${Utils.formatRupiah(finalPricePerUnit)} / ${unitName}`;
                 } else {
                     estCard.classList.remove('active');
                     totalDisplay.textContent = 'Rp 0';
-                    baseDisplay.textContent = 'Rp 0 /kg';
+                    baseDisplay.textContent = `Rp 0 / ${AppState.currentUnit}`;
                 }
 
                 // Reset checkbox jika input berubah
@@ -568,7 +598,6 @@
                 const crop = document.getElementById('cropType').value;
                 const btn = document.getElementById('btnSubmit');
 
-                // Validasi UI: Button jadi hijau hanya jika form lengkap & disetujui
                 const isValid = checkbox.checked && quantity > 0 && crop !== "";
                 
                 if (isValid) {
@@ -576,21 +605,17 @@
                     btn.disabled = false;
                 } else {
                     btn.classList.remove('ready');
-                    // Disable button jika tidak valid, KECUALI sedang loading
                     if (!AppState.isSubmitting) btn.disabled = true;
                 }
             },
 
             submit: async () => {
-                // 1. VALIDASI KEAMANAN (Wajib Login)
                 if (!AppState.currentUser) {
                     Utils.showToast("Anda harus Login terlebih dahulu!", "error");
-                    // Redirect halus ke login
                     setTimeout(() => { window.location.href = 'login.html'; }, 1500);
                     return;
                 }
 
-                // 2. VALIDASI DATA
                 const crop = document.getElementById('cropType').value;
                 const qty = document.getElementById('quantity').value;
                 const quality = document.getElementById('quality').value;
@@ -601,17 +626,18 @@
                     return;
                 }
 
-                // 3. PROSES KIRIM
                 Utils.setLoading(true);
 
                 try {
+                    // Simpan Satuan bersama data penjualan agar catatan akurat
                     const payload = {
                         user_id: AppState.currentUser.id,
                         crop_type: crop,
                         quantity: parseFloat(qty),
+                        unit: AppState.currentUnit, // <--- MENYIMPAN SATUAN
                         quality: quality,
-                        estimated_price: 0, // Bisa dihitung di frontend jika perlu
-                        status: 'pending' // Status awal
+                        estimated_price: 0,
+                        status: 'pending'
                     };
 
                     const { error } = await supabase
@@ -620,13 +646,13 @@
 
                     if (error) throw error;
 
-                    // SUKSES
                     Utils.showToast("Data panen berhasil dijual!", "success");
                     document.getElementById('harvestForm').reset();
                     document.getElementById('estimationCard').classList.remove('active');
                     document.getElementById('totalPriceDisplay').textContent = 'Rp 0';
+                    // Reset label ke default
+                    document.getElementById('quantityLabel').textContent = "Jumlah Total";
                     
-                    // Redirect home setelah delay
                     setTimeout(() => { window.location.href = 'index.html'; }, 2000);
 
                 } catch (err) {
@@ -640,25 +666,20 @@
 
         // --- INITIALIZATION ---
         document.addEventListener("DOMContentLoaded", async () => {
-            // Cek Session
             const { data: { session } } = await supabase.auth.getSession();
             
             if (session) {
                 AppState.currentUser = session.user;
-                console.log("User ID:", session.user.id);
             } else {
                 AppState.currentUser = null;
-                console.warn("User belum login. Submit akan diblokir.");
             }
 
-            // Load Harga
             await MarketModule.init();
             
-            // Event Listeners Input Real-time
+            // Listener untuk update satuan saat ganti komoditas
             document.getElementById('quantity').addEventListener('input', HarvestModule.updateEstimate);
             document.getElementById('cropType').addEventListener('change', HarvestModule.updateEstimate);
             
-            // Init State Button
             HarvestModule.toggleSubmit();
         });
 
