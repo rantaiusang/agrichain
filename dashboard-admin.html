@@ -14,15 +14,15 @@
             --primary-light: #3949AB;
             --accent-gold: #FFD700;
             --bg-light: #F5F7FA;
-            --white: #ffffff;
             --text-dark: #333;
             --text-grey: #666;
-            --success: #2E7D32;
-            --danger: #C62828;
+            --white: #ffffff;
+            --shadow: 0 2px 8px rgba(0,0,0,0.05);
+            --radius: 8px;
         }
 
         body {
-            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-light);
             margin: 0;
             display: flex;
@@ -103,25 +103,20 @@
             align-items: end;
         }
 
-        .form-group label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: var(--text-grey);
-        }
-
-        .form-control {
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: bold; font-size: 0.9rem; margin-bottom: 5px; color: var(--text-dark); }
+        
+        select, input {
             width: 100%;
             padding: 10px;
             border: 1px solid #ddd;
             border-radius: 6px;
-            font-size: 0.95rem;
+            font-size: 1rem;
             box-sizing: border-box;
         }
-
+        
         .btn-add {
-            background: var(--success);
+            background: var(--primary-dark); /* Ubah jadi Primary Dark agar beda dengan Submit di Master */
             color: white;
             border: none;
             padding: 10px 20px;
@@ -130,7 +125,7 @@
             font-weight: bold;
             height: 42px;
         }
-        .btn-add:hover { background: #1B5E20; }
+        .btn-add:hover { background: #0d47a1; }
 
         /* --- TABLE LIST --- */
         .table-container {
@@ -153,13 +148,13 @@
         }
 
         th {
-            background-color: #f8f9fa;
+            background: #f8f9fa;
             color: var(--primary-dark);
             font-weight: bold;
         }
 
         .btn-delete {
-            background: var(--danger);
+            background: var(--text-grey); /* Ubah jadi abu-abu */
             color: white;
             border: none;
             padding: 5px 10px;
@@ -167,6 +162,7 @@
             cursor: pointer;
             font-size: 0.8rem;
         }
+        .btn-delete:hover { background: #D32F2F; }
 
         /* --- STATS --- */
         .grid-stats {
@@ -209,25 +205,23 @@
             <span>AgriAdmin</span>
         </div>
         
-        <div class="nav-item active">📊 Dashboard</div>
+        <!-- LINK KE MASTER -->
+        <div class="nav-item active" onclick="window.location.href='admin-master.html'">📊 Master Control</div>
+        <div class="nav-item" onclick="window.location.href='dashboard-admin.html'">🌾 Kelola Komoditas</div>
         <div class="nav-item" onclick="window.location.href='admin-users.html'">👥 Users</div>
-        
-        <!-- Menu Aktif -->
-        <div class="nav-item" style="background: rgba(255,255,255,0.1); color: #FFD700;">
-            🌾 Kelola Harga Pasar
-        </div>
-
         <div class="nav-item" onclick="window.location.href='admin-blockchain.html'">⛓️ Blockchain</div>
         <div class="nav-item" onclick="window.location.href='index.html'">🌐 Lihat Website</div>
+        <div class="nav-item" onclick="window.location.href='admin-pengaturan.html'">⚙️ Pengaturan</div>
         
-        <!-- Tombol Keluar -->
-        <div id="btn-logout" style="margin-top: auto; padding: 15px; color: #ff8a80; border: 1px solid #ff8a80; border-radius: 6px; cursor: pointer; text-align: center;">
+        <!-- Tombol Keluar (FIXED ID) -->
+        <div id="btn-logout" class="nav-item" style="margin-top: auto; color: #ff8a80; border: 1px solid #ff8a80; cursor: pointer;">
              🚪 Keluar
         </div>
     </nav>
 
     <!-- Main Content -->
     <div class="main-content">
+        
         <!-- Mobile Toggle -->
         <div style="margin-bottom: 20px; display: none;" id="mobileToggle">
             <button onclick="toggleSidebar()" style="padding: 10px; background: var(--primary-dark); color: white; border: none; border-radius: 5px;">☰ Menu</button>
@@ -245,26 +239,26 @@
             </div>
             <div class="stat-card buyer">
                 <div class="stat-label">Estimasi Transaksi</div>
-                <div class="stat-value">Rp 0</div>
+                <div class="stat-value">Rp 12.5 Jt</div>
             </div>
         </div>
 
         <!-- 1. FORM TAMBAH KOMODITAS -->
-        <div class="admin-form-card">
+        <div class="admin-form-card" id="commoditiesSection">
             <h3 style="margin:0; color:var(--primary-dark);">➕ Update Harga Pasar Baru</h3>
             <p style="margin-bottom:20px; font-size:0.9rem; color:#666;">Data ini akan muncul di form input petani dan grafik harga.</p>
             
             <form id="addCommodityForm" class="form-grid">
                 <div class="form-group">
-                    <label>Nama Komoditas</label>
+                    <label for="inputName">Nama Komoditas</label>
                     <input type="text" id="inputName" class="form-control" placeholder="Contoh: Padi Giling" required>
                 </div>
                 <div class="form-group">
-                    <label>Harga (Rp)</label>
+                    <label for="inputPrice">Harga (Rp)</label>
                     <input type="number" id="inputPrice" class="form-control" placeholder="6200" required>
                 </div>
                 <div class="form-group">
-                    <label>Satuan</label>
+                    <label for="inputUnit">Satuan</label>
                     <select id="inputUnit" class="form-control">
                         <option value="Kg">Kilogram (Kg)</option>
                         <option value="Ton">Ton</option>
@@ -302,7 +296,7 @@
     </div>
 
     <script>
-        // --- 1. KONFIGURASI SUPABASE (FIXED) ---
+        // --- 1. KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -316,8 +310,9 @@
 
             // Cek Session
             const { data: { session }, error } = await supabase.auth.getSession();
+
             if (error || !session) {
-                alert("Akses Ditolak: Silakan Login.");
+                alert("Akses Ditolak");
                 window.location.href = 'login.html';
                 return;
             }
@@ -330,7 +325,7 @@
                 .single();
 
             if (!profile || profile.role !== 'ADMIN') {
-                alert("Akses Ditolak: Anda bukan Admin.");
+                alert("Akses Ditolak");
                 window.location.href = 'index.html';
                 return;
             }
@@ -340,13 +335,12 @@
             loadStats();
         });
 
-        // --- 3. LOAD DATA KOMODITAS (FIXED: market_prices) ---
+        // --- 3. LOAD DATA KOMODITAS ---
         async function loadCommodities() {
             const tableBody = document.querySelector('#commodityTable tbody');
             const countDisplay = document.getElementById('totalCommodityCount');
             
             try {
-                // PERBAIKAN: Mengambil data dari tabel 'market_prices'
                 const { data, error } = await supabase
                     .from('market_prices')
                     .select('*')
@@ -394,7 +388,6 @@
             const unit = document.getElementById('inputUnit').value;
 
             try {
-                // PERBAIKAN: Insert ke tabel 'market_prices'
                 const { error } = await supabase
                     .from('market_prices')
                     .insert([{
@@ -405,7 +398,7 @@
 
                 if (error) throw error;
 
-                alert('Harga berhasil ditambahkan!');
+                alert('Komoditas berhasil ditambahkan!');
                 document.getElementById('addCommodityForm').reset();
                 loadCommodities();
                 loadStats();
@@ -424,7 +417,6 @@
             if(!confirm('Yakin ingin menghapus harga ini?')) return;
 
             try {
-                // PERBAIKAN: Delete dari tabel 'market_prices'
                 const { error } = await supabase
                     .from('market_prices')
                     .delete()
@@ -457,12 +449,11 @@
             }
         }
 
-        // --- 7. MOBILE NAV ---
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
         }
 
-        // --- 8. LOGOUT ---
+        // --- 7. LOGOUT (FIXED) ---
         document.getElementById('btn-logout').addEventListener('click', async () => {
             if(confirm("Keluar dari Admin?")) {
                 await supabase.auth.signOut();
