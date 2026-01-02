@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Daftar Akun - AgriChain</title>
     
-    <!-- PERBAIKAN 1: Library Supabase (Ganti Axios) -->
+    <!-- Library Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -233,7 +233,7 @@
             <!-- 4. Nomor HP (Login Key) -->
             <div class="form-group">
                 <label for="phone">Nomor HP (WhatsApp)</label>
-                <input type="tel" id="phone" class="form-input" placeholder="0816253606" required>
+                <input type="tel" id="phone" class="form-input" placeholder="08xxxxxxxxxx" required>
                 <div class="info-box">
                     ℹ️ Nomor HP ini akan digunakan untuk Login Anda. Tidak perlu email.
                 </div>
@@ -278,14 +278,14 @@
 
     <!-- SCRIPT UTAMA (LOGIKA REGISTER + SUPABASE) -->
     <script>
-        // PERBAIKAN 2: INISIALISASI SUPABASE LANGSUNG DI SINI
+        // --- KONFIGURASI SUPABASE ---
         // Ganti URL dan KEY ini dengan milik Anda dari Dashboard Supabase > Settings > API
-        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
+        const SUPABASE_URL = 'https://xyzcompany.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // ANON KEY
 
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // DOM ELEMENTS
+        // --- DOM ELEMENTS ---
         const form = document.getElementById('registerForm');
         const roleSelect = document.getElementById('role');
         const adminCodeGroup = document.getElementById('adminCodeGroup');
@@ -296,7 +296,7 @@
         const btnText = document.getElementById('btnText');
         const passError = document.getElementById('passError');
 
-        // FUNGSI MODAL
+        // --- FUNGSI MODAL ---
         function showModal(type, title, desc, redirectUrl) {
             const modal = document.getElementById('statusModal');
             const icon = document.getElementById('modalIcon');
@@ -331,10 +331,11 @@
             }
         }
 
-        // EVENT LISTENER SAAT LOAD
+        // --- EVENT LISTENER SAAT LOAD ---
         document.addEventListener("DOMContentLoaded", () => {
             roleSelect.value = "PETANI";
-            phoneInput.value = "0816253606";
+            // Saya kosongkan input phone agar user sadar harus isi manual
+            phoneInput.value = ""; 
             adminCodeGroup.style.display = 'none';
 
             roleSelect.addEventListener('change', function() {
@@ -349,7 +350,7 @@
             });
         });
 
-        // LOGIKA SUBMIT
+        // --- LOGIKA SUBMIT FORM ---
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -360,33 +361,34 @@
             const role = document.getElementById('role').value;
             const adminCode = document.getElementById('adminCode').value;
 
-            // Validasi Password
+            // 1. Validasi Password Sederhana
             if (password !== confirmPassword) {
                 passError.style.display = 'block';
+                showModal('error', 'Konfirmasi Gagal', 'Kata sandi yang Anda masukkan tidak cocok.', null);
                 return;
             } else {
                 passError.style.display = 'none';
             }
 
-            // Validasi Admin Code
+            // 2. Validasi Admin Code
             if (role === 'ADMIN' && adminCode !== 'admin123') {
-                showModal('error', 'Kode Admin Salah', 'Anda tidak memiliki izin untuk mendaftar sebagai Master Administrator. Pastikan Anda memasukkan kode rahasia yang benar.', null);
+                showModal('error', 'Akses Ditolak', 'Kode Admin salah. Anda tidak berizin mendaftar sebagai Administrator.', null);
                 return;
             }
 
-            // UI Loading
+            // 3. Tampilkan UI Loading
             btnSubmit.classList.add('btn-loading');
             btnSubmit.disabled = true;
             spinner.style.display = 'inline-block';
             btnText.textContent = 'MENDAFTARKAN...';
 
             try {
-                // PERBAIKAN 3: MENGGUNAKAN SUPABASE AUTH (AMAN)
-                // Trik: Nomor HP dianggap Email dengan domain palsu
+                // Trik: Nomor HP diubah menjadi format email dummy untuk Supabase Auth
                 const emailForSupabase = phone + "@agrichain.com";
+                console.log("Mencoba mendaftarkan:", emailForSupabase);
 
-                // 1. Buat Akun Auth Supabase (Password otomatis di-hash aman oleh Supabase)
-                const { data, error } = await supabase.auth.signUp({
+                // LANGKAH 1: Buat Akun Autentikasi Supabase
+                const { data: authData, error: authError } = await supabase.auth.signUp({
                     email: emailForSupabase,
                     password: password,
                     options: {
@@ -398,43 +400,56 @@
                     }
                 });
 
-                if (error) throw error;
+                // Cek error dari Auth
+                if (authError) {
+                    throw authError;
+                }
 
-                // 2. Simpan data tambahan ke tabel 'profiles'
-                const userId = data.user.id;
+                console.log("Auth Berhasil. ID User:", authData.user.id);
 
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .insert([
-                        { 
-                            id: userId,
-                            full_name: fullname,
-                            phone: phone,
-                            role: role,
-                            desa: "-", // Default data
-                            luas_lahan: 0
-                        }
-                    ]);
+                // LANGKAH 2: Simpan data detail ke tabel 'profiles'
+                // Hanya lanjut jika user ID berhasil dibuat
+                if (authData.user && authData.user.id) {
+                    const { error: profileError } = await supabase
+                        .from('profiles')
+                        .insert([
+                            { 
+                                id: authData.user.id,    // Pastikan id ini sama dengan UUID dari Auth
+                                full_name: fullname,
+                                phone: phone,
+                                role: role,
+                                desa: "-",              // Default data
+                                luas_lahan: 0
+                            }
+                        ]);
 
-                if (profileError) throw profileError;
+                    // Cek error dari Insert Profile
+                    if (profileError) {
+                        console.error("Gagal insert profile:", profileError);
+                        throw new Error("Gagal menyimpan data profil. Periksa tabel database.");
+                    }
+                }
 
-                // 3. SUKSES
-                showModal('success', 'Registrasi Berhasil!', 'Selamat datang di AgriChain. Akun Anda telah aktif dan siap digunakan. Silakan login untuk memulai aktivitas Anda.', 'login.html');
+                // LANGKAH 3: Tampilkan Sukses
+                showModal('success', 'Registrasi Berhasil!', 'Akun Anda telah aktif. Silakan Login untuk memulai.', 'login.html');
 
             } catch (err) {
-                console.error("Error register:", err);
+                console.error("Error Register:", err);
+                
                 let failTitle = 'Pendaftaran Gagal';
-                let failDesc = 'Terjadi kesalahan sistem.';
+                let failDesc = err.message || 'Terjadi kesalahan tak terduga pada sistem.';
 
-                // Cek error Duplicate (HP sudah ada)
-                if (err.message && err.message.includes('already registered')) {
-                    failDesc = 'Nomor HP ' + phone + ' sudah terdaftar. Silakan Login.';
+                // Deteksi pesan error spesifik Supabase
+                if (failDesc.includes('already registered')) {
+                    failDesc = 'Nomor HP ' + phone + ' sudah terdaftar. Silakan Login langsung.';
+                } else if (failDesc.includes('Database error')) {
+                    failDesc = 'Gagal menyimpan data ke database. Pastikan tabel "profiles" sudah dibuat.';
                 }
 
                 showModal('error', failTitle, failDesc, null);
 
             } finally {
-                // Reset Tombol
+                // Reset Tombol ke kondisi semula
                 btnSubmit.classList.remove('btn-loading');
                 btnSubmit.disabled = false;
                 spinner.style.display = 'none';
