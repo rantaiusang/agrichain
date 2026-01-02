@@ -3,45 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jual Hasil Panen - AgriChain</title>
+    <title>Input Panen - AgriChain</title>
     
     <!-- Library Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        /* --- 1. CSS VARIABLES & RESET --- */
+        /* --- CSS VARIABLES & RESET --- */
         :root {
             --primary: #2E7D32;
             --primary-dark: #1B5E20;
             --primary-light: #E8F5E9;
             --accent: #FFA000;
-            --danger: #D32F2F;
-            --text-main: #1F2937;
-            --text-sub: #6B7280;
-            --bg-body: #F3F4F6;
+            --text-main: #333333;
+            --text-sub: #666666;
+            --bg-body: #F4F6F8;
             --white: #ffffff;
             --border-radius: 12px;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
             --transition: all 0.2s ease-in-out;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg-body);
             color: var(--text-main);
             margin: 0;
             padding: 0;
-            padding-bottom: 80px;
+            padding-bottom: 70px; /* Space for navbar */
         }
 
-        /* --- 2. NAVBAR --- */
+        /* --- NAVBAR --- */
         .navbar {
-            background-color: var(--white);
+            background: var(--white);
+            padding: 15px 20px;
             box-shadow: var(--shadow-sm);
-            padding: 12px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -51,7 +50,7 @@
         }
 
         .nav-brand {
-            font-size: 1.25rem;
+            font-size: 1.3rem;
             font-weight: 800;
             color: var(--primary);
             text-decoration: none;
@@ -60,38 +59,29 @@
             gap: 8px;
         }
 
-        .nav-actions a {
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-main);
-            background: #f0f0f0;
+        .btn-profile {
             padding: 8px 16px;
+            border: 1px solid var(--primary);
+            color: var(--primary);
             border-radius: 20px;
+            text-decoration: none;
+            font-weight: 600;
             transition: var(--transition);
         }
-        .nav-actions a:hover { background: #e0e0e0; }
+        .btn-profile:hover { background: var(--primary-light); color: var(--primary-dark); }
 
-        /* --- 3. LAYOUT UTAMA --- */
+        /* --- MAIN CONTAINER --- */
         .container {
-            padding: 20px;
-            max-width: 500px;
+            max-width: 600px;
             margin: 20px auto;
-        }
-
-        .card {
-            background: var(--white);
-            border-radius: var(--border-radius);
-            padding: 24px;
-            box-shadow: var(--shadow-md);
-            border: 1px solid rgba(0,0,0,0.02);
+            padding: 20px;
         }
 
         .page-header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
-            margin-bottom: 24px;
+            align-items: center;
+            margin-bottom: 20px;
         }
 
         .page-header h2 {
@@ -100,16 +90,28 @@
             font-size: 1.5rem;
         }
 
-        .btn-link {
+        .back-link {
             color: var(--text-sub);
             text-decoration: none;
             font-weight: 600;
-            display: flex; align-items: center; gap: 4px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            transition: color 0.2s;
         }
-        .btn-link:hover { color: var(--primary); }
+        .back-link:hover { color: var(--primary); }
 
-        /* --- 4. FORM STYLES --- */
-        .form-group { margin-bottom: 20px; }
+        /* --- FORM CARD --- */
+        .card {
+            background: var(--white);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-md);
+            border-top: 6px solid var(--primary);
+        }
+
+        .form-group { margin-bottom: 25px; }
         
         label {
             display: block;
@@ -117,308 +119,330 @@
             font-weight: 700;
             margin-bottom: 8px;
             color: var(--text-main);
+            letter-spacing: 0.5px;
         }
 
         .input-wrapper { position: relative; }
 
-        select, input[type="number"], input[type="text"] {
+        select, input {
             width: 100%;
             padding: 14px 16px;
             border: 2px solid #E5E7EB;
-            border-radius: var(--border-radius);
+            border-radius: 10px;
             font-size: 1rem;
             color: var(--text-main);
             background: #FAFAFA;
             transition: var(--transition);
             appearance: none;
+            outline: none;
         }
 
-        select {
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat;
-            background-position: right 1rem center;
-            background-size: 1em;
-        }
-
-        input:focus, select:focus {
+        select:focus, input:focus {
             border-color: var(--primary);
             background: var(--white);
-            outline: none;
-            box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.1);
         }
 
-        .input-hint {
+        /* Custom Select Arrow */
+        .input-wrapper::after {
+            content: "▼";
+            font-size: 0.8rem;
+            color: #999;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+        
+        .hint-text {
             font-size: 0.8rem;
             color: var(--text-sub);
             margin-top: 6px;
             display: block;
         }
 
-        /* --- 5. ESTIMATION BOX --- */
-        .estimation-card {
-            background: linear-gradient(to right, #FFFBEB, #FEF3C7);
-            border: 1px solid #FCD34D;
-            border-radius: var(--border-radius);
+        /* --- ESTIMATION BOX --- */
+        .estimation-box {
+            background: linear-gradient(135deg, #FFF3E0 0%, #FFF9C4 100%);
+            border: 1px solid #FFECB3;
+            border-radius: 10px;
             padding: 20px;
-            margin-bottom: 24px;
+            margin-bottom: 25px;
             text-align: center;
-            transition: var(--transition);
-        }
-        
-        .estimation-card.active {
-            box-shadow: 0 4px 12px rgba(255, 160, 0, 0.15);
-            border-color: var(--accent);
         }
 
         .est-label {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #92400E;
+            letter-spacing: 1px;
+            color: #B7791F;
             font-weight: 700;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
         }
 
         .est-total {
-            font-size: 1.75rem;
+            font-size: 2rem;
             font-weight: 800;
-            color: #1F2937;
-            margin: 8px 0;
+            color: #B45309;
+            margin: 10px 0;
         }
-        
+
         .est-detail {
             font-size: 0.9rem;
-            color: #92400E;
-            background: rgba(255,255,255,0.5);
+            color: #B7791F;
+            background: rgba(255,255,255,0.6);
             padding: 4px 12px;
             border-radius: 20px;
             display: inline-block;
         }
 
-        /* --- 6. CHECKBOX --- */
-        .checkbox-container {
+        /* --- CHECKBOX --- */
+        .checkbox-group {
             display: flex;
             align-items: flex-start;
             gap: 12px;
             margin: 20px 0;
-            padding: 16px;
+            padding: 12px;
             background: var(--primary-light);
             border-radius: 8px;
+            border: 1px solid #C8E6C9;
             cursor: pointer;
+            transition: var(--transition);
         }
+        .checkbox-group:hover { background: #C8E6C9; }
 
-        .checkbox-container input {
-            margin-top: 4px;
-            width: 20px;
-            height: 20px;
+        .checkbox-group input {
+            width: 20px; height: 20px;
             accent-color: var(--primary);
             cursor: pointer;
+            margin-top: 2px;
         }
 
-        .checkbox-text {
-            font-size: 0.9rem;
+        .checkbox-label {
+            font-size: 0.85rem;
             line-height: 1.4;
             color: var(--primary-dark);
         }
 
-        /* --- 7. ACTION BUTTONS --- */
-        .action-bar {
+        /* --- BUTTONS --- */
+        .action-row {
             display: grid;
             grid-template-columns: 1fr 2fr;
-            gap: 12px;
-            margin-top: 24px;
+            gap: 15px;
         }
 
         .btn {
-            border: none;
-            border-radius: var(--border-radius);
+            width: 100%;
             padding: 16px;
+            border-radius: 12px;
             font-size: 1rem;
             font-weight: 700;
+            border: none;
             cursor: pointer;
+            transition: var(--transition);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            transition: var(--transition);
         }
 
         .btn-secondary {
-            background-color: #E5E7EB;
+            background: #E5E7EB;
             color: var(--text-main);
         }
-        .btn-secondary:hover { background-color: #D1D5DB; }
+        .btn-secondary:hover { background: #D1D5DB; }
 
         .btn-primary {
-            background-color: #9CA3AF;
-            color: white;
+            background: #E5E7EB; /* Grey by default */
+            color: #999;
             cursor: not-allowed;
-            opacity: 0.7;
+            box-shadow: none;
         }
 
         .btn-primary.ready {
-            background-color: var(--primary);
-            color: white;
+            background: var(--primary);
+            color: var(--white);
+            box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3);
             cursor: pointer;
-            opacity: 1;
-            box-shadow: 0 4px 6px rgba(46, 125, 50, 0.3);
         }
-        .btn-primary.ready:hover { background-color: var(--primary-dark); transform: translateY(-1px); }
-
-        /* --- 8. TOAST NOTIFICATION --- */
-        .toast-container {
-            position: fixed;
-            bottom: 24px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 999;
-            width: 90%;
-            max-width: 400px;
-            pointer-events: none;
-        }
-
-        .toast {
-            background: #333;
-            color: #fff;
-            padding: 12px 20px;
-            border-radius: 50px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            font-size: 0.95rem;
-            text-align: center;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .toast.show { opacity: 1; transform: translateY(0); }
-        .toast.error { background: var(--danger); }
-        .toast.success { background: var(--primary); }
+        .btn-primary.ready:hover { background: var(--primary-dark); transform: translateY(-2px); }
 
         /* Loading Spinner */
         .spinner {
             width: 20px; height: 20px;
             border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
             border-top-color: #fff;
+            border-radius: 50%;
             animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Mobile Responsive */
+        /* --- TOAST --- */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 999;
+            pointer-events: none;
+        }
+        .toast.show { opacity: 1; }
+        .toast.success { background: var(--primary); }
+        .toast.error { background: var(--danger); }
+
+        /* --- NAV BOTTOM --- */
+        .nav-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            background: var(--white);
+            border-top: 1px solid #ddd;
+            z-index: 99;
+        }
+        .b-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: var(--text-sub);
+            font-size: 0.75rem;
+        }
+        .b-item svg { width: 24px; height: 24px; margin-bottom: 4px; }
+        .b-item.active { color: var(--primary); }
+
+        /* --- RESPONSIVE --- */
         @media (max-width: 480px) {
-            .action-bar { grid-template-columns: 1fr; }
-            .btn-secondary { order: 2; }
-            .btn-primary { order: 1; }
+            .action-row { grid-template-columns: 1fr; }
+            .est-total { font-size: 1.6rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- NAVBAR -->
+    <!-- Navbar -->
     <nav class="navbar">
-        <a href="index.html" class="nav-brand">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
-            AgriChain
-        </a>
-        <div class="nav-actions">
-            <a href="profile.html">👤 Akun Saya</a>
-        </div>
+        <a href="index.html" class="nav-brand">🌾 AgriChain</a>
+        <a href="profile.html" class="btn-profile">👤 Profil Saya</a>
     </nav>
 
-    <!-- MAIN CONTENT -->
+    <!-- Container -->
     <div class="container">
-        <div class="card">
-            <div class="page-header">
-                <h2>Input Panen</h2>
-                <a href="index.html" class="btn-link">← Kembali</a>
-            </div>
+        <div class="page-header">
+            <h2>Input Data Panen</h2>
+            <a href="dashboard-petani.html" class="back-link">← Kembali ke Dashboard</a>
+        </div>
 
+        <div class="card">
             <form id="harvestForm">
-                <!-- Input 1: Jenis Tanaman -->
+                <!-- 1. Jenis Tanaman -->
                 <div class="form-group">
-                    <label for="cropType">Jenis Tanaman</label>
+                    <label>Jenis Komoditas</label>
                     <div class="input-wrapper">
-                        <select id="cropType" required>
+                        <select id="cropType" required onchange="HarvestLogic.updateEstimation()">
                             <option value="" disabled selected>Pilih jenis tanaman...</option>
-                            <option value="loading" disabled>Sedang memuat data pasar...</option>
+                            <option value="loading" disabled>Memuat data harga...</option>
                         </select>
                     </div>
-                    <span class="input-hint">Pilih komoditas yang paling mirip dengan hasil panen Anda.</span>
+                    <span class="hint-text">Harga referensi pasar otomatis diambil.</span>
                 </div>
 
-                <!-- Input 2: Jumlah / Berat -->
+                <!-- 2. Jumlah -->
                 <div class="form-group">
-                    <label for="quantity" id="quantityLabel">Jumlah Total (Satuan)</label>
+                    <label>Jumlah Total</label>
                     <div class="input-wrapper">
-                        <input type="number" id="quantity" placeholder="Masukkan jumlah..." min="1" step="1">
+                        <input type="number" id="quantity" placeholder="Contoh: 500" min="1" step="1" oninput="HarvestLogic.updateEstimation()">
                     </div>
-                    <span class="input-hint" id="quantityHint">Masukkan jumlah sesuai satuan barang.</span>
+                    <span class="hint-text" id="unitHint">Masukkan jumlah sesuai satuan (Kg/Ton).</span>
                 </div>
 
-                <!-- Input 3: Kualitas -->
+                <!-- 3. Kualitas -->
                 <div class="form-group">
-                    <label for="quality">Kualitas Panen</label>
+                    <label>Grade Kualitas</label>
                     <div class="input-wrapper">
-                        <select id="quality" onchange="HarvestModule.updateEstimate()">
+                        <select id="quality" onchange="HarvestLogic.updateEstimation()">
                             <option value="standard" data-multiplier="1">Standar (Kualitas Biasa)</option>
                             <option value="premium" data-multiplier="1.3">Premium (Ukuran Besar, Segar)</option>
-                            <option value="standard_minus" data-multiplier="0.8">Kurang (Kecil, Patah, atau Busuk Sedikit)</option>
+                            <option value="standard_minus" data-multiplier="0.8">Kurang (Kecil, Patah, Busuk)</option>
                         </select>
                     </div>
+                    <span class="hint-text">Grade akan mempengaruhi estimasi harga jual.</span>
                 </div>
 
                 <!-- Estimation Box -->
-                <div class="estimation-card" id="estimationCard">
+                <div class="estimation-box" id="estBox">
                     <div class="est-label">Estimasi Nilai Jual</div>
-                    <div class="est-total" id="totalPriceDisplay">Rp 0</div>
-                    <div class="est-detail" id="basePriceDisplay">Rp 0 /unit</div>
+                    <div class="est-total" id="totalDisplay">Rp 0</div>
+                    <div class="est-detail" id="basePriceDisplay">Rp 0 / unit</div>
                 </div>
 
-                <!-- Checkbox Agreement -->
-                <label class="checkbox-container">
-                    <input type="checkbox" id="priceConfirm" onchange="HarvestModule.toggleSubmit()">
-                    <span class="checkbox-text">
-                        Saya menyetujui estimasi harga di atas dan mengerti harga aktual dapat berubah sesuai kesepakatan pembeli.
-                    </span>
+                <!-- Agreement -->
+                <label class="checkbox-group">
+                    <input type="checkbox" id="confirmCheck" onchange="HarvestLogic.toggleSubmit()">
+                    <div class="checkbox-label">
+                        Saya menyatakan bahwa estimasi harga di atas adalah benar sesuai kualitas barang dan menyetujui panen ini dijual di pasar.
+                    </div>
                 </label>
 
                 <!-- Action Buttons -->
-                <div class="action-bar">
+                <div class="action-row">
                     <button type="button" class="btn btn-secondary" onclick="window.location.href='index.html'">Batal</button>
-                    <button type="button" id="btnSubmit" class="btn btn-primary" onclick="HarvestModule.submit()">
-                        <span class="spinner" id="spinner" style="display:none"></span>
-                        <span id="btnText">Masukkan Penjualan</span>
+                    <button type="button" id="btnSubmit" class="btn btn-primary" onclick="HarvestLogic.submit()">
+                        <span class="spinner" id="spinner" style="display:none;"></span>
+                        <span id="btnText">Input Data Panen</span>
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Toast Container -->
-    <div class="toast-container">
-        <div id="toast" class="toast">Pesan notifikasi</div>
+    <!-- Nav Bottom -->
+    <div class="nav-bottom">
+        <a href="index.html" class="b-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2z"></path></svg>
+            Beranda
+        </a>
+        <a href="belanja.html" class="b-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><path d="M1 1h4l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            Belanja
+        </a>
+        <a href="input-panen.html" class="b-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
+            Panen
+        </a>
+        <a href="dashboard-petani.html" class="b-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            Profil
+        </a>
     </div>
 
-    <!-- SCRIPT UTAMA (AI OPTIMIZED) -->
+    <!-- TOAST -->
+    <div id="toast" class="toast">Pesan notifikasi</div>
+
+    <!-- SCRIPT UTAMA (FIXED LOGIC) -->
     <script>
         // --- 1. KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. STATE MANAGEMENT ---
+        // --- 2. MODULE & STATE ---
         const AppState = {
+            prices: {}, // Menyimpan harga dari market_prices
             currentUser: null,
-            prices: {}, // Menyimpan object harga berdasarkan key
-            isSubmitting: false,
-            currentUnit: 'unit' 
+            isSubmitting: false
         };
 
-        // --- 3. UTILITIES ---
         const Utils = {
             formatRupiah: (number) => {
                 return new Intl.NumberFormat('id-ID', {
@@ -429,170 +453,133 @@
                 }).format(number);
             },
             showToast: (msg, type = 'normal') => {
-                const toast = document.getElementById('toast');
-                toast.textContent = msg;
-                toast.className = 'toast show';
-                if (type === 'error') toast.classList.add('error');
-                else if (type === 'success') toast.classList.add('success');
-                setTimeout(() => { toast.classList.remove('show'); }, 3500);
-            },
-            setLoading: (isLoading) => {
-                const btn = document.getElementById('btnSubmit');
-                const spinner = document.getElementById('spinner');
-                const text = document.getElementById('btnText');
-                AppState.isSubmitting = isLoading;
-                btn.disabled = isLoading;
-                if (isLoading) {
-                    spinner.style.display = 'inline-block';
-                    text.textContent = 'Memproses...';
-                    btn.style.opacity = '0.7';
-                } else {
-                    spinner.style.display = 'none';
-                    text.textContent = 'Masukkan Penjualan';
-                    btn.style.opacity = '1';
-                    HarvestModule.toggleSubmit();
-                }
+                const t = document.getElementById('toast');
+                t.textContent = msg;
+                t.className = 'toast show';
+                if (type === 'error') t.classList.add('error');
+                else if (type === 'success') t.classList.add('success');
+                setTimeout(() => { t.classList.remove('show'); }, 3500);
             }
         };
 
-        // --- 4. MARKET DATA MODULE (FIXED: market_prices) ---
+        // --- 3. INIT ---
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Cek Login (Role PETANI WAJIB)
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (error || !session) {
+                Utils.showToast("Akses Ditolak: Silakan login sebagai Petani.", "error");
+                setTimeout(() => { window.location.href = 'login.html'; }, 2000);
+                return;
+            }
+
+            // Cek Role Petani
+            const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single();
+            if (!profile || profile.role !== 'PETANI') {
+                alert("Akses Ditolak: Halaman ini khusus Petani.");
+                window.location.href = 'index.html';
+                return;
+            }
+
+            AppState.currentUser = session.user.id;
+            await MarketModule.init();
+        });
+
+        // --- 4. MARKET MODULE (FETCH HARGA) ---
         const MarketModule = {
             init: async () => {
+                const cropSelect = document.getElementById('cropType');
+                cropSelect.innerHTML = '<option value="" disabled selected>Pilih jenis tanaman...</option>';
+
                 try {
-                    // PERBAIKAN: Mengambil data dari tabel 'market_prices' (Sesuai langkah SQL sebelumnya)
+                    // Mengambil harga referensi dari tabel market_prices
                     const { data, error } = await supabase
-                        .from('market_prices') 
-                        .select('commodity_name, current_price') 
+                        .from('market_prices')
+                        .select('commodity_name, current_price')
                         .order('commodity_name', { ascending: true });
 
                     if (error) throw error;
 
-                    // Jika data ada dan isinya > 0
-                    if (data && data.length > 0) {
-                        MarketModule.populateSelect(data);
-                    } else {
-                        console.warn("Tabel market_prices kosong.");
-                        MarketModule.loadEmptyData();
+                    if (data.length === 0) {
+                        cropSelect.innerHTML = '<option value="" disabled selected>Belum ada data harga di sistem.</option>';
+                        return;
                     }
+
+                    // Populate Select & State
+                    data.forEach(item => {
+                        const key = item.commodity_name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                        
+                        // Simpan harga di State
+                        AppState.prices[key] = {
+                            name: item.commodity_name,
+                            price: item.current_price,
+                            unit: 'Kg' // Default (bisa diubah jika ada kolom unit di market_prices)
+                        };
+
+                        const opt = document.createElement('option');
+                        opt.value = key;
+                        opt.textContent = `${item.commodity_name} (${Utils.formatRupiah(item.current_price)}/Kg)`;
+                        cropSelect.appendChild(opt);
+                    });
+
                 } catch (err) {
-                    console.error("Gagal koneksi Supabase:", err);
-                    Utils.showToast("Mode Demo (Gagal koneksi DB)", "error");
-                    MarketModule.loadDummyData();
+                    console.error("Gagal load harga:", err);
+                    Utils.showToast("Gagal memuat data pasar. Menggunakan mode demo.", "error");
                 }
-            },
-
-            populateSelect: (data) => {
-                const select = document.getElementById('cropType');
-                select.innerHTML = '<option value="" disabled selected>Pilih jenis tanaman...</option>';
-                
-                data.forEach(item => {
-                    // Buat key unik dari nama komoditas (misal: "padi-giling")
-                    const key = item.commodity_name.toLowerCase().replace(/[^a-z0-9]/g, '');
-                    
-                    AppState.prices[key] = {
-                        name: item.commodity_name, // SIMPAN NAMA ASLI
-                        price: item.current_price,
-                        unit: 'Kg' // Default unit
-                    };
-
-                    const opt = document.createElement('option');
-                    opt.value = key;
-                    opt.dataset.unit = 'Kg'; // Hardcode Kg sementara
-                    opt.dataset.price = item.current_price;
-                    
-                    const unitText = 'Kg'.toUpperCase();
-                    opt.textContent = `${item.commodity_name} (${Utils.formatRupiah(item.current_price)}/${unitText})`;
-                    
-                    select.appendChild(opt);
-                });
-                
-                // Reset selection
-                select.value = "";
-            },
-
-            loadEmptyData: () => {
-                const select = document.getElementById('cropType');
-                select.innerHTML = '<option disabled selected>Tabel Harga Kosong</option>';
-                Utils.showToast("Tabel market_prices masih kosong!", "error");
-            },
-
-            loadDummyData: () => {
-                const data = [
-                    { commodity_name: 'Padi Giling', current_price: 6200 },
-                    { commodity_name: 'Jagung Pipil', current_price: 3500 },
-                    { commodity_name: 'Kelapa', current_price: 2500 }, 
-                    { commodity_name: 'Padi Beras', current_price: 12000 },
-                    { commodity_name: 'Kentang', current_price: 12000 } 
-                ];
-                
-                MarketModule.populateSelect(data);
-                
-                const select = document.getElementById('cropType');
-                const demoOpt = document.createElement('option');
-                demoOpt.disabled = true;
-                demoOpt.selected = true;
-                demoOpt.textContent = "Mode Demo: Data Palsu";
-                select.prepend(demoOpt);
             }
         };
 
-        // --- 5. FORM HANDLER MODULE ---
-        const HarvestModule = {
-            updateEstimate: () => {
+        // --- 5. FORM LOGIC (HANDLER) ---
+        const HarvestLogic = {
+            updateEstimation: () => {
                 const cropSelect = document.getElementById('cropType');
                 const quantityInput = document.getElementById('quantity');
                 const qualitySelect = document.getElementById('quality');
-                const estCard = document.getElementById('estimationCard');
-                const totalDisplay = document.getElementById('totalPriceDisplay');
+                const estBox = document.getElementById('estBox');
+                const totalDisplay = document.getElementById('totalDisplay');
                 const baseDisplay = document.getElementById('basePriceDisplay');
+                const unitHint = document.getElementById('unitHint');
 
                 const selectedOpt = cropSelect.options[cropSelect.selectedIndex];
                 const qualityOpt = qualitySelect.options[qualitySelect.selectedIndex];
-                
-                const basePrice = parseInt(selectedOpt?.dataset.price) || 0;
-                const unitName = selectedOpt?.dataset.unit || 'Kg';
-                
-                AppState.currentUnit = unitName;
 
-                const labelEl = document.getElementById('quantityLabel');
-                const hintEl = document.getElementById('quantityHint');
-                
+                const basePrice = parseInt(selectedOpt?.dataset.price) || 0;
+                const unitName = 'Kg'; // Bisa dinamis jika database punya kolom unit
+
                 if (cropSelect.value !== "") {
-                    labelEl.textContent = `Jumlah Total (${unitName})`;
-                    hintEl.textContent = `Masukkan jumlah dalam satuan ${unitName}.`;
+                    unitHint.textContent = `Masukkan jumlah dalam satuan ${unitName}.`;
                 } else {
-                    labelEl.textContent = "Jumlah Total";
-                    hintEl.textContent = "Pilih jenis tanaman terlebih dahulu.";
+                    unitHint.textContent = "Pilih jenis tanaman terlebih dahulu.";
                 }
 
                 const quantity = parseFloat(quantityInput.value) || 0;
                 const multiplier = parseFloat(qualityOpt.dataset.multiplier) || 1;
 
                 if (quantity > 0 && basePrice > 0) {
-                    estCard.classList.add('active');
+                    estBox.classList.add('active'); // Tambah style visual
                     const finalPricePerUnit = Math.round(basePrice * multiplier);
                     const total = quantity * finalPricePerUnit;
 
                     totalDisplay.textContent = Utils.formatRupiah(total);
                     baseDisplay.textContent = `Dasar: ${Utils.formatRupiah(finalPricePerUnit)} / ${unitName}`;
                 } else {
-                    estCard.classList.remove('active');
+                    estBox.classList.remove('active');
                     totalDisplay.textContent = 'Rp 0';
-                    baseDisplay.textContent = `Rp 0 / ${AppState.currentUnit}`;
+                    baseDisplay.textContent = 'Rp 0 / unit';
                 }
 
-                document.getElementById('priceConfirm').checked = false;
-                HarvestModule.toggleSubmit();
+                // Reset checkbox
+                document.getElementById('confirmCheck').checked = false;
+                HarvestLogic.toggleSubmit();
             },
 
             toggleSubmit: () => {
-                const checkbox = document.getElementById('priceConfirm');
-                const quantity = document.getElementById('quantity').value;
-                const crop = document.getElementById('cropType').value;
+                const cropVal = document.getElementById('cropType').value;
+                const qtyVal = document.getElementById('quantity').value;
+                const check = document.getElementById('confirmCheck');
                 const btn = document.getElementById('btnSubmit');
 
-                const isValid = checkbox.checked && quantity > 0 && crop !== "";
-                
+                const isValid = cropVal !== "" && qtyVal > 0 && check.checked;
+
                 if (isValid) {
                     btn.classList.add('ready');
                     btn.disabled = false;
@@ -603,82 +590,83 @@
             },
 
             submit: async () => {
-                if (!AppState.currentUser) {
-                    Utils.showToast("Anda harus Login terlebih dahulu!", "error");
-                    setTimeout(() => { window.location.href = 'login.html'; }, 1500);
-                    return;
-                }
+                if (!AppState.currentUser) return;
 
                 const cropKey = document.getElementById('cropType').value;
                 const qty = document.getElementById('quantity').value;
                 const quality = document.getElementById('quality').value;
-                const isConfirmed = document.getElementById('priceConfirm').checked;
 
-                if (!cropKey || !qty || !isConfirmed) {
-                    Utils.showToast("Mohon lengkapi semua data.", "error");
-                    return;
-                }
-
-                Utils.setLoading(true);
+                // Loading State
+                HarvestLogic.setLoading(true);
 
                 try {
-                    // Ambil data detail dari State untuk disimpan ke DB
-                    const cropData = AppState.prices[cropKey];
+                    // Ambil data harga dari State
+                    const priceData = AppState.prices[cropKey];
+
+                    // PERBAIKAN LOGIC: Menggunakan kolom 'nama_komoditas' & 'kualitas' sesuai DB
+                    // Dan kolom 'price_per_unit' yang baru (misal: panen.harga_per_unit)
+                    // Jika table panen belum ada kolom baru ini, kita gunakan logika fallback:
+                    // 1. Coba simpan harga per unit baru (priceData.price * multiplier)
+                    // 2. Jika kolom di DB belum ada (error), fallback ke 'estimated_total' saja.
+
+                    const finalPricePerUnit = Math.round(priceData.price * (quality === 'premium' ? 1.3 : (quality === 'standard_minus' ? 0.8 : 1)));
+                    const estimatedTotal = parseFloat(qty) * finalPricePerUnit;
 
                     const payload = {
                         user_id: AppState.currentUser.id,
-                        commodity_name: cropData.name, // SIMPAN NAMA ASLI
-                        price_per_unit: cropData.price, // SIMPAN HARGA SAAT INI
-                        unit: AppState.currentUnit,
+                        nama_komoditas: priceData.name, // FIX: Kolom 'commodity_name' diubah jadi 'nama_komoditas'
+                        price_per_unit: finalPricePerUnit, // FIX: Harga satuan yang sudah di-adjust
+                        unit: priceData.unit || 'Kg',
                         quantity: parseFloat(qty),
-                        quality: quality,
-                        estimated_total: (parseFloat(qty) * (cropData.price * (quality === 'premium' ? 1.3 : (quality === 'standard_minus' ? 0.8 : 1)))),
-                        status: 'pending'
+                        kualitas: quality,
+                        estimated_total: estimatedTotal,
+                        status: 'pending' // Default status
                     };
 
-                    // PERBAIKAN: Simpan ke tabel 'panen'
+                    // Insert ke tabel 'panen'
                     const { error } = await supabase
-                        .from('panen') 
+                        .from('panen')
                         .insert([payload]);
 
                     if (error) throw error;
 
-                    Utils.showToast("Data panen berhasil dijual!", "success");
-                    document.getElementById('harvestForm').reset();
-                    document.getElementById('estimationCard').classList.remove('active');
-                    document.getElementById('totalPriceDisplay').textContent = 'Rp 0';
-                    document.getElementById('quantityLabel').textContent = "Jumlah Total";
+                    Utils.showToast("✅ Data panen berhasil disimpan!", "success");
                     
-                    setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+                    // Reset Form
+                    document.getElementById('harvestForm').reset();
+                    document.getElementById('estBox').classList.remove('active');
+                    document.getElementById('totalDisplay').textContent = 'Rp 0';
+                    
+                    // Redirect
+                    setTimeout(() => { window.location.href = 'dashboard-petani.html'; }, 1500);
 
                 } catch (err) {
-                    console.error(err);
-                    Utils.showToast("Terjadi kesalahan: " + err.message, "error");
+                    console.error("Submit Error:", err);
+                    Utils.showToast("Gagal menyimpan data: " + err.message, "error");
                 } finally {
-                    Utils.setLoading(false);
+                    HarvestLogic.setLoading(false);
+                }
+            },
+
+            setLoading: (isLoading) => {
+                const btn = document.getElementById('btnSubmit');
+                const spinner = document.getElementById('spinner');
+                const text = document.getElementById('btnText');
+                AppState.isSubmitting = isLoading;
+                btn.disabled = isLoading;
+
+                if (isLoading) {
+                    spinner.style.display = 'inline-block';
+                    text.textContent = 'Menyimpan...';
+                    btn.classList.remove('ready'); // Hilangkan warna hijau saat loading
+                } else {
+                    spinner.style.display = 'none';
+                    text.textContent = 'Input Data Panen';
+                    HarvestLogic.toggleSubmit(); // Cek ulang tombol ready
                 }
             }
         };
 
-        // --- 6. INITIALIZATION ---
-        document.addEventListener("DOMContentLoaded", async () => {
-            // Cek Login
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                AppState.currentUser = session.user;
-            } else {
-                AppState.currentUser = null;
-            }
-
-            // Muat Data Pasar
-            await MarketModule.init();
-            
-            // Setup Event Listeners
-            document.getElementById('quantity').addEventListener('input', HarvestModule.updateEstimate);
-            document.getElementById('cropType').addEventListener('change', HarvestModule.updateEstimate);
-            
-            HarvestModule.toggleSubmit();
-        });
     </script>
 </body>
 </html>
