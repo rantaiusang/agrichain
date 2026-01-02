@@ -206,31 +206,23 @@
 
         <form id="registerForm">
             
-            <!-- 1. Pilihan Peran -->
+            <!-- 1. Pilihan Peran (OPSI ADMIN DIHAPUS) -->
             <div class="form-group">
                 <label for="role">Saya mendaftar sebagai:</label>
                 <select id="role" class="form-select" required>
                     <option value="PETANI" selected>Petani (Penjual)</option>
                     <option value="PEMBELI">Pembeli / Tengkulak</option>
                     <option value="LEMBAGA">Lembaga / Koperasi</option>
-                    <option value="ADMIN">Master Administrator (Rahasia)</option>
                 </select>
             </div>
 
-            <!-- 2. Input Kode Admin -->
-            <div class="form-group" id="adminCodeGroup" style="display: none; background: #FFF8E1; padding: 15px; border-radius: 8px; border: 1px dashed var(--primary-green);">
-                <label for="adminCode" style="color: var(--primary-green);">🔑 Kode Rahasia Admin</label>
-                <input type="text" id="adminCode" class="form-input" placeholder="Masukkan kode admin...">
-                <div style="font-size: 0.75rem; color: #666; margin-top: 5px;">Pilih role "Master Administrator" dan masukkan kode.</div>
-            </div>
-
-            <!-- 3. Nama Lengkap -->
+            <!-- 2. Nama Lengkap -->
             <div class="form-group">
                 <label for="fullname">Nama Lengkap</label>
                 <input type="text" id="fullname" class="form-input" placeholder="Contoh: Budi Santoso" required>
             </div>
 
-            <!-- 4. Nomor HP (Login Key) -->
+            <!-- 3. Nomor HP (Login Key) -->
             <div class="form-group">
                 <label for="phone">Nomor HP (WhatsApp)</label>
                 <input type="tel" id="phone" class="form-input" placeholder="08xxxxxxxxxx" required>
@@ -239,20 +231,20 @@
                 </div>
             </div>
 
-            <!-- 5. Password -->
+            <!-- 4. Password -->
             <div class="form-group">
                 <label for="password">Kata Sandi</label>
                 <input type="password" id="password" class="form-input" placeholder="Buat kata sandi" required minlength="6">
             </div>
 
-            <!-- 6. Konfirmasi Password -->
+            <!-- 5. Konfirmasi Password -->
             <div class="form-group">
                 <label for="confirmPassword">Ulangi Kata Sandi</label>
                 <input type="password" id="confirmPassword" class="form-input" placeholder="Ketik ulang kata sandi" required>
                 <div id="passError" class="error-msg">Kata sandi tidak cocok!</div>
             </div>
 
-            <!-- 7. Info Wallet -->
+            <!-- 6. Info Wallet -->
             <div class="info-box" style="background-color: #E8F5E9; color: #2E7D32;">
                 🛡️ <strong>Aman & Mudah:</strong> Dompet Blockchain (Wallet) akan dibuat otomatis oleh sistem nanti. Anda tidak perlu mengingat kode rumit saat ini.
             </div>
@@ -279,7 +271,6 @@
     <!-- SCRIPT UTAMA (LOGIKA REGISTER + SUPABASE) -->
     <script>
         // --- KONFIGURASI SUPABASE ---
-        // Ganti URL dan KEY ini dengan milik Anda dari Dashboard Supabase > Settings > API
         const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X'; // ANON KEY
 
@@ -288,8 +279,6 @@
         // --- DOM ELEMENTS ---
         const form = document.getElementById('registerForm');
         const roleSelect = document.getElementById('role');
-        const adminCodeGroup = document.getElementById('adminCodeGroup');
-        const adminCodeInput = document.getElementById('adminCode');
         const phoneInput = document.getElementById('phone');
         const btnSubmit = document.getElementById('btnSubmit');
         const spinner = document.getElementById('spinner');
@@ -334,20 +323,7 @@
         // --- EVENT LISTENER SAAT LOAD ---
         document.addEventListener("DOMContentLoaded", () => {
             roleSelect.value = "PETANI";
-            // Saya kosongkan input phone agar user sadar harus isi manual
             phoneInput.value = ""; 
-            adminCodeGroup.style.display = 'none';
-
-            roleSelect.addEventListener('change', function() {
-                if (this.value === 'ADMIN') {
-                    adminCodeGroup.style.display = 'block';
-                    adminCodeInput.required = true;
-                } else {
-                    adminCodeGroup.style.display = 'none';
-                    adminCodeInput.value = "";
-                    adminCodeInput.required = false;
-                }
-            });
         });
 
         // --- LOGIKA SUBMIT FORM ---
@@ -359,7 +335,6 @@
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const role = document.getElementById('role').value;
-            const adminCode = document.getElementById('adminCode').value;
 
             // 1. Validasi Password Sederhana
             if (password !== confirmPassword) {
@@ -370,13 +345,7 @@
                 passError.style.display = 'none';
             }
 
-            // 2. Validasi Admin Code
-            if (role === 'ADMIN' && adminCode !== 'admin123') {
-                showModal('error', 'Akses Ditolak', 'Kode Admin salah. Anda tidak berizin mendaftar sebagai Administrator.', null);
-                return;
-            }
-
-            // 3. Tampilkan UI Loading
+            // 2. Tampilkan UI Loading
             btnSubmit.classList.add('btn-loading');
             btnSubmit.disabled = true;
             spinner.style.display = 'inline-block';
@@ -408,22 +377,20 @@
                 console.log("Auth Berhasil. ID User:", authData.user.id);
 
                 // LANGKAH 2: Simpan data detail ke tabel 'profiles'
-                // Hanya lanjut jika user ID berhasil dibuat
                 if (authData.user && authData.user.id) {
                     const { error: profileError } = await supabase
                         .from('profiles')
                         .insert([
                             { 
-                                id: authData.user.id,    // Pastikan id ini sama dengan UUID dari Auth
+                                id: authData.user.id,    
                                 full_name: fullname,
                                 phone: phone,
                                 role: role,
-                                desa: "-",              // Default data
+                                desa: "-",              
                                 luas_lahan: 0
                             }
                         ]);
 
-                    // Cek error dari Insert Profile
                     if (profileError) {
                         console.error("Gagal insert profile:", profileError);
                         throw new Error("Gagal menyimpan data profil. Periksa tabel database.");
@@ -439,7 +406,6 @@
                 let failTitle = 'Pendaftaran Gagal';
                 let failDesc = err.message || 'Terjadi kesalahan tak terduga pada sistem.';
 
-                // Deteksi pesan error spesifik Supabase
                 if (failDesc.includes('already registered')) {
                     failDesc = 'Nomor HP ' + phone + ' sudah terdaftar. Silakan Login langsung.';
                 } else if (failDesc.includes('Database error')) {
@@ -449,7 +415,6 @@
                 showModal('error', failTitle, failDesc, null);
 
             } finally {
-                // Reset Tombol ke kondisi semula
                 btnSubmit.classList.remove('btn-loading');
                 btnSubmit.disabled = false;
                 spinner.style.display = 'none';
