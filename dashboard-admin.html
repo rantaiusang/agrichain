@@ -43,6 +43,7 @@
             left: 0;
             top: 0;
             z-index: 100;
+            overflow-y: auto;
         }
 
         .brand {
@@ -65,6 +66,7 @@
             align-items: center;
             gap: 10px;
             color: rgba(255,255,255,0.7);
+            text-decoration: none;
         }
 
         .nav-item:hover, .nav-item.active {
@@ -79,7 +81,88 @@
             padding: 30px;
         }
 
-        /* --- ROLE SWITCHER --- */
+        /* --- FORM INPUT (BARU) --- */
+        .admin-form-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            border-top: 5px solid var(--accent-gold);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--text-grey);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .btn-add {
+            background: var(--success);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            height: 42px;
+        }
+        .btn-add:hover { background: #1B5E20; }
+
+        /* --- TABLE LIST --- */
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: var(--primary-dark);
+            font-weight: bold;
+        }
+
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* --- LAMA STYLE (Stats & Role Switcher) --- */
         .role-switcher {
             background: white;
             padding: 15px;
@@ -92,23 +175,7 @@
             border-left: 5px solid var(--accent-gold);
         }
 
-        .role-title {
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: var(--primary-dark);
-        }
-
-        .role-badge {
-            font-size: 0.8rem;
-            color: var(--text-grey);
-            margin-top: 4px;
-        }
-
-        .mode-selector {
-            display: flex;
-            gap: 10px;
-        }
-
+        .mode-selector { display: flex; gap: 10px; }
         .mode-btn {
             padding: 8px 16px;
             border: 1px solid #ddd;
@@ -119,17 +186,12 @@
             font-weight: 500;
             transition: all 0.2s;
         }
-
-        .mode-btn:hover { background: #e0e0e0; }
-
         .mode-btn.active {
             background: var(--primary-dark);
             color: white;
             border-color: var(--primary-dark);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        /* --- CARDS & STATS --- */
         .grid-stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -144,60 +206,20 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             border-top: 4px solid transparent;
         }
-
         .stat-card.admin { border-color: var(--primary-dark); }
         .stat-card.petani { border-color: var(--success); }
         .stat-card.buyer { border-color: var(--warning); }
         .stat-card.lembaga { border-color: var(--danger); }
-
         .stat-value { font-size: 1.8rem; font-weight: bold; margin: 10px 0; }
         .stat-label { font-size: 0.9rem; color: var(--text-grey); }
-
-        /* --- LIST ITEMS --- */
-        .list-section {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            padding: 20px;
-        }
-
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .list-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid #f9f9f9;
-        }
-        
-        .list-item:last-child { border-bottom: none; }
-
-        .item-info h4 { margin: 0 0 5px 0; }
-        .item-info p { margin: 0; font-size: 0.85rem; color: var(--text-grey); }
-
-        .status-tag {
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-        .tag-success { background: #E8F5E9; color: #2E7D32; }
-        .tag-warning { background: #FFF8E1; color: #F57F17; }
 
         /* --- RESPONSIVE --- */
         @media (max-width: 768px) {
             .sidebar { width: 60px; padding: 15px 10px; }
             .brand span, .nav-item span { display: none; }
             .main-content { margin-left: 60px; padding: 15px; }
-            .role-switcher { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .btn-add { width: 100%; }
         }
     </style>
 </head>
@@ -209,14 +231,21 @@
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
             <span>AgriAdmin</span>
         </div>
-        <div class="nav-item active">🏠 Dashboard</div>
-        <div class="nav-item" onclick="location.href='admin-users.html'">👥 User Management</div>
-        <div class="nav-item" onclick="location.href='admin-blockchain.html'">⛓️ Blockchain Logs</div>
-        <div class="nav-item" onclick="location.href='admin-keuangan.html'">💰 Keuangan</div>
+        
+        <!-- Navigasi -->
+        <div class="nav-item active">📊 Dashboard</div>
+        <div class="nav-item" onclick="location.href='admin-users.html'">👥 Users</div>
+        
+        <!-- FITUR BARU: Kelola Komoditas -->
+        <div class="nav-item" style="background: rgba(255,255,255,0.1); color: #FFD700;" onclick="scrollToCommodities()">
+            🌾 Kelola Komoditas
+        </div>
+
+        <div class="nav-item" onclick="location.href='admin-blockchain.html'">⛓️ Blockchain</div>
         <div class="nav-item" onclick="location.href='admin-pengaturan.html'">⚙️ Pengaturan</div>
         
         <!-- Tombol Keluar -->
-        <div id="logoutBtn" class="nav-item" style="margin-top: auto; color: #ff8a80; border: 1px solid #ff8a80; cursor: pointer;">
+        <div id="logoutBtn" class="nav-item" style="margin-top: auto; color: #ff8a80; border: 1px solid #ff8a80;">
              🚪 Keluar
         </div>
     </nav>
@@ -224,203 +253,220 @@
     <!-- Main Content -->
     <div class="main-content">
         
-        <!-- 1. FITUR: ROLE SWITCHER (Mode Tampilan) -->
-        <div class="role-switcher">
+        <!-- Header Stats -->
+        <div class="grid-stats" id="statsContainer">
+            <div class="stat-card admin">
+                <div class="stat-label">Total User</div>
+                <div class="stat-value">1,240</div>
+            </div>
+            <div class="stat-card petani">
+                <div class="stat-label">Komoditas Aktif</div>
+                <div class="stat-value" id="totalCommodityCount">...</div>
+            </div>
+            <div class="stat-card buyer">
+                <div class="stat-label">Transaksi Hari Ini</div>
+                <div class="stat-value">Rp 12.5 Jt</div>
+            </div>
+        </div>
+
+        <!-- 1. BAGIAN BARU: INPUT KOMODITAS -->
+        <div class="admin-form-card" id="commoditiesSection">
+            <h3 style="margin-top:0; color:var(--primary-dark);">➕ Tambah Komoditas Pasar</h3>
+            <p style="color:var(--text-grey); font-size:0.9rem; margin-bottom:20px;">Masukkan data baru agar muncul di form petani.</p>
+            
+            <form id="addCommodityForm" class="form-grid">
+                <div class="form-group">
+                    <label>Nama Komoditas</label>
+                    <input type="text" id="inputName" class="form-control" placeholder="Contoh: Kentang Dieng" required>
+                </div>
+                <div class="form-group">
+                    <label>Harga (Rp)</label>
+                    <input type="number" id="inputPrice" class="form-control" placeholder="12000" required>
+                </div>
+                <div class="form-group">
+                    <label>Satuan</label>
+                    <select id="inputUnit" class="form-control">
+                        <option value="Kg">Kg</option>
+                        <option value="Ton">Ton</option>
+                        <option value="Pcs">Pcs</option>
+                        <option value="Karung">Karung</option>
+                        <option value="Ikat">Ikat</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-add">Simpan</button>
+            </form>
+        </div>
+
+        <!-- 2. DAFTAR KOMODITAS (TABEL) -->
+        <div class="table-container" id="commoditiesSection">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="margin:0; color:var(--primary-dark);">Daftar Harga Pasar</h3>
+                <button onclick="loadCommodities()" style="border:1px solid #ddd; background:white; padding:5px 10px; cursor:pointer;">🔄 Refresh</button>
+            </div>
+            
+            <table id="commodityTable">
+                <thead>
+                    <tr>
+                        <th>Nama Komoditas</th>
+                        <th>Harga</th>
+                        <th>Satuan</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data akan diisi oleh JS -->
+                    <tr><td colspan="4" style="text-align:center; color:#999;">Memuat data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 3. MODE SWITCHER (SAMA SEPERTI SEBELUMNYA) -->
+        <div class="role-switcher" style="margin-top: 30px;">
             <div>
                 <div class="role-title">Mode Tampilan Super Admin</div>
-                <div class="role-badge">Lihat sistem dari sudut pandang user berbeda</div>
+                <div class="role-badge">Simulasi pandangan user lain</div>
             </div>
             <div class="mode-selector">
                 <button class="mode-btn active" onclick="switchMode('admin', this)">Admin</button>
                 <button class="mode-btn" onclick="switchMode('petani', this)">Petani</button>
                 <button class="mode-btn" onclick="switchMode('buyer', this)">Buyer</button>
-                <button class="mode-btn" onclick="switchMode('lembaga', this)">Lembaga</button>
-            </div>
-        </div>
-
-        <!-- 2. STATISTICS (Berubah sesuai Mode) -->
-        <div class="grid-stats" id="statsContainer">
-            <!-- Diisi oleh JS -->
-        </div>
-
-        <!-- 3. DYNAMIC CONTENT LIST -->
-        <div class="list-section">
-            <div class="section-header">
-                <h3 id="listTitle">Aktivitas Sistem Terkini</h3>
-                <button style="border:none; background:none; color:var(--primary-dark); cursor:pointer;">Lihat Semua</button>
-            </div>
-            <div id="listContainer">
-                <!-- Diisi oleh JS -->
             </div>
         </div>
 
     </div>
 
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        // --- 1. KONFIGURASI SUPABASE (SESUAIKAN) ---
+        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
+        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X'; // Ganti dengan KEY Anda yang asli
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. LOGIKA KEAMANAN (Security Check) ---
-        document.addEventListener("DOMContentLoaded", async () => {
-            // Ambil session saat ini
-            const { data: { session }, error } = await supabase.auth.getSession();
-
-            if (error || !session) {
-                alert("Akses Ditolak: Anda belum login.");
-                window.location.href = 'login.html';
-                return;
-            }
-
-            // Cek apakah role user adalah ADMIN dari tabel profiles
-            // (Penting: Admin tidak bisa sembarang masuk)
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', session.user.id)
-                .single();
-
-            if (!profile || profile.role !== 'ADMIN') {
-                alert("Akses Ditolak: Halaman ini khusus Administrator.");
-                window.location.href = 'index.html'; // Lempar ke halaman user biasa
-                return;
-            }
-
-            console.log("✅ Admin terverifikasi. Dashboard dimuat.");
+        // --- 2. LOAD DATA KOMODITAS ---
+        async function loadCommodities() {
+            const tableBody = document.querySelector('#commodityTable tbody');
+            const countDisplay = document.getElementById('totalCommodityCount');
             
-            // Load data awal
-            const adminBtn = document.querySelector('.mode-btn');
-            switchMode('admin', adminBtn);
-        });
+            try {
+                const { data, error } = await supabase
+                    .from('harga_pasar')
+                    .select('*')
+                    .order('commodity_name', { ascending: true });
 
-        // --- 3. DATA SIMULASI (Tetap Sama) ---
-        const roleData = {
-            admin: {
-                stats: [
-                    { label: "Total User", value: "1,240", class: "admin" },
-                    { label: "Volume Transaksi", value: "Rp 85 M", class: "admin" },
-                    { label: "Pending Dispute", value: "3", class: "admin" },
-                    { label: "Server Status", value: "Online", class: "admin" }
-                ],
-                activities: [
-                    { title: "User Baru Terdaftar", desc: "Budi Santoso (Petani) - Jawa Barat", status: "Baru", color: "tag-success" },
-                    { title: "Laporan Sistem", desc: "Gas fee tinggi di jaringan Polygon", status: "Warning", color: "tag-warning" },
-                    { title: "Backup Database", desc: "Selesai jam 03:00 WIB", status: "Sukses", color: "tag-success" },
-                    { title: "Login Gagal Berulang", desc: "IP 192.168.x.x mencoba brute force", status: "Bahaya", color: "tag-warning" }
-                ]
-            },
-            petani: {
-                stats: [
-                    { label: "Panen Saya", value: "500 Kg", class: "petani" },
-                    { label: "Pendapatan Bulan Ini", value: "Rp 3.2 Jt", class: "petani" },
-                    { label: "Skor Kepercayaan", value: "4.8 ★", class: "petani" },
-                    { label: "Pesanan Masuk", value: "5", class: "petani" }
-                ],
-                activities: [
-                    { title: "Pesanan Baru", desc: "PT. Pangan Jaya membeli 200kg Jagung", status: "Perlu Konfirmasi", color: "tag-warning" },
-                    { title: "Pembayaran Diterima", desc: "Pembayaran untuk Invoice #INV-001", status: "Lunas", color: "tag-success" },
-                    { title: "Update Stok", desc: "Padi IR64 berkurang 500kg", status: "Otomatis", color: "tag-success" }
-                ]
-            },
-            buyer: {
-                stats: [
-                    { label: "Total Pembelian", value: "12 Ton", class: "buyer" },
-                    { label: "Saldo Dompet", value: "Rp 15 Jt", class: "buyer" },
-                    { label: "Supplier Terpercaya", value: "12", class: "buyer" },
-                    { label: "Pesanan Aktif", value: "2", class: "buyer" }
-                ],
-                activities: [
-                    { title: "Penawaran Diterima", desc: "Koperasi Tani Makmur menyetujui harga Padi", status: "Deal", color: "tag-success" },
-                    { title: "Pengiriman", desc: "Truk B-1234-KJ berangkat ke Gudang", status: "Dikirim", color: "tag-warning" },
-                    { title: "Komplain", desc: "Kualitas Jagung kurang kering (Bpk. Yono)", status: "Dispute", color: "tag-warning" }
-                ]
-            },
-            lembaga: {
-                stats: [
-                    { label: "Audit Bulanan", value: "98%", class: "lembaga" },
-                    { label: "Total Dana Pinjaman", value: "Rp 500 Jt", class: "lembaga" },
-                    { label: "Petani Mitra", value: "450", class: "lembaga" },
-                    { label: "Sertifikat Terbit", value: "120", class: "lembaga" }
-                ],
-                activities: [
-                    { title: "Verifikasi Sertifikat", desc: "Request Blockchain Hash: 0x8a2...b4d1", status: "Verified", color: "tag-success" },
-                    { title: "Rapat Koordinasi", desc: "Evaluasi harga pasar mingguan", status: "Jadwal", color: "tag-warning" },
-                    { title: "Pencairan Dana", desc: "Kelompok Tani Suka Maju - Rp 50jt", status: "Approved", color: "tag-success" }
-                ]
+                if (error) throw error;
+
+                // Update Count
+                countDisplay.textContent = data.length;
+
+                // Render Table
+                tableBody.innerHTML = '';
+                if (data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Belum ada data komoditas.</td></tr>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><strong>${item.commodity_name}</strong></td>
+                        <td>Rp ${parseInt(item.current_price).toLocaleString('id-ID')}</td>
+                        <td><span style="background:#eee; padding:2px 8px; border-radius:4px; font-size:0.8rem;">${item.unit}</span></td>
+                        <td>
+                            <button class="btn-delete" onclick="deleteCommodity(${item.id})">Hapus</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error(err);
+                tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Gagal memuat data.</td></tr>';
             }
-        };
-
-        // --- 4. FUNGSI GANTI MODE ---
-        function switchMode(role, btnElement) {
-            // Update UI Tombol
-            const buttons = document.querySelectorAll('.mode-btn');
-            buttons.forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
-
-            // Ambil Data
-            const data = roleData[role];
-
-            // Render Stats
-            const statsContainer = document.getElementById('statsContainer');
-            statsContainer.innerHTML = '';
-            
-            data.stats.forEach(stat => {
-                const card = document.createElement('div');
-                card.className = `stat-card ${stat.class}`;
-                card.innerHTML = `
-                    <div class="stat-label">${stat.label}</div>
-                    <div class="stat-value">${stat.value}</div>
-                `;
-                statsContainer.appendChild(card);
-            });
-
-            // Render Activities
-            const listContainer = document.getElementById('listContainer');
-            listContainer.innerHTML = '';
-
-            data.activities.forEach(act => {
-                const item = document.createElement('div');
-                item.className = 'list-item';
-                item.innerHTML = `
-                    <div class="item-info">
-                        <h4>${act.title}</h4>
-                        <p>${act.desc}</p>
-                    </div>
-                    <span class="status-tag ${act.color}">${act.status}</span>
-                `;
-                listContainer.appendChild(item);
-            });
-
-            // Update Judul
-            const titles = {
-                admin: "Aktivitas Sistem Terkini",
-                petani: "Aktivitas Panen & Penjualan",
-                buyer: "Riwayat Pembelian & Pasokan",
-                lembaga: "Audit & Verifikasi Data"
-            };
-            document.getElementById('listTitle').innerText = titles[role];
         }
 
-        // --- 5. FUNGSI LOGOUT ---
-        const logoutBtn = document.getElementById('logoutBtn');
-        logoutBtn.addEventListener('click', async () => {
-            const confirmLogout = confirm("Apakah Anda yakin ingin keluar dari Dashboard Admin?");
-            
-            if (confirmLogout) {
-                try {
-                    // Logout resmi dari Supabase
-                    await supabase.auth.signOut();
-                    alert("Anda telah keluar.");
-                } catch (err) {
-                    console.error("Error logout:", err);
-                } finally {
-                    // Redirect ke Login
-                    window.location.href = 'login.html';
-                }
+        // --- 3. TAMBAH KOMODITAS ---
+        document.getElementById('addCommodityForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.textContent;
+            btn.textContent = 'Menyimpan...';
+            btn.disabled = true;
+
+            const name = document.getElementById('inputName').value;
+            const price = document.getElementById('inputPrice').value;
+            const unit = document.getElementById('inputUnit').value;
+
+            try {
+                const { error } = await supabase
+                    .from('harga_pasar')
+                    .insert([{
+                        commodity_name: name,
+                        current_price: parseInt(price),
+                        unit: unit
+                    }]);
+
+                if (error) throw error;
+
+                alert('Komoditas berhasil ditambahkan!');
+                document.getElementById('addCommodityForm').reset();
+                loadCommodities(); // Refresh tabel
+
+            } catch (err) {
+                alert('Gagal menambah: ' + err.message);
+            } finally {
+                btn.textContent = originalText;
+                btn.disabled = false;
             }
         });
 
+        // --- 4. HAPUS KOMODITAS ---
+        async function deleteCommodity(id) {
+            if(!confirm('Yakin ingin menghapus komoditas ini?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('harga_pasar')
+                    .delete()
+                    .eq('id', id);
+
+                if (error) throw error;
+                loadCommodities(); // Refresh tabel
+            } catch (err) {
+                alert('Gagal menghapus: ' + err.message);
+            }
+        }
+
+        function scrollToCommodities() {
+            document.getElementById('commoditiesSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- 5. INIT & DUMMY DATA (SAMA SEPERTI SEBELUMNYA) ---
+        document.addEventListener("DOMContentLoaded", () => {
+            // Load Data Real
+            loadCommodities();
+
+            // Cek Login Admin
+            supabase.auth.getSession().then(({ data: { session } }) => {
+                if (!session) {
+                    alert("Akses Ditolak");
+                    window.location.href = 'login.html';
+                }
+            });
+        });
+
+        // Logika Role Switcher (Disederhanakan untuk fokus ke komoditas)
+        function switchMode(role, btn) {
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            // Bisa ditambahkan logika ubah tampilan grafik sesuai role jika mau
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            if(confirm("Keluar dari Admin?")) {
+                await supabase.auth.signOut();
+                window.location.href = 'login.html';
+            }
+        });
     </script>
 </body>
 </html>
