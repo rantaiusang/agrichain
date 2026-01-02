@@ -9,34 +9,39 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        /* --- CSS VARIABLES & RESET --- */
+        /* --- 1. CSS VARIABLES & RESET --- */
         :root {
-            --primary-green: #2E7D32;
-            --dark-green: #1B5E20;
-            --light-green: #E8F5E9;
-            --text-dark: #333333;
-            --text-grey: #666666;
+            --primary: #2E7D32;       /* Hijau Utama */
+            --primary-dark: #1B5E20;  /* Hijau Tua */
+            --primary-light: #E8F5E9; /* Hijau Muda */
+            --accent: #FFA000;        /* Kuning/Oranye */
+            --danger: #D32F2F;        /* Merah Error */
+            --text-main: #1F2937;
+            --text-sub: #6B7280;
+            --bg-body: #F3F4F6;
             --white: #ffffff;
-            --warning: #FFA000;
-            --danger: #D32F2F;
-            --border-radius: 8px;
-            --shadow: 0 2px 8px rgba(0,0,0,0.05);
+            --border-radius: 12px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --transition: all 0.2s ease-in-out;
         }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #f4f6f8;
-            color: var(--text-dark);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
             margin: 0;
-            padding: 0; 
-            padding-bottom: 40px;
+            padding: 0;
+            padding-bottom: 80px; /* Ruang untuk toast di bawah */
         }
 
-        /* --- NAVBAR (MENU ATAS) --- */
+        /* --- 2. NAVBAR --- */
         .navbar {
             background-color: var(--white);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-            padding: 10px 20px;
+            box-shadow: var(--shadow-sm);
+            padding: 12px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -46,548 +51,615 @@
         }
 
         .nav-brand {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             font-weight: 800;
-            color: var(--primary-green);
+            color: var(--primary);
             text-decoration: none;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        .nav-links {
-            display: flex;
-            gap: 20px;
-        }
-
-        .nav-link {
-            text-decoration: none;
-            color: var(--text-dark);
-            font-weight: 600;
-            padding: 8px 12px;
-            border-radius: 20px;
-            transition: background 0.2s;
-        }
-
-        .nav-link:hover {
-            background-color: var(--light-green);
-            color: var(--primary-green);
-        }
-
-        .btn-nav-profile {
-            background-color: var(--text-dark);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
+        .nav-actions a {
             text-decoration: none;
             font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-main);
+            background: #f0f0f0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: var(--transition);
         }
+        .nav-actions a:hover { background: #e0e0e0; }
 
-        /* --- CONTAINER --- */
+        /* --- 3. LAYOUT UTAMA --- */
         .container {
-            padding: 16px;
-            max-width: 480px;
-            margin: 40px auto;
+            padding: 20px;
+            max-width: 500px;
+            margin: 20px auto;
         }
 
-        /* --- CARD STYLE --- */
         .card {
             background: var(--white);
-            border-radius: 12px;
+            border-radius: var(--border-radius);
             padding: 24px;
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(0,0,0,0.02);
         }
 
         .page-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
             margin-bottom: 24px;
         }
 
         .page-header h2 {
             margin: 0;
-            color: var(--primary-green);
-            font-size: 1.3rem;
+            color: var(--primary);
+            font-size: 1.5rem;
         }
 
-        .btn-back {
-            background: transparent;
-            border: 1px solid #ddd;
-            color: var(--text-grey);
-            padding: 6px 16px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            cursor: pointer;
+        .btn-link {
+            color: var(--text-sub);
             text-decoration: none;
+            font-weight: 600;
+            display: flex; align-items: center; gap: 4px;
         }
-        .btn-back:hover { background: #f0f0f0; color: var(--text-dark); }
+        .btn-link:hover { color: var(--primary); }
 
-        /* --- FORM ELEMENTS --- */
-        .form-group { margin-bottom: 16px; }
+        /* --- 4. FORM STYLES --- */
+        .form-group { margin-bottom: 20px; }
         
         label {
             display: block;
             font-size: 0.9rem;
-            margin-bottom: 6px;
-            font-weight: 600;
-            color: var(--text-dark);
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-main);
         }
-        
-        .helper-text {
-            font-size: 0.8rem;
-            color: var(--text-grey);
-            margin-top: 4px;
-        }
+
+        .input-wrapper { position: relative; }
 
         select, input[type="number"], input[type="text"] {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            padding: 14px 16px;
+            border: 2px solid #E5E7EB;
+            border-radius: var(--border-radius);
             font-size: 1rem;
-            box-sizing: border-box;
-            background: #fff;
+            color: var(--text-main);
+            background: #FAFAFA;
+            transition: var(--transition);
+            appearance: none; /* Hilangkan default style browser */
+        }
+
+        select {
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
         }
 
         input:focus, select:focus {
-            border-color: var(--primary-green);
+            border-color: var(--primary);
+            background: var(--white);
             outline: none;
-            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
+            box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.1);
         }
 
-        /* --- ESTIMATION BOX --- */
-        .estimation-box {
-            background-color: #FFF8E1;
-            border: 1px solid var(--warning);
+        .input-hint {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            margin-top: 6px;
+            display: block;
+        }
+
+        /* Quality Badges inside Select (Optional visual enhancement) */
+        option[value="premium"] { font-weight: bold; color: var(--accent); }
+        option[value="standard_minus"] { color: var(--text-sub); }
+
+        /* --- 5. ESTIMATION BOX --- */
+        .estimation-card {
+            background: linear-gradient(to right, #FFFBEB, #FEF3C7); /* Kuning muda */
+            border: 1px solid #FCD34D;
             border-radius: var(--border-radius);
-            padding: 16px;
-            margin-top: 20px;
-            opacity: 0.5;
-            transition: opacity 0.3s;
+            padding: 20px;
+            margin-bottom: 24px;
+            text-align: center;
+            transition: var(--transition);
+        }
+        
+        .estimation-card.active {
+            box-shadow: 0 4px 12px rgba(255, 160, 0, 0.15);
+            border-color: var(--accent);
         }
 
-        .estimation-title {
-            font-size: 0.85rem;
-            color: var(--warning);
-            font-weight: bold;
+        .est-label {
+            font-size: 0.8rem;
             text-transform: uppercase;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+            letter-spacing: 0.05em;
+            color: #92400E;
+            font-weight: 700;
+            margin-bottom: 4px;
         }
 
-        .price-breakdown {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-            font-size: 0.95rem;
-        }
-
-        .total-price {
-            font-size: 1.5rem;
+        .est-total {
+            font-size: 1.75rem;
             font-weight: 800;
-            color: var(--text-dark);
+            color: #1F2937;
+            margin: 8px 0;
+        }
+        
+        .est-detail {
+            font-size: 0.9rem;
+            color: #92400E;
+            background: rgba(255,255,255,0.5);
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-block;
         }
 
-        .price-note {
-            font-size: 0.75rem;
-            color: var(--text-grey);
-            margin-top: 8px;
-            font-style: italic;
-        }
-
-        /* --- CHECKBOX --- */
-        .checkbox-wrapper {
+        /* --- 6. CHECKBOX --- */
+        .checkbox-container {
             display: flex;
             align-items: flex-start;
-            gap: 10px;
+            gap: 12px;
+            margin: 20px 0;
+            padding: 16px;
+            background: var(--primary-light);
+            border-radius: 8px;
             cursor: pointer;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid #eee;
         }
-        .checkbox-wrapper input { margin-top: 4px; accent-color: var(--primary-green); }
-        .checkbox-label { font-size: 0.85rem; line-height: 1.4; color: var(--text-dark); }
 
-        /* --- BUTTONS --- */
-        .form-actions {
-            display: flex;
-            gap: 10px;
+        .checkbox-container input {
+            margin-top: 4px;
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .checkbox-text {
+            font-size: 0.9rem;
+            line-height: 1.4;
+            color: var(--primary-dark);
+        }
+
+        /* --- 7. ACTION BUTTONS --- */
+        .action-bar {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 12px;
             margin-top: 24px;
         }
 
-        .btn-cancel {
-            flex: 1;
-            padding: 14px;
-            background: #f5f5f5;
-            border: 1px solid #ddd;
-            color: var(--text-dark);
-            border-radius: var(--border-radius);
-            font-weight: bold;
-            cursor: pointer;
-            text-decoration: none;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .btn-cancel:hover { background: #e0e0e0; }
-
-        .btn-submit {
-            flex: 2;
-            padding: 14px;
-            background-color: #ccc;
-            color: white;
+        .btn {
             border: none;
             border-radius: var(--border-radius);
+            padding: 16px;
             font-size: 1rem;
-            font-weight: bold;
-            cursor: not-allowed;
+            font-weight: 700;
+            cursor: pointer;
             display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
             gap: 8px;
-            transition: background 0.3s;
+            transition: var(--transition);
         }
 
-        .btn-submit.active {
-            background-color: var(--primary-green);
+        .btn-secondary {
+            background-color: #E5E7EB;
+            color: var(--text-main);
+        }
+        .btn-secondary:hover { background-color: #D1D5DB; }
+
+        .btn-primary {
+            background-color: #9CA3AF; /* Disabled color initially */
+            color: white;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .btn-primary.ready {
+            background-color: var(--primary);
             color: white;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2);
+            opacity: 1;
+            box-shadow: 0 4px 6px rgba(46, 125, 50, 0.3);
         }
-        .btn-submit.active:hover { background-color: var(--dark-green); }
+        .btn-primary.ready:hover { background-color: var(--primary-dark); transform: translateY(-1px); }
 
-        /* --- SPINNER LOADING --- */
-        .spinner {
-            width: 18px; height: 18px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s linear infinite;
-            display: none;
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* --- TOAST --- */
-        .toast {
+        /* --- 8. TOAST NOTIFICATION --- */
+        .toast-container {
             position: fixed;
-            bottom: 20px;
+            bottom: 24px;
             left: 50%;
             transform: translateX(-50%);
+            z-index: 999;
+            width: 90%;
+            max-width: 400px;
+            pointer-events: none;
+        }
+
+        .toast {
             background: #333;
             color: #fff;
-            padding: 12px 24px;
+            padding: 12px 20px;
             border-radius: 50px;
-            font-size: 0.9rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            font-size: 0.95rem;
+            text-align: center;
             opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            z-index: 999;
-            white-space: nowrap;
+            transform: translateY(20px);
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        .toast.show { opacity: 1; }
 
-        /* --- RESPONSIVE --- */
-        @media (max-width: 600px) {
-            .nav-links { display: none; } /* Sembunyikan menu teks di HP */
-            .form-actions { flex-direction: column; }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .toast.error { background: var(--danger); }
+        .toast.success { background: var(--primary); }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 20px; height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Mobile Responsive */
+        @media (max-width: 480px) {
+            .action-bar { grid-template-columns: 1fr; }
+            .btn-secondary { order: 2; }
+            .btn-primary { order: 1; }
         }
     </style>
 </head>
 <body>
 
-    <!-- 1. NAVBAR (MENU ATAS) -->
+    <!-- NAVBAR -->
     <nav class="navbar">
         <a href="index.html" class="nav-brand">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z" />
-            </svg>
+            <!-- Icon Daun SVG -->
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>
             AgriChain
         </a>
-
-        <!-- Menu Navigasi -->
-        <ul class="nav-links">
-            <li><a href="index.html" class="nav-link">🏠 Beranda</a></li>
-            <li><a href="belanja.html" class="nav-link">🛒 Belanja</a></li>
-            <li><a href="harga.html" class="nav-link">💰 Info Harga</a></li>
-        </ul>
-
-        <a href="profile.html" class="btn-nav-profile">👤 Profil</a>
+        <div class="nav-actions">
+            <a href="profile.html">👤 Akun Saya</a>
+        </div>
     </nav>
 
-    <!-- 2. KONTEN FORM -->
+    <!-- MAIN CONTENT -->
     <div class="container">
         <div class="card">
-            <!-- Header Halaman dengan Tombol Kembali -->
             <div class="page-header">
                 <h2>Input Panen</h2>
-                <a href="index.html" class="btn-back">← Kembali</a>
+                <a href="index.html" class="btn-link">← Kembali</a>
             </div>
 
             <form id="harvestForm">
-                <!-- Kategori Tanaman -->
+                <!-- Input 1: Jenis Tanaman -->
                 <div class="form-group">
                     <label for="cropType">Jenis Tanaman</label>
-                    <select id="cropType" onchange="HarvestModule.updateEstimate()">
-                        <option value="" disabled selected>Pilih tanaman...</option>
-                        <!-- Opsi harga akan diisi oleh JS dari Database -->
-                        <option value="loading" disabled>Sedang memuat harga pasar...</option>
-                    </select>
-                    <div class="helper-text">Pilih jenis yang paling mirip.</div>
+                    <div class="input-wrapper">
+                        <select id="cropType" required>
+                            <option value="" disabled selected>Pilih jenis tanaman...</option>
+                            <!-- Data akan diisi otomatis oleh JS -->
+                            <option value="loading" disabled>Sedang memuat data pasar...</option>
+                        </select>
+                    </div>
+                    <span class="input-hint">Pilih komoditas yang paling mirip dengan hasil panen Anda.</span>
                 </div>
 
-                <!-- Berat -->
+                <!-- Input 2: Berat -->
                 <div class="form-group">
-                    <label for="quantity">Berat Hasil (Kg)</label>
-                    <input type="number" id="quantity" placeholder="0" min="1" oninput="HarvestModule.updateEstimate()">
-                    <div class="helper-text">Contoh: 500, 1000. Gunakan angka bulat.</div>
+                    <label for="quantity">Berat Total (Kg)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="quantity" placeholder="Contoh: 100" min="1" step="0.1">
+                    </div>
+                    <span class="input-hint">Masukkan berat dalam kilogram (Kg).</span>
                 </div>
 
-                <!-- Kualitas -->
+                <!-- Input 3: Kualitas -->
                 <div class="form-group">
                     <label for="quality">Kualitas Panen</label>
-                    <select id="quality" onchange="HarvestModule.updateEstimate()">
-                        <option value="standard" data-multiplier="1">Standar (Biasa)</option>
-                        <option value="premium" data-multiplier="1.2">Premium (Pilihan)</option>
-                        <option value="standard_minus" data-multiplier="0.8">Kurang (Kecil/Patah)</option>
-                    </select>
-                </div>
-
-                <!-- Kotak Estimasi -->
-                <div class="estimation-box" id="estimationBox">
-                    <div class="estimation-title">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-                        Perkiraan Harga Pasar
-                    </div>
-                    
-                    <div class="price-breakdown">
-                        <span>Harga Dasar:</span>
-                        <span id="basePriceDisplay">Rp 0 /kg</span>
-                    </div>
-                    <div class="price-breakdown">
-                        <span>Total Estimasi:</span>
-                        <span class="total-price" id="totalPriceDisplay">Rp 0</span>
-                    </div>
-                    
-                    <div class="price-note">
-                        *Harga di atas hanya saran dari sistem berdasarkan data pasar minggu ini.
+                    <div class="input-wrapper">
+                        <select id="quality" onchange="HarvestModule.updateEstimate()">
+                            <option value="standard" data-multiplier="1">Standar (Kualitas Biasa)</option>
+                            <option value="premium" data-multiplier="1.3">Premium (Ukuran Besar, Segar)</option>
+                            <option value="standard_minus" data-multiplier="0.8">Kurang (Kecil, Patah, atau Busuk Sedikit)</option>
+                        </select>
                     </div>
                 </div>
 
-                <!-- Konfirmasi -->
-                <label class="checkbox-wrapper">
-                    <input type="checkbox" id="priceConfirm" onchange="HarvestModule.toggleSubmitButton()">
-                    <span class="checkbox-label">
-                        Saya sudah melihat harga saran di atas. Saya mengerti harga ini bisa berubah saat ada pembeli.
+                <!-- Estimation Box -->
+                <div class="estimation-card" id="estimationCard">
+                    <div class="est-label">Estimasi Nilai Jual</div>
+                    <div class="est-total" id="totalPriceDisplay">Rp 0</div>
+                    <div class="est-detail" id="basePriceDisplay">Rp 0 /kg</div>
+                </div>
+
+                <!-- Checkbox Agreement -->
+                <label class="checkbox-container">
+                    <input type="checkbox" id="priceConfirm" onchange="HarvestModule.toggleSubmit()">
+                    <span class="checkbox-text">
+                        Saya menyetujui estimasi harga di atas dan mengerti harga aktual dapat berubah sesuai kesepakatan pembeli.
                     </span>
                 </label>
 
-                <!-- Tombol Aksi -->
-                <div class="form-actions">
-                    <a href="index.html" class="btn-cancel">Batal</a>
-                    <button type="button" id="btnSubmit" class="btn-submit" onclick="HarvestModule.submit()">
-                        <span class="spinner" id="spinner"></span>
-                        <span id="btnText">Masukkan ke Penjualan</span>
+                <!-- Action Buttons -->
+                <div class="action-bar">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='index.html'">Batal</button>
+                    <button type="button" id="btnSubmit" class="btn btn-primary" onclick="HarvestModule.submit()">
+                        <span class="spinner" id="spinner" style="display:none"></span>
+                        <span id="btnText">Masukkan Penjualan</span>
                     </button>
                 </div>
-
             </form>
         </div>
     </div>
 
-    <!-- Toast Notifikasi -->
-    <div id="toast" class="toast">Data berhasil disimpan!</div>
+    <!-- Toast Container -->
+    <div class="toast-container">
+        <div id="toast" class="toast">Pesan notifikasi</div>
+    </div>
 
-    <!-- 3. JAVASCRIPT MODULAR (SUPABASE INTEGRATION) -->
+    <!-- LOGIC SCRIPT -->
     <script>
-        // --- KONFIGURASI SUPABASE ---
+        // --- KONFIGURASI ---
         const SUPABASE_URL = 'https://xyzcompany.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let currentUserId = null;
-        let marketPrices = {}; // Cache harga pasar
-
-        // --- MODUL 1: DATA PASAR (AMBIL DARI DATABASE) ---
-        const MarketData = {
-            init: async function() {
-                // Ambil harga terkini dari tabel market_prices
-                const { data, error } = await supabase
-                    .from('market_prices')
-                    .select('commodity_name, current_price')
-                    .order('commodity_name', { ascending: true });
-                
-                if (data) {
-                    const select = document.getElementById('cropType');
-                    select.innerHTML = '<option value="" disabled selected>Pilih tanaman...</option>';
-                    
-                    data.forEach(item => {
-                        // Normalisasi nama (huruf kecil semua) untuk key
-                        const key = item.commodity_name.toLowerCase().replace(/ /g, '');
-                        marketPrices[key] = item.current_price;
-
-                        // Tambahkan option ke HTML
-                        const opt = document.createElement('option');
-                        opt.value = key;
-                        opt.setAttribute('data-price', item.current_price);
-                        opt.textContent = item.commodity_name;
-                        select.appendChild(opt);
-                    });
-                }
-            },
-            getPrice: function(key) {
-                return marketPrices[key] || 0;
-            }
+        // --- STATE MANAGEMENT ---
+        const AppState = {
+            currentUser: null,
+            prices: {},
+            isSubmitting: false
         };
 
-        // --- MODUL 2: FUNGSI BANTUAN (UTILITIES) ---
+        // --- MODULES ---
+
+        // 1. UTILS (Helper Functions)
         const Utils = {
-            formatRupiah: function(number) {
-                return new Intl.NumberFormat('id-ID', { 
-                    style: 'currency', 
+            formatRupiah: (number) => {
+                return new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
                     currency: 'IDR',
-                    minimumFractionDigits: 0
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
                 }).format(number);
             },
 
-            showToast: function(message) {
+            showToast: (msg, type = 'normal') => {
                 const toast = document.getElementById('toast');
-                if(!toast) return;
-                toast.textContent = message;
-                toast.classList.add('show');
-                setTimeout(() => { toast.classList.remove('show'); }, 3000);
+                toast.textContent = msg;
+                toast.className = 'toast show'; // Reset class
+                
+                if (type === 'error') toast.classList.add('error');
+                else if (type === 'success') toast.classList.add('success');
+
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3500);
+            },
+
+            setLoading: (isLoading) => {
+                const btn = document.getElementById('btnSubmit');
+                const spinner = document.getElementById('spinner');
+                const text = document.getElementById('btnText');
+                
+                AppState.isSubmitting = isLoading;
+                btn.disabled = isLoading;
+                
+                if (isLoading) {
+                    spinner.style.display = 'inline-block';
+                    text.textContent = 'Memproses...';
+                    btn.style.opacity = '0.7';
+                } else {
+                    spinner.style.display = 'none';
+                    text.textContent = 'Masukkan Penjualan';
+                    btn.style.opacity = '1';
+                    HarvestModule.toggleSubmit(); // Re-check state
+                }
             }
         };
 
-        // --- MODUL 3: LOGIKA FORM (HANDLER) ---
-        const HarvestModule = {
-            updateEstimate: function() {
-                // DOM Elements
-                const cropSelect = document.getElementById('cropType');
-                const quantityInput = document.getElementById('quantity');
-                const qualitySelect = document.getElementById('quality');
-                const estimationBox = document.getElementById('estimationBox');
-                const basePriceDisplay = document.getElementById('basePriceDisplay');
-                const totalPriceDisplay = document.getElementById('totalPriceDisplay');
-
-                // Ambil Nilai
-                const selectedOption = cropSelect.options[cropSelect.selectedIndex];
-                const qualityOption = qualitySelect.options[qualitySelect.selectedIndex];
-
-                const basePrice = parseInt(selectedOption.getAttribute('data-price')) || 0;
-                const quantity = parseFloat(quantityInput.value) || 0;
-                const multiplier = parseFloat(qualityOption.getAttribute('data-multiplier')) || 1;
-
-                // Logika Kalkulasi
-                if (quantity > 0 && basePrice > 0) {
-                    estimationBox.style.opacity = "1";
-                    
-                    const finalPricePerKg = basePrice * multiplier;
-                    let totalEstimation = quantity * finalPricePerKg;
-
-                    // Update UI
-                    basePriceDisplay.textContent = Utils.formatRupiah(finalPricePerKg) + " /kg";
-                    totalPriceDisplay.textContent = Utils.formatRupiah(totalEstimation);
-                } else {
-                    estimationBox.style.opacity = "0.5";
-                    basePriceDisplay.textContent = "Rp 0 /kg";
-                    totalPriceDisplay.textContent = "Rp 0";
-                }
-
-                // Reset Checkbox jika input berubah
-                document.getElementById('priceConfirm').checked = false;
-                this.toggleSubmitButton();
-            },
-
-            toggleSubmitButton: function() {
-                const checkbox = document.getElementById('priceConfirm');
-                const btn = document.getElementById('btnSubmit');
-                const quantity = document.getElementById('quantity').value;
-                const crop = document.getElementById('cropType').value;
-
-                if (checkbox.checked && quantity > 0 && crop !== "") {
-                    btn.classList.add('active');
-                    btn.disabled = false;
-                } else {
-                    btn.classList.remove('active');
-                    btn.disabled = true;
-                }
-            },
-
-            submit: async function() {
-                const btn = document.getElementById('btnSubmit');
-                const originalHTML = btn.innerHTML;
-                
-                // Validasi Input
-                const cropType = document.getElementById('cropType').value;
-                const quantity = document.getElementById('quantity').value;
-                const quality = document.getElementById('quality').value;
-                const estimatedPriceText = document.getElementById('totalPriceDisplay').textContent;
-
-                if(!cropType || !quantity) {
-                    Utils.showToast("Mohon lengkapi jenis dan berat panen.");
-                    return;
-                }
-
-                // UI Loading
-                btn.innerHTML = `<span class="spinner" style="display:inline-block"></span> Menyimpan...`;
-                btn.disabled = true;
-
+        // 2. MARKET DATA (Fetching Prices)
+        const MarketModule = {
+            init: async () => {
                 try {
-                    // 1. Kirim Data ke Tabel 'harvest_sales'
-                    const { error } = await supabase
-                        .from('harvest_sales')
-                        .insert([{
-                            user_id: currentUserId,
-                            crop_type: cropType,
-                            quantity: parseInt(quantity),
-                            quality: quality,
-                            estimated_price: 0 // Supabase tidak simpan string Rp, bisa dihitung nanti di backend atau di sini convert ke int
-                        }]);
+                    // Simulasi jika belum ada database, uncomment ini untuk dummy data:
+                    // MarketModule.loadDummyData(); return;
+
+                    const { data, error } = await supabase
+                        .from('market_prices')
+                        .select('commodity_name, current_price')
+                        .order('commodity_name', { ascending: true });
 
                     if (error) throw error;
 
-                    // Reset Form
-                    document.getElementById('harvestForm').reset();
-                    document.getElementById('estimationBox').style.opacity = "0.5";
-                    document.getElementById('basePriceDisplay').textContent = "Rp 0 /kg";
-                    document.getElementById('totalPriceDisplay').textContent = "Rp 0";
-                    document.getElementById('priceConfirm').checked = false;
-                    
-                    btn.innerHTML = originalHTML;
-                    btn.disabled = true;
-                    btn.classList.remove('active');
+                    if (data && data.length > 0) {
+                        MarketModule.populateSelect(data);
+                    } else {
+                        document.getElementById('cropType').innerHTML = 
+                            `<option disabled selected>Belum ada data harga</option>`;
+                    }
+                } catch (err) {
+                    console.error("Gagal load harga:", err);
+                    Utils.showToast("Gagal memuat data harga pasar", "error");
+                    document.getElementById('cropType').innerHTML = 
+                        `<option disabled selected>Error memuat data</option>`;
+                }
+            },
 
-                    Utils.showToast("Data panen berhasil dimasukkan ke Pasar!");
+            populateSelect: (data) => {
+                const select = document.getElementById('cropType');
+                select.innerHTML = '<option value="" disabled selected>Pilih tanaman...</option>';
+                
+                data.forEach(item => {
+                    const key = item.commodity_name.toLowerCase().replace(/[^a-z0-9]/g, '');
+                    AppState.prices[key] = item.current_price;
+
+                    const opt = document.createElement('option');
+                    opt.value = key;
+                    opt.dataset.price = item.current_price; // Simpan harga di DOM
+                    opt.textContent = `${item.commodity_name} (${Utils.formatRupiah(item.current_price)}/kg)`;
+                    select.appendChild(opt);
+                });
+            },
+
+            // Fungsi Dummy untuk testing tanpa Supabase connection
+            loadDummyData: () => {
+                const data = [
+                    { commodity_name: 'Padi', current_price: 5000 },
+                    { commodity_name: 'Jagung', current_price: 4000 },
+                    { commodity_name: 'Cabai Merah', current_price: 45000 }
+                ];
+                MarketModule.populateSelect(data);
+            }
+        };
+
+        // 3. FORM HANDLER (Logic Input & Submit)
+        const HarvestModule = {
+            updateEstimate: () => {
+                const cropSelect = document.getElementById('cropType');
+                const quantityInput = document.getElementById('quantity');
+                const qualitySelect = document.getElementById('quality');
+                const estCard = document.getElementById('estimationCard');
+                const totalDisplay = document.getElementById('totalPriceDisplay');
+                const baseDisplay = document.getElementById('basePriceDisplay');
+
+                // Ambil values
+                const selectedOpt = cropSelect.options[cropSelect.selectedIndex];
+                const qualityOpt = qualitySelect.options[qualitySelect.selectedIndex];
+                
+                const basePrice = parseInt(selectedOpt?.dataset.price) || 0;
+                const quantity = parseFloat(quantityInput.value) || 0;
+                const multiplier = parseFloat(qualityOpt.dataset.multiplier) || 1;
+
+                // Kalkulasi
+                if (quantity > 0 && basePrice > 0) {
+                    estCard.classList.add('active');
+                    const finalPricePerKg = Math.round(basePrice * multiplier);
+                    const total = quantity * finalPricePerKg;
+
+                    totalDisplay.textContent = Utils.formatRupiah(total);
+                    baseDisplay.textContent = `Dasar: ${Utils.formatRupiah(finalPricePerKg)} /kg`;
+                } else {
+                    estCard.classList.remove('active');
+                    totalDisplay.textContent = 'Rp 0';
+                    baseDisplay.textContent = 'Rp 0 /kg';
+                }
+
+                // Reset checkbox jika input berubah
+                document.getElementById('priceConfirm').checked = false;
+                HarvestModule.toggleSubmit();
+            },
+
+            toggleSubmit: () => {
+                const checkbox = document.getElementById('priceConfirm');
+                const quantity = document.getElementById('quantity').value;
+                const crop = document.getElementById('cropType').value;
+                const btn = document.getElementById('btnSubmit');
+
+                // Validasi UI: Button jadi hijau hanya jika form lengkap & disetujui
+                const isValid = checkbox.checked && quantity > 0 && crop !== "";
+                
+                if (isValid) {
+                    btn.classList.add('ready');
+                    btn.disabled = false;
+                } else {
+                    btn.classList.remove('ready');
+                    // Disable button jika tidak valid, KECUALI sedang loading
+                    if (!AppState.isSubmitting) btn.disabled = true;
+                }
+            },
+
+            submit: async () => {
+                // 1. VALIDASI KEAMANAN (Wajib Login)
+                if (!AppState.currentUser) {
+                    Utils.showToast("Anda harus Login terlebih dahulu!", "error");
+                    // Redirect halus ke login
+                    setTimeout(() => { window.location.href = 'login.html'; }, 1500);
+                    return;
+                }
+
+                // 2. VALIDASI DATA
+                const crop = document.getElementById('cropType').value;
+                const qty = document.getElementById('quantity').value;
+                const quality = document.getElementById('quality').value;
+                const isConfirmed = document.getElementById('priceConfirm').checked;
+
+                if (!crop || !qty || !isConfirmed) {
+                    Utils.showToast("Mohon lengkapi semua data.", "error");
+                    return;
+                }
+
+                // 3. PROSES KIRIM
+                Utils.setLoading(true);
+
+                try {
+                    const payload = {
+                        user_id: AppState.currentUser.id,
+                        crop_type: crop,
+                        quantity: parseFloat(qty),
+                        quality: quality,
+                        estimated_price: 0, // Bisa dihitung di frontend jika perlu
+                        status: 'pending' // Status awal
+                    };
+
+                    const { error } = await supabase
+                        .from('harvest_sales')
+                        .insert([payload]);
+
+                    if (error) throw error;
+
+                    // SUKSES
+                    Utils.showToast("Data panen berhasil dijual!", "success");
+                    document.getElementById('harvestForm').reset();
+                    document.getElementById('estimationCard').classList.remove('active');
+                    document.getElementById('totalPriceDisplay').textContent = 'Rp 0';
                     
-                    // Redirect ke Beranda (Opsional)
-                    setTimeout(() => { window.location.href = 'index.html'; }, 1500);
+                    // Redirect home setelah delay
+                    setTimeout(() => { window.location.href = 'index.html'; }, 2000);
 
                 } catch (err) {
-                    console.error("Submit Error:", err);
-                    Utils.showToast("Gagal menyimpan: " + err.message);
-                    btn.innerHTML = originalHTML;
-                    btn.disabled = false;
+                    console.error(err);
+                    Utils.showToast("Terjadi kesalahan: " + err.message, "error");
+                } finally {
+                    Utils.setLoading(false);
                 }
             }
         };
 
-        // --- 4. INIT ---
+        // --- INITIALIZATION ---
         document.addEventListener("DOMContentLoaded", async () => {
-            // Cek Login
+            // Cek Session
             const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                window.location.href = 'login.html';
-                return;
+            
+            if (session) {
+                AppState.currentUser = session.user;
+                console.log("User ID:", session.user.id);
+            } else {
+                AppState.currentUser = null;
+                console.warn("User belum login. Submit akan diblokir.");
             }
-            currentUserId = session.user.id;
 
-            // Load Data Pasar
-            await MarketData.init();
-
-            // Init Tombol
-            HarvestModule.toggleSubmitButton();
+            // Load Harga
+            await MarketModule.init();
+            
+            // Event Listeners Input Real-time
+            document.getElementById('quantity').addEventListener('input', HarvestModule.updateEstimate);
+            document.getElementById('cropType').addEventListener('change', HarvestModule.updateEstimate);
+            
+            // Init State Button
+            HarvestModule.toggleSubmit();
         });
 
     </script>
