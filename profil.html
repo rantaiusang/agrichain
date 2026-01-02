@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil Petani - AgriChain</title>
     
-    <!-- Library Blockchain -->
+    <!-- Library Blockchain (Opsional, belum dipakai di script tapi disiapkan) -->
     <script src="https://unpkg.com/@web3modal/web3modal"></script>
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    
+    <!-- Library Supabase (WAJIB) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
@@ -134,6 +137,13 @@
         }
 
         @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .loading-overlay {
+            display: none;
+            text-align: center;
+            color: var(--text-grey);
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -143,14 +153,17 @@
             <!-- Header Profil -->
             <div class="profile-header">
                 <div class="avatar">👨‍🌾</div>
-                <h1 id="displayName" class="profile-name">Nama Petani</h1>
-                <span id="displayRole" class="profile-role">PETANI</span>
+                <h1 id="displayName" class="profile-name">Memuat...</h1>
+                <span id="displayRole" class="profile-role">...</span>
             </div>
+
+            <!-- Pesan Loading Awal -->
+            <div id="initialLoader" class="loading-overlay">Sedang mengambil data profil...</div>
 
             <h2>Edit Profil</h2>
 
             <!-- Form Edit Profil -->
-            <form id="profileForm">
+            <form id="profileForm" style="display: none;"> <!-- Disembunyikan dulu sampai data loading -->
                 <div class="form-group">
                     <label for="nama">Nama Lengkap</label>
                     <input type="text" id="nama" required>
@@ -162,19 +175,19 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="jenis">Jenis Petani</label>
-                    <select id="jenis" required>
-                        <option value="">Pilih Jenis Petani...</option>
-                        <option value="Petani Mandiri">Petani Mandiri</option>
-                        <option value="Ketua Kelompok Tani">Ketua Kelompok Tani</option>
-                        <option value="Koperasi Tani">Koperasi Tani</option>
-                        <option value="Perusahaan Perkebunan">Perusahaan Perkebunan</option>
+                    <label for="role">Jenis Akun</label>
+                    <select id="role" disabled style="background-color: #f9f9f9; cursor: not-allowed;">
+                        <option value="PETANI">Petani</option>
+                        <option value="PEMBELI">Pembeli</option>
+                        <option value="LEMBAGA">Lembaga</option>
+                        <option value="ADMIN">Admin</option>
                     </select>
+                    <small style="color: #888;">Role tidak dapat diubah setelah pendaftaran.</small>
                 </div>
 
                 <div class="form-group">
                     <label for="luas">Luas Lahan (Meter Persegi)</label>
-                    <input type="number" id="luas" placeholder="Contoh: 5000" required>
+                    <input type="number" id="luas" placeholder="0" required>
                 </div>
 
                 <button type="submit" class="btn-save" id="btnSubmit">
@@ -186,101 +199,117 @@
             <!-- Tombol Kembali -->
             <div style="text-align: center; margin-top: 20px;">
                 <a href="index.html" style="color: #666; text-decoration: none;">&larr; Kembali ke Beranda</a>
+                <br>
+                <a href="login.html" onclick="localStorage.clear(); return true;" style="color: #D32F2F; font-size: 0.8rem; text-decoration: none; margin-top: 10px; display: inline-block;">(Logout)</a>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPT MODULAR (MEMANGGIL SUPABASE.JS) -->
-    <script type="module">
-        // Import Klien Supabase (Mockup saat backend offline)
-        import { supabaseClient } from './src/supabase.js';
+    <!-- SCRIPT UTAMA -->
+    <script>
+        // --- 1. KONFIGURASI SUPABASE ---
+        // PASTIKAN SAMA DENGAN FILE REGISTER DAN LOGIN
+        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // 1. DOM ELEMENTS
+        // --- 2. DOM ELEMENTS ---
         const form = document.getElementById('profileForm');
         const namaInput = document.getElementById('nama');
         const desaInput = document.getElementById('desa');
-        const jenisInput = document.getElementById('jenis');
         const luasInput = document.getElementById('luas');
+        const roleInput = document.getElementById('role');
         
         const displayName = document.getElementById('displayName');
         const displayRole = document.getElementById('displayRole');
         const btnSubmit = document.getElementById('btnSubmit');
         const spinner = document.getElementById('spinner');
         const btnText = document.getElementById('btnText');
+        const initialLoader = document.getElementById('initialLoader');
 
-        // 2. CEK LOGIN & ISI DATA
+        // --- 3. LOGIKA LOAD HALAMAN ---
         document.addEventListener("DOMContentLoaded", async () => {
-            const token = localStorage.getItem('agrichain_token');
-            const userStr = localStorage.getItem('agrichain_user');
+            // Cek apakah user masih login
+            const { data: { session } } = await supabase.auth.getSession();
 
-            if (!token || !userStr) {
+            if (!session) {
                 alert("Sesi Anda berakhir. Silakan login kembali.");
                 window.location.href = 'login.html';
                 return;
             }
 
-            const user = JSON.parse(userStr);
+            const user = session.user;
+            console.log("User ID:", user.id);
 
-            // 3. MOCKUP PENGAMBILAN DATA PROFIL (Simulasi SELECT * FROM profiles)
-            // Nanti saat backend online, ganti bagian ini dengan:
-            // const { data, error } = await supabaseClient.from('profiles').select('*').eq('user_id', user.id).single();
-            
-            // Untuk demo, kita ambil data dari user yang login dan tambah data dummy profil
-            const mockProfile = {
-                nama: user.full_name,
-                desa: "Desa Sukamaju, Kec. Cianjur", // Dummy data
-                jenis: "Petani Mandiri", // Dummy data
-                luas: 5000 // Dummy data
-            };
+            // Ambil data dari tabel 'profiles' berdasarkan ID User
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', user.id) // Pastikan kolom id di tabel profiles cocok dengan auth id
+                .single();
 
-            // 4. ISI FORM DENGAN DATA YANG ADA (PRE-FILL)
-            displayName.textContent = mockProfile.nama;
-            displayRole.textContent = mockProfile.jenis.toUpperCase();
+            if (error || !profile) {
+                console.error("Gagal ambil profil:", error);
+                alert("Gagal memuat data profil. Silakan refresh halaman.");
+                return;
+            }
+
+            console.log("Data Profil:", profile);
+
+            // Isi UI dengan Data Asli
+            displayName.textContent = profile.full_name || "Nama Belum Diatur";
+            displayRole.textContent = profile.role || "USER";
             
-            namaInput.value = mockProfile.nama;
-            desaInput.value = mockProfile.desa;
-            jenisInput.value = mockProfile.jenis;
-            luasInput.value = mockProfile.luas;
+            namaInput.value = profile.full_name || "";
+            desaInput.value = profile.desa || "";
+            luasInput.value = profile.luas_lahan || 0;
+            roleInput.value = profile.role || "PETANI";
+
+            // Tampilkan form, sembunyikan loading awal
+            form.style.display = 'block';
+            initialLoader.style.display = 'none';
         });
 
-        // 5. HANDLE SIMPAN (UPDATE)
+        // --- 4. LOGIKA UPDATE PROFIL ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const namaBaru = namaInput.value;
-            const desaBaru = desaInput.value;
-            const jenisBaru = jenisInput.value;
-            const luasBaru = luasInput.value;
+            // Ambil nilai input
+            const updatedData = {
+                full_name: namaInput.value,
+                desa: desaInput.value,
+                luas_lahan: parseInt(luasInput.value)
+                // Role tidak diupdate karena biasanya fixed
+            };
 
-            // Tampilkan Loading
+            // UI Loading
             btnSubmit.classList.add('btn-loading');
             btnSubmit.disabled = true;
             spinner.style.display = 'inline-block';
             btnText.textContent = 'MEMPERBARUI...';
 
             try {
-                // Simulasi update ke Supabase (Tabel 'profiles')
-                // const { error } = await supabaseClient
-                //     .from('profiles')
-                //     .upsert({ nama: namaBaru, desa: desaBaru, jenis: jenisBaru, luas: luasBaru });
-                
-                // Untuk sekarang, kita delay sebentar untuk simulasi jaringan
-                await new Promise(r => setTimeout(r, 1000));
+                // Dapatkan user id lagi (atau simpan di variabel global saat load)
+                const { data: { session } } = await supabase.auth.getSession();
+                const userId = session.user.id;
 
-                // Update Header UI
-                displayName.textContent = namaBaru;
-                displayRole.textContent = jenisBaru.toUpperCase();
+                // Update ke Supabase
+                const { error } = await supabase
+                    .from('profiles')
+                    .update(updatedData)
+                    .eq('id', userId);
 
-                // Update LocalStorage User (Opsional, biar konsisten)
-                const currentUser = JSON.parse(localStorage.getItem('agrichain_user'));
-                currentUser.full_name = namaBaru;
-                localStorage.setItem('agrichain_user', JSON.stringify(currentUser));
+                if (error) throw error;
 
-                alert(`Profil Anda berhasil diperbarui!\n\nHalo, ${namaBaru}`);
+                // Update Header UI agar terlihat instan
+                displayName.textContent = updatedData.full_name;
+
+                alert("Profil berhasil diperbarui!");
 
             } catch (err) {
-                console.error("Gagal update profil:", err);
-                alert("Gagal memperbarui profil. Cek koneksi internet.");
+                console.error("Gagal update:", err);
+                alert("Terjadi kesalahan saat menyimpan data. Periksa koneksi internet.");
             } finally {
                 // Reset Tombol
                 btnSubmit.classList.remove('btn-loading');
