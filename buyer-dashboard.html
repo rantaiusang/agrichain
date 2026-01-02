@@ -1,410 +1,77 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pasar Belanja - AgriChain</title>
-    
-    <!-- Library Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Super Admin - AgriChain</title>
 
-    <style>
-        :root {
-            --primary-green: #2E7D32;
-            --light-green: #E8F5E9;
-            --accent-green: #4CAF50;
-            --text-dark: #1B1B1B;
-            --text-grey: #666;
-            --white: #ffffff;
-            --gold: #FFC107;
-            --bg-gray: #F5F5F5;
-            --radius: 12px;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg-gray);
-            margin: 0;
-            padding-bottom: 80px;
-            color: var(--text-dark);
-        }
-
-        /* Header */
-        header {
-            background: var(--primary-green);
-            color: white;
-            padding: 16px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header-title { font-size: 1.2rem; font-weight: bold; }
-        
-        .user-badge {
-            font-size: 0.8rem;
-            background: rgba(255,255,255,0.2);
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
-
-        /* Filter Section */
-        .filter-container {
-            background: white;
-            padding: 12px 16px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 60px; /* Di bawah header */
-            z-index: 90;
-        }
-
-        .filter-row {
-            display: flex;
-            gap: 10px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-        }
-
-        .filter-select {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            background: white;
-            min-width: 120px;
-        }
-
-        /* Product List */
-        .container {
-            padding: 16px;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .card {
-            background: white;
-            border-radius: var(--radius);
-            overflow: hidden;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-            border: 1px solid transparent;
-            transition: transform 0.2s;
-        }
-
-        .card:active { transform: scale(0.98); }
-
-        .card-img {
-            width: 100%;
-            height: 160px;
-            object-fit: cover;
-            background-color: #eee;
-        }
-
-        .card-body { padding: 14px; }
-
-        .product-title {
-            font-weight: 700;
-            font-size: 1.1rem;
-            margin: 0 0 5px 0;
-        }
-
-        .location-tag {
-            font-size: 0.75rem;
-            color: var(--text-grey);
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            margin-bottom: 8px;
-        }
-
-        /* Trust Score Styling */
-        .trust-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: bold;
-        }
-
-        .trust-high { background-color: #FFF8E1; color: #FF8F00; border: 1px solid #FFECB3; }
-        .trust-mid { background-color: #E8F5E9; color: #2E7D32; border: 1px solid #C8E6C9; }
-        .trust-low { background-color: #FFEBEE; color: #C62828; border: 1px solid #FFCDD2; }
-
-        .price-section {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px dashed #eee;
-        }
-
-        .price { font-size: 1.1rem; font-weight: 800; color: var(--primary-green); }
-
-        .btn-buy {
-            background: var(--primary-green);
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            cursor: pointer;
-        }
-
-        .seller-info {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 10px;
-        }
-        
-        .seller-avatar {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: #ddd;
-        }
-
-        .seller-name { font-size: 0.9rem; font-weight: 500; }
-
-        /* Toast & Loading */
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            z-index: 200;
-        }
-        .toast.show { opacity: 1; }
-
-        .loading-text { text-align: center; color: #888; padding: 20px; }
-
-    </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
 
-    <header>
-        <div class="header-title">AgriChain Belanja</div>
-        <span id="userBadge" class="user-badge">Loading...</span>
-    </header>
+<div id="logoutBtn" style="cursor:pointer;">🚪 Keluar</div>
 
-    <!-- Filter Panel -->
-    <div class="filter-container">
-        <div class="filter-row">
-            <select id="filterLocation" class="filter-select" onchange="applyFilters()">
-                <option value="all">Semua Lokasi</option>
-                <option value="Jawa Barat">Jawa Barat</option>
-                <option value="Jawa Tengah">Jawa Tengah</option>
-                <option value="Jawa Timur">Jawa Timur</option>
-                <option value="Sumatera">Sumatera</option>
-            </select>
+<script>
+/* =========================
+   1. KONFIGURASI SUPABASE
+========================= */
+const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
 
-            <select id="filterType" class="filter-select" onchange="applyFilters()">
-                <option value="all">Semua Komoditas</option>
-                <option value="padi">Padi & Beras</option>
-                <option value="jagung">Jagung</option>
-                <option value="kopi">Kopi</option>
-                <option value="cabai">Cabai</option>
-            </select>
+/* ✅ FIX: jangan menimpa object supabase */
+const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 
-            <select id="filterTrust" class="filter-select" onchange="applyFilters()">
-                <option value="all">Semua Skor</option>
-                <option value="high">Hanya Bintang 4+ (Terpercaya)</option>
-                <option value="mid">Bintang 3+ (Baik)</option>
-            </select>
-        </div>
-    </div>
+/* =========================
+   2. CEK LOGIN & ROLE
+========================= */
+document.addEventListener("DOMContentLoaded", async () => {
+    const { data: { session }, error } = await supabaseClient.auth.getSession();
 
-    <!-- Daftar Produk -->
-    <main class="container" id="productList">
-        <div class="loading-text">Memuat produk dari pasar...</div>
-    </main>
+    if (!session || error) {
+        alert("Anda belum login");
+        window.location.href = "login.html";
+        return;
+    }
 
-    <div id="toast" class="toast">Menghubungi Petani...</div>
+    const { data: profile } = await supabaseClient
+        .from("profiles")
+        .select("role")
+        .eq("id", session.user.id)
+        .single();
 
-    <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    if (!profile || profile.role !== "ADMIN") {
+        alert("Akses khusus Admin");
+        window.location.href = "index.html";
+        return;
+    }
 
-        // Variabel Global untuk Menyimpan Data
-        let allProducts = [];
-        let allSellers = {}; // Cache data penjual
+    console.log("✅ Admin login");
+});
 
-        // Format Rupiah
-        const formatRupiah = (number) => {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
-        };
+/* =========================
+   3. LOGOUT (FIX TOTAL)
+========================= */
+document.getElementById("logoutBtn").addEventListener("click", async () => {
+    if (!confirm("Yakin ingin keluar?")) return;
 
-        const getTrustBadge = (score) => {
-            if (score >= 4.0) return `<span class="trust-badge trust-high">★ ${score} MITRA UTAMA</span>`;
-            if (score >= 3.0) return `<span class="trust-badge trust-mid">★ ${score} BAIK</span>`;
-            return `<span class="trust-badge trust-low">★ ${score} AWAS</span>`;
-        };
+    try {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
 
-        // --- 2. CEK SESI & LOAD DATA ---
-        document.addEventListener("DOMContentLoaded", async () => {
-            // A. Cek Login
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                alert("Silakan login terlebih dahulu.");
-                window.location.href = 'login.html';
-                return;
-            }
+        console.log("✅ Logout sukses");
+        window.location.href = "login.html";
 
-            // B. Cek Role User (Harus Pembeli)
-            const userId = session.user.id;
-            const { data: profile } = await supabase.from('profiles').select('role').eq('id', userId).single();
+    } catch (err) {
+        console.error("Logout error:", err);
+        alert("Logout gagal, paksa keluar.");
+        window.location.href = "login.html";
+    }
+});
+</script>
 
-            if (!profile || profile.role !== 'PEMBELI') {
-                alert("Akses Ditolak. Halaman ini khusus Pembeli.");
-                window.location.href = 'index.html';
-                return;
-            }
-
-            // Tampilkan Badge User
-            document.getElementById('userBadge').textContent = "Pembeli";
-
-            // C. Ambil Data Produk
-            await loadProducts();
-        });
-
-        // --- 3. AMBIL DATA DARI DATABASE ---
-        async function loadProducts() {
-            // Ambil Produk
-            const { data: products, error } = await supabase
-                .from('products')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            if (error) {
-                console.error("Gagal ambil produk:", error);
-                document.getElementById('productList').innerHTML = '<div class="loading-text" style="color:red">Gagal memuat data.</div>';
-                return;
-            }
-
-            // Ambil data unik seller_id untuk join manual
-            const sellerIds = [...new Set(products.map(p => p.seller_id))];
-            
-            if (sellerIds.length > 0) {
-                const { data: sellers } = await supabase
-                    .from('profiles')
-                    .select('id, full_name, trust_score') // Pastikan tabel profiles punya kolom trust_score
-                    .in('id', sellerIds);
-                
-                // Buat map/dictionary seller agar mudah diakses
-                if (sellers) {
-                    sellers.forEach(s => {
-                        allSellers[s.id] = s;
-                    });
-                }
-            }
-
-            // Gabungkan data produk + data seller
-            allProducts = products.map(p => {
-                const seller = allSellers[p.seller_id] || { full_name: "Unknown", trust_score: 0 };
-                return {
-                    ...p,
-                    seller_name: seller.full_name,
-                    trust_score: seller.trust_score || 3.0 // Default 3.0 jika belum ada skor
-                };
-            });
-
-            renderProducts(allProducts);
-        }
-
-        // --- 4. RENDER TABEL ---
-        function renderProducts(list) {
-            const container = document.getElementById('productList');
-            container.innerHTML = '';
-
-            if (list.length === 0) {
-                container.innerHTML = '<div style="text-align:center; padding:20px; color:#888;">Tidak ada produk yang ditemukan.</div>';
-                return;
-            }
-
-            list.forEach(item => {
-                // Gunakan image_url dari DB, atau placeholder jika kosong
-                const imgUrl = item.image_url || `https://picsum.photos/seed/${item.id}/400/200`;
-
-                const card = document.createElement('div');
-                card.className = 'card';
-                
-                card.innerHTML = `
-                    <img src="${imgUrl}" alt="${item.name}" class="card-img">
-                    <div class="card-body">
-                        <div class="seller-info">
-                            <div class="seller-avatar"></div>
-                            <div>
-                                <div class="seller-name">${item.seller_name}</div>
-                                <div class="location-tag">📍 ${item.location}</div>
-                            </div>
-                            <div style="margin-left:auto;">
-                                ${getTrustBadge(item.trust_score)}
-                            </div>
-                        </div>
-
-                        <h3 class="product-title">${item.name}</h3>
-                        
-                        <div class="price-section">
-                            <div class="price">${formatRupiah(item.price)} / ${item.unit}</div>
-                            <button class="btn-buy" onclick="contactSeller('${item.seller_name}', '${item.id}')">Beli</button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        // --- 5. FILTER LOGIC ---
-        function applyFilters() {
-            const locVal = document.getElementById('filterLocation').value;
-            const typeVal = document.getElementById('filterType').value;
-            const trustVal = document.getElementById('filterTrust').value;
-
-            const filtered = allProducts.filter(item => {
-                const matchLoc = locVal === 'all' || item.location === locVal;
-                const matchType = typeVal === 'all' || item.type === typeVal;
-                
-                let matchTrust = true;
-                if (trustVal === 'high') matchTrust = item.trust_score >= 4.0;
-                if (trustVal === 'mid') matchTrust = item.trust_score >= 3.0;
-
-                return matchLoc && matchType && matchTrust;
-            });
-
-            renderProducts(filtered);
-        }
-
-        // --- 6. INTERAKSI ---
-        function contactSeller(sellerName, productId) {
-            const toast = document.getElementById('toast');
-            toast.textContent = `Membuka chat dengan ${sellerName}...`;
-            toast.classList.add('show');
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-                // Disini nanti redirect ke halaman chat/chat.html?product=productId
-                // window.location.href = 'chat.html';
-            }, 2000);
-        }
-
-    </script>
 </body>
 </html>
