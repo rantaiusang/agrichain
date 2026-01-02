@@ -24,7 +24,7 @@
             background-color: #f4f6f8;
             color: var(--text-dark);
             margin: 0;
-            padding-bottom: 80px; /* Space for bottom bar */
+            padding-bottom: 80px;
         }
 
         /* --- HEADER --- */
@@ -54,7 +54,7 @@
             padding: 20px;
         }
 
-        /* --- FILTER SECTION (PERBAIKAN MUALOKASI) --- */
+        /* --- FILTER SECTION (PERBAIKAN LAYOUT PC) --- */
         .filter-bar {
             background: var(--white);
             padding: 20px;
@@ -62,14 +62,14 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
             margin-bottom: 20px;
             display: flex;
-            gap: 15px;
+            gap: 12px;
             align-items: center;
-            flex-wrap: wrap; /* Pindah ke bawah di HP */
+            flex-wrap: wrap;
         }
 
-        /* Kotak Pencarian: Mengambil proporsi lebih besar */
+        /* 1. KOTAK PENCARIAN (Search Box) */
         .search-box {
-            flex: 3; /* Mengambil 3 bagian dari lebar */
+            flex: 2; /* Proporsi 2 bagian dari total lebar */
             min-width: 200px;
             position: relative;
         }
@@ -95,26 +95,30 @@
             top: 50%;
             transform: translateY(-50%);
             color: #999;
-            font-size: 1.1rem;
         }
 
-        /* Dropdown Filter: Mengambil proporsi lebih kecil, LEBAR DIBATASI */
+        /* 2. DROPDOWN (Lokasi & Jenis) */
         select {
-            flex: 1; /* Mengambil sisa proporsi (lebih kecil) */
-            min-width: 150px;
-            padding: 12px;
+            flex: 1; /* Sisa 1 bagian dibagi rata untuk dropdown */
+            min-width: 140px; /* Lebar minimum agar tidak gepeng */
+            padding: 10px 12px; /* Padding sedikit lebih kecil */
             border: 1px solid #ddd;
             border-radius: 8px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             background: white;
             cursor: pointer;
             box-sizing: border-box;
             
-            /* --- FIX UTAMA UNTUK MENGHINDARI KOTAK MELEBAR --- */
-            max-width: 280px; /* Batasi lebar maksimal kotak dropdown */
-            text-overflow: ellipsis; /* Tambahkan titik tiga jika teks sangat panjang */
-            white-space: nowrap; /* Paksa satu baris */
-            /* ----------------------------------------------------- */
+            /* Batasi teks panjang di kotak dropdown */
+            max-width: 300px; 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        select:focus {
+            border-color: var(--primary-green);
+            outline: none;
         }
 
         /* --- GRID PRODUK --- */
@@ -190,7 +194,7 @@
             font-size: 1.2rem;
             font-weight: 800;
             color: var(--primary-green);
-            margin-top: auto; /* Push ke bawah */
+            margin-top: auto; /* Push to bottom */
         }
 
         .card-actions {
@@ -214,33 +218,28 @@
         .btn-buy:hover { background-color: var(--dark-green); }
 
         .back-link {
-            display: inline-block;
+            display: block;
             margin-top: 20px;
+            text-align: center;
             color: var(--text-grey);
             text-decoration: none;
             font-weight: bold;
-            text-align: center;
-            width: 100%;
-            display: block; /* Block agar tombol mudah diklik di HP */
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.2s;
         }
-        .back-link:hover { color: var(--primary-green); }
+        .back-link:hover { background-color: #eee; color: var(--text-dark); }
 
         /* --- LOADING & EMPTY --- */
-        .loading-msg {
+        .loading-msg, .empty-msg {
             text-align: center;
             padding: 40px;
             color: #999;
             font-size: 1.1rem;
             grid-column: 1 / -1;
             background: #fff;
-            border-radius: 12px;
+            border-radius: 8px;
             border: 1px dashed #ddd;
-        }
-        .empty-msg {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-            grid-column: 1 / -1;
         }
 
         /* --- BADGE --- */
@@ -251,17 +250,19 @@
             border-radius: 4px;
             font-size: 0.7rem;
             font-weight: bold;
+            margin-bottom: 5px;
+            display: inline-block;
         }
 
         /* --- RESPONSIVE --- */
         @media (max-width: 600px) {
             .filter-bar { 
                 flex-direction: column; 
-                align-items: stretch; /* Stretch agar full width di HP */
-                gap: 10px;
+                align-items: stretch; 
+                gap: 10px; /* Jarak antar elemen di HP */
             }
             .search-box { width: 100%; }
-            select { width: 100%; max-width: 100%; }
+            select { width: 100%; }
         }
     </style>
 </head>
@@ -282,16 +283,19 @@
         
         <!-- Filter Bar -->
         <div class="filter-bar">
+            <!-- Kolom 1: Pencarian (Lebar) -->
             <div class="search-box">
                 <span class="search-icon">🔍</span>
                 <input type="text" id="searchInput" placeholder="Cari komoditas atau lokasi...">
             </div>
             
+            <!-- Kolom 2: Dropdown Lokasi -->
             <select id="filterLokasi">
                 <option value="">Semua Lokasi</option>
                 <!-- Opsi akan diisi JS dari DB -->
             </select>
 
+            <!-- Kolom 3: Dropdown Jenis -->
             <select id="filterType">
                 <option value="">Semua Jenis</option>
                 <option value="padi">Padi</option>
@@ -388,7 +392,7 @@
 
         // --- 6. RENDER GRID ---
         function renderGrid(products) {
-            productList.innerHTML = '';
+            productList.innerHTML = ''; 
 
             if (products.length === 0) {
                 productList.innerHTML = '<div class="empty-msg">Tidak ada produk yang sesuai kriteria.</div>';
@@ -438,13 +442,8 @@
 
             // Filter array allProducts
             const filtered = allProducts.filter(item => {
-                // Cek Nama Produk atau Lokasi saat mencari
                 const matchSearch = item.name.toLowerCase().includes(searchVal) || item.location.toLowerCase().includes(searchVal);
-                
-                // Cek Lokasi Dropdown
                 const matchLoc = locVal === '' || item.location === locVal;
-                
-                // Cek Jenis Dropdown (Case insensitive)
                 const matchType = typeVal === '' || item.type.toLowerCase() === typeVal;
 
                 return matchSearch && matchLoc && matchType;
@@ -461,7 +460,7 @@
         // --- 9. FUNGSI BELI ---
         window.contactSeller = function(sellerName, productId) {
             alert(`Menghubungi ${sellerName} untuk produk ID: ${productId}...`);
-            // Nanti di sini bisa logika redirect ke Chat atau Notifikasi
+            // Nanti di sini bisa logika redirect ke Chat atau Notif
         };
 
     </script>
