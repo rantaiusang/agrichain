@@ -1,25 +1,23 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="U<!DOCTYPE html>
-<html lang="id">
-<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kelola Users - AgriChain</title>
+    <title>Kelola Users - AgriAdmin</title>
     
     <!-- Library Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
+        /* --- CSS VARIABLES --- */
         :root {
             --primary-dark: #1A237E;
             --primary-light: #3949AB;
             --accent-gold: #FFD700;
             --bg-light: #F5F7FA;
-            --white: #ffffff;
             --text-dark: #333;
             --text-grey: #666;
+            --white: #ffffff;
             --success: #2E7D32;
             --danger: #C62828;
         }
@@ -32,7 +30,7 @@
             min-height: 100vh;
         }
 
-        /* --- SIDEBAR (SAMA DASHBOARD ADMIN) --- */
+        /* --- SIDEBAR (SAME AS DASHBOARD ADMIN) --- */
         .sidebar {
             width: 250px;
             background: var(--primary-dark);
@@ -49,7 +47,7 @@
         }
 
         .brand {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: bold;
             margin-bottom: 40px;
             color: var(--accent-gold);
@@ -83,54 +81,26 @@
             padding: 30px;
         }
 
-        /* --- TABLE STYLES --- */
-        .content-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
+        h2 { color: var(--primary-dark); margin-bottom: 10px; font-size: 1.5rem; }
+        p { color: var(--text-grey); margin-bottom: 30px; }
 
-        .search-box {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 1rem;
-        }
-
-        .btn-search {
-            padding: 10px 20px;
-            background: var(--primary-dark);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        .table-container {
+        /* --- TABLE --- */
+        .table-wrapper {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            padding: 20px;
             overflow-x: auto;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+            min-width: 600px;
         }
 
         th, td {
+            padding: 15px;
             text-align: left;
-            padding: 12px 15px;
             border-bottom: 1px solid #eee;
         }
 
@@ -138,288 +108,42 @@
             background-color: #f8f9fa;
             color: var(--primary-dark);
             font-weight: bold;
+            font-size: 0.85rem;
+            text-transform: uppercase;
         }
 
-        .role-badge {
-            padding: 4px 8px;
-            border-radius: 4px;
+        tr:hover { background-color: #fafafa; }
+
+        /* --- BADGES --- */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
             font-size: 0.75rem;
             font-weight: bold;
+            display: inline-block;
         }
-        .role-ADMIN { background: #FFEBEE; color: #D32F2F; }
-        .role-PETANI { background: #E8F5E9; color: #2E7D32; }
-        .role-PEMBELI { background: #FFF3E0; color: #F57C00; }
-        .role-LEMBAGA { background: #E3F2FD; color: #1565C0; }
+        .badge-ADMIN { background: #E3F2FD; color: #1565C0; }
+        .badge-PETANI { background: #E8F5E9; color: #2E7D32; }
+        .badge-PEMBELI { background: #FFF3E0; color: #F57C00; }
+        .badge-LEMBAGA { background: #FCE4EC; color: #C62828; }
 
-        .btn-delete {
-            background: var(--danger);
-            color: white;
+        /* --- ACTION BUTTONS --- */
+        .btn-edit {
+            padding: 6px 12px;
+            background: #FFC107;
+            color: #333;
             border: none;
-            padding: 5px 10px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 0.8rem;
+            font-weight: 600;
         }
-
-        /* --- RESPONSIVE --- */
-        @media (max-width: 768px) {
-            .sidebar { width: 60px; padding: 15px 10px; }
-            .brand span, .nav-item span { display: none; }
-            .main-content { margin-left: 60px; padding: 15px; }
-            .search-box { max-width: 100%; }
-        }
-    </style>
-</head>
-<body>
-
-    <!-- Sidebar (SAMA) -->
-    <nav class="sidebar">
-        <div class="brand">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
-            <span>AgriAdmin</span>
-        </div>
-        
-        <div class="nav-item" onclick="location.href='dashboard-admin.html'">📊 Dashboard</div>
-        <div class="nav-item active">👥 Users</div>
-        
-        <div class="nav-item" onclick="location.href='dashboard-admin.html'">🌾 Kelola Komoditas</div>
-        <div class="nav-item" onclick="location.href='admin-blockchain.html'">⛓️ Blockchain</div>
-        <div class="nav-item" onclick="location.href='admin-pengaturan.html'">⚙️ Pengaturan</div>
-        
-        <!-- Tombol Logout (ID: btn-logout) -->
-        <div id="btn-logout" class="nav-item" style="margin-top: auto; color: #ff8a80; border: 1px solid #ff8a80; cursor: pointer;">
-             🚪 Keluar
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="main-content">
-        
-        <div class="content-header">
-            <h2 style="margin:0; color:var(--primary-dark);">Data Pengguna</h2>
-            <div class="search-box">
-                <input type="text" id="searchInput" class="search-input" placeholder="Cari nama atau email...">
-                <button class="btn-search" onclick="filterUsers()">Cari</button>
-            </div>
-        </div>
-
-        <div class="table-container">
-            <table id="usersTable">
-                <thead>
-                    <tr>
-                        <th>Nama Lengkap</th>
-                        <th>Email / HP</th>
-                        <th>Role</th>
-                        <th>Terdaftar</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Data akan diisi oleh JS -->
-                    <tr><td colspan="6" style="text-align:center; color:#999;">Memuat data...</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-    </div>
-
-    <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
-        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        // --- 2. LOGIKA KEAMANAN (CEK ADMIN) ---
-        document.addEventListener("DOMContentLoaded", async () => {
-            const { data: { session }, error } = await supabase.auth.getSession();
-
-            if (error || !session) {
-                alert("Akses Ditolak");
-                window.location.href = 'login.html';
-                return;
-            }
-
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', session.user.id)
-                .single();
-
-            if (!profile || profile.role !== 'ADMIN') {
-                alert("Akses Ditolak");
-                window.location.href = 'index.html';
-                return;
-            }
-
-            loadUsers();
-        });
-
-        // --- 3. LOAD USER LIST ---
-        async function loadUsers() {
-            const tableBody = document.querySelector('#usersTable tbody');
-            
-            try {
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                tableBody.innerHTML = '';
-                if (data.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada user.</td></tr>';
-                    return;
-                }
-
-                data.forEach(user => {
-                    const row = document.createElement('tr');
-                    
-                    // Format Tanggal
-                    const date = new Date(user.created_at).toLocaleDateString('id-ID');
-
-                    row.innerHTML = `
-                        <td><strong>${user.full_name}</strong></td>
-                        <td>${user.phone || '-'}</td>
-                        <td><span class="role-badge role-${user.role}">${user.role}</span></td>
-                        <td style="color:#666; font-size:0.85rem;">${date}</td>
-                        <td>
-                            <button class="btn-delete" onclick="deleteUser('${user.id}')">Hapus</button>
-                        </td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-
-            } catch (err) {
-                console.error(err);
-                document.querySelector('#usersTable tbody').innerHTML = '<tr><td colspan="6" style="text-align:center;">Gagal memuat data.</td></tr>';
-            }
-        }
-
-        // --- 4. FILTER / SEARCH USER ---
-        async function filterUsers() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const tableBody = document.querySelector('#usersTable tbody');
-            
-            try {
-                // Cari di kolom full_name atau phone yang mirip query (case insensitive)
-                const { data, error } = await supabase
-                    .from('profiles')
-                    .select('*')
-                    .or(`full_name.ilike.%${query}%`, `phone.ilike.%${query}%`)
-                    .order('created_at', { ascending: false });
-
-                if (error) throw error;
-
-                // Render ulang tabel
-                tableBody.innerHTML = '';
-                if (data.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">User tidak ditemukan.</td></tr>';
-                    return;
-                }
-
-                data.forEach(user => {
-                    const row = document.createElement('tr');
-                    const date = new Date(user.created_at).toLocaleDateString('id-ID');
-                    row.innerHTML = `
-                        <td><strong>${user.full_name}</strong></td>
-                        <td>${user.phone}</td>
-                        <td><span class="role-badge role-${user.role}">${user.role}</span></td>
-                        <td style="color:#666; font-size:0.85rem;">${date}</td>
-                        <td>
-                            <button class="btn-delete" onclick="deleteUser('${user.id}')">Hapus</button>
-                        </td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-
-            } catch (err) {
-                console.error(err);
-            }
-        }
-
-        // --- 5. HAPUS USER ---
-        async function deleteUser(id) {
-            if(!confirm('Yakin ingin menghapus user ini? Data akan hilang permanen.')) return;
-
-            try {
-                // 1. Hapus dari Auth Supabase
-                const { error: authError } = await supabase.auth.admin.deleteUser(id);
-                if (authError) throw authError;
-
-                // 2. Hapus dari Tabel Profiles (Biasanya cascade, tapi aman dihapus manual)
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .delete()
-                    .eq('id', id);
-
-                if (profileError) throw profileError;
-
-                alert('User berhasil dihapus.');
-                loadUsers(); // Refresh tabel
-
-            } catch (err) {
-                console.error(err);
-                alert('Gagal menghapus: ' + err.message);
-            }
-        }
-
-        // --- 6. LOGOUT ---
-        document.getElementById('btn-logout').addEventListener('click', async () => {
-            if(confirm("Keluar dari Admin?")) {
-                await supabase.auth.signOut();
-                window.location.href = 'login.html';
-            }
-        });
-    </script>
-</body>
-</html>TF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Management - AgriAdmin</title>
-    
-    <!-- Library Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <style>
-        /* --- RESET & BODY --- */
-        body { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f6f8; margin: 0; display: flex; min-height: 100vh; }
-        
-        /* --- SIDEBAR --- */
-        .sidebar { width: 250px; background: #1A237E; color: white; height: 100vh; position: fixed; left: 0; top: 0; z-index: 100; flex-shrink: 0; display: flex; flex-direction: column; padding: 20px; }
-        .brand { font-size: 1.5rem; margin-bottom: 40px; color: #FFD700; font-weight: bold; display: flex; align-items: center; gap: 10px; }
-        .nav-item { padding: 12px 15px; margin-bottom: 8px; cursor: pointer; transition: background 0.2s; display: flex; gap: 10px; color: rgba(255,255,255,0.7); white-space: nowrap; }
-        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.15); color: white; }
-        .logout { margin-top: auto; color: #ff8a80; cursor: pointer; border: 1px solid #ff8a80; padding: 10px; text-align: center; border-radius: 6px; }
-        
-        /* --- MAIN CONTENT --- */
-        .main { margin-left: 270px; flex: 1; padding: 30px; min-width: 0; }
-        h2 { color: #333; margin-top: 0; }
-        p { color: #666; }
-        .loading-text { color: #999; font-style: italic; }
-
-        /* --- TABEL --- */
-        .table-wrapper { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); overflow-x: auto; padding: 5px; }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; border-spacing: 0; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; vertical-align: middle; white-space: nowrap; }
-        th { background: #f8f9fa; font-weight: 600; color: #333; border-bottom: 2px solid #ddd; }
-        tr:last-child td { border-bottom: none; }
-        tr:hover { background-color: #fafafa; }
-
-        /* --- BADGE --- */
-        .badge { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; display: inline-block; }
-        .badge-admin { background: #E3F2FD; color: #1565C0; }
-        .badge-petani { background: #E8F5E9; color: #2E7D32; }
-        .badge-buyer { background: #FFF8E1; color: #F57F17; }
-        .badge-lembaga { background: #FCE4EC; color: #C62828; }
-
-        /* --- TOMBOL EDIT --- */
-        .btn-edit { padding: 6px 12px; background-color: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: background 0.2s; }
-        .btn-edit:hover { background-color: #1976D2; }
-        .btn-disabled { background-color: #ccc; cursor: not-allowed; }
 
         /* --- MODAL POPUP --- */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: rgba(0,0,0,0.5);
             display: none;
             justify-content: center;
@@ -431,242 +155,331 @@
             background: white;
             padding: 30px;
             border-radius: 12px;
-            width: 100%;
-            max-width: 400px;
+            width: 90%;
+            max-width: 500px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             text-align: center;
-            animation: fadeIn 0.3s ease-out;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .modal-title { font-size: 1.5rem; margin-bottom: 20px; color: #333; }
-        .form-group { margin-bottom: 15px; text-align: left; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
-        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 1rem; }
-        .modal-actions { display: flex; justify-content: space-between; margin-top: 20px; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; text-align: left; }
         
-        .btn-cancel { background: #f44336; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
-        .btn-save { background: #2E7D32; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
 
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            padding: 10px;
+            background: #e0e0e0;
+            color: #333;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            flex: 1;
+            padding: 10px;
+            background: var(--primary-dark);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .sidebar { width: 0; padding: 0; overflow: hidden; }
+            .sidebar.open { width: 250px; padding: 20px; }
+            .main-content { margin-left: 0; padding: 15px; }
+            .mobile-toggle { display: block; }
+        }
+        @media (min-width: 769px) {
+            .mobile-toggle { display: none; }
+        }
     </style>
 </head>
 <body>
 
     <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="brand">🏠 AgriAdmin</div>
-        <div class="nav-item" onclick="location.href='dashboard-admin.html'">📊 Dashboard</div>
-        <div class="nav-item active">👥 User Management</div>
-        <div class="nav-item" onclick="location.href='admin-blockchain.html'">⛓️ Blockchain Logs</div>
-        <div class="nav-item" onclick="location.href='admin-keuangan.html'">💰 Keuangan</div>
-        <div class="nav-item" onclick="location.href='admin-pengaturan.html'">⚙️ Pengaturan</div>
-        <div class="logout" id="btnLogout">🚪 Keluar</div>
-    </div>
-
-    <!-- Konten Utama -->
-    <div class="main">
-        <h2>Kelola Pengguna</h2>
-        <p>Daftar seluruh petani, pembeli, dan lembaga yang terdaftar di AgriChain.</p>
-        <br>
+    <nav class="sidebar" id="sidebar">
+        <div class="brand">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            <span>AgriAdmin</span>
+        </div>
         
+        <div class="nav-item" onclick="window.location.href='dashboard-admin.html'">📊 Dashboard</div>
+        <div class="nav-item active">👥 User Management</div>
+        <div class="nav-item" onclick="window.location.href='dashboard-admin.html'">🌾 Kelola Harga</div>
+        <div class="nav-item" onclick="window.location.href='index.html'">🌐 Lihat Website</div>
+        
+        <div class="nav-item" id="btn-logout" style="margin-top: auto; color: #ff8a80; border: 1px solid #ff8a80; cursor: pointer;">
+             🚪 Keluar
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <div>
+                <div class="mobile-toggle">
+                    <button onclick="toggleSidebar()" style="padding:10px; background:var(--primary-dark); color:white; border:none; border-radius:5px;">☰ Menu</button>
+                </div>
+            </div>
+            <!-- Bisa tambah Search Box jika perlu -->
+        </div>
+
+        <h2>Kelola Pengguna</h2>
+        <p>Pantau dan edit data petani, pembeli, lembaga yang terdaftar.</p>
+
         <div class="table-wrapper">
-            <table>
+            <table id="usersTable">
                 <thead>
                     <tr>
                         <th style="width: 25%;">Nama Lengkap</th>
-                        <th style="width: 20%;">Nomor HP</th>
+                        <th style="width: 25%;">Email</th>
+                        <th style="width: 10%;">HP</th>
                         <th style="width: 15%;">Role</th>
-                        <th style="width: 15%;">Status</th>
-                        <th style="width: 25%;">Aksi</th>
+                        <th style="width: 10%;">Terdaftar</th>
+                        <th style="width: 15%;">Aksi</th>
                     </tr>
                 </thead>
-                <tbody id="userTableBody">
-                    <tr>
-                        <td colspan="5" style="text-align:center;"><span class="loading-text">Memuat data dari database...</span></td>
-                    </tr>
+                <tbody>
+                    <tr><td colspan="7" style="text-align:center; color:#999;">Memuat data pengguna...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- MODAL POPUP -->
+    <!-- Modal Edit User -->
     <div id="editModal" class="modal-overlay">
         <div class="modal-box">
-            <h3 class="modal-title">Edit Data Pengguna</h3>
+            <h3 style="color:var(--primary-dark); margin-top:0;">Edit Pengguna</h3>
             
-            <form id="editForm">
-                <input type="hidden" id="editUserId"> <!-- Simpan ID User untuk Query Update -->
-                
+            <form id="editUserForm">
+                <input type="hidden" id="authId"> <!-- ID dari auth.users untuk update email -->
+                <input type="hidden" id="profileId"> <!-- ID dari profiles untuk update lainnya -->
+
                 <div class="form-group">
-                    <label for="editName">Nama Lengkap</label>
-                    <input type="text" id="editName" required>
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="fullName" class="input-field" required>
                 </div>
+
                 <div class="form-group">
-                    <label for="editPhone">Nomor HP</label>
-                    <input type="tel" id="editPhone" required>
+                    <label>Email (Login ID)</label>
+                    <input type="email" id="userEmail" class="input-field" required>
                 </div>
+
                 <div class="form-group">
-                    <label for="editRole">Role</label>
-                    <!-- Role dikunci -->
-                    <select id="editRole" disabled>
-                        <option value="PETANI">Petani</option>
-                        <option value="PEMBELI">Pembeli</option>
-                        <option value="LEMBAGA">Lembaga</option>
-                        <option value="ADMIN">Admin</option>
-                    </select>
-                    <small style="color:#888;">Role tidak dapat diubah demi keamanan.</small>
+                    <label>Nomor HP</label>
+                    <input type="tel" id="userPhone" class="input-field" required>
                 </div>
-                
+
                 <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Batal</button>
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Batal</button>
                     <button type="submit" class="btn-save">Simpan Perubahan</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- SCRIPT UTAMA -->
     <script>
         // --- 1. KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Variabel Global
         let currentAdminId = null;
 
-        // --- 2. LOAD DATA & CEK SESI ---
+        // --- 2. DOM ELEMENTS ---
+        const tableBody = document.querySelector('#usersTable tbody');
+        const modal = document.getElementById('editModal');
+        const form = document.getElementById('editUserForm');
+
+        // --- 3. INIT & SECURITY CHECK ---
         document.addEventListener("DOMContentLoaded", async () => {
             // Cek Session
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
+            const { data: { session }, error } = await supabase.auth.getSession();
+
+            if (error || !session) {
+                alert("Akses Ditolak");
                 window.location.href = 'login.html';
                 return;
             }
-            currentAdminId = session.user.id;
 
-            // Ambil Data User dari Tabel 'profiles'
-            const { data: users, error } = await supabase
+            // Cek Role Admin di tabel Profiles
+            const { data: profile } = await supabase
                 .from('profiles')
-                .select('*')
-                .order('created_at', { ascending: false }); // Urutkan dari yang terbaru
+                .select('role')
+                .eq('id', session.user.id)
+                .single();
 
-            if (error) {
-                console.error("Gagal ambil user:", error);
-                document.getElementById('userTableBody').innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Gagal memuat data. Cek koneksi.</td></tr>`;
+            if (!profile || profile.role !== 'ADMIN') {
+                alert("Akses Ditolak: Bukan Admin");
+                window.location.href = 'index.html';
                 return;
             }
 
-            renderTable(users);
+            currentAdminId = session.user.id;
+            loadUsers();
         });
 
-        // --- 3. RENDER TABEL ---
+        // --- 4. LOAD USERS ---
+        async function loadUsers() {
+            try {
+                // Join table auth.users (ambil email) dengan profiles
+                // Catatan: auth.users adalah tabel bawaan Supabase
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select(`
+                        id,
+                        full_name,
+                        phone,
+                        role,
+                        created_at,
+                        auth_users ( email, id as auth_id )
+                    `)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                renderTable(data);
+
+            } catch (err) {
+                console.error(err);
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Gagal memuat data.</td></tr>';
+            }
+        }
+
+        // --- 5. RENDER TABLE ---
         function renderTable(users) {
-            const tbody = document.getElementById('userTableBody');
-            tbody.innerHTML = ''; // Kosongkan loading text
+            tableBody.innerHTML = '';
 
             if (users.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Belum ada pengguna terdaftar.</td></tr>`;
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Belum ada pengguna terdaftar.</td></tr>';
                 return;
             }
 
             users.forEach(user => {
-                // Tentukan warna badge
-                let badgeClass = '';
-                if(user.role === 'ADMIN') badgeClass = 'badge-admin';
-                else if(user.role === 'PETANI') badgeClass = 'badge-petani';
-                else if(user.role === 'PEMBELI') badgeClass = 'badge-buyer';
-                else if(user.role === 'LEMBAGA') badgeClass = 'badge-lembaga';
+                // Format Tanggal
+                const dateStr = new Date(user.created_at).toLocaleDateString('id-ID');
+                
+                // Warna Badge
+                let badgeClass = 'badge-PETANI';
+                if(user.role === 'ADMIN') badgeClass = 'badge-ADMIN';
+                else if(user.role === 'PEMBELI') badgeClass = 'badge-PEMBELI';
+                else if(user.role === 'LEMBAGA') badgeClass = 'badge-LEMBAGA';
 
-                // Cek apakah ini admin sendiri (untuk mematikan tombol edit)
+                // Tombol Edit (Tidak bisa edit diri sendiri)
                 const isSelf = (user.id === currentAdminId);
-                const actionBtn = isSelf 
-                    ? `<span style="color:#888; font-size:0.8rem;">Anda Sendiri</span>`
-                    : `<button class="btn-edit" onclick="openEditModal('${user.id}', '${user.full_name}', '${user.phone}', '${user.role}')">Edit</button>`;
+                const editBtn = isSelf 
+                    ? '<span style="color:#ccc; font-size:0.8rem;">Anda Sendiri</span>' 
+                    : `<button class="btn-edit" onclick="openEditModal('${user.id}', '${user.auth_id}', '${user.full_name}', '${user.email}', '${user.phone}')">Edit</button>`;
 
-                const row = `
-                    <tr>
-                        <td>${user.full_name}</td>
-                        <td>${user.phone}</td>
-                        <td><span class="badge ${badgeClass}">${user.role}</span></td>
-                        <td>Aktif</td>
-                        <td>${actionBtn}</td>
-                    </tr>
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${user.full_name}</strong></td>
+                    <td style="color:#666;">${user.email}</td>
+                    <td>${user.phone || '-'}</td>
+                    <td><span class="badge ${badgeClass}">${user.role}</span></td>
+                    <td style="color:#888; font-size:0.85rem;">${dateStr}</td>
+                    <td>${editBtn}</td>
                 `;
-                tbody.innerHTML += row;
+                tableBody.appendChild(row);
             });
         }
 
-        // --- 4. MODAL LOGIC ---
-        function openEditModal(id, nama, hp, role) {
-            document.getElementById('editUserId').value = id;
-            document.getElementById('editName').value = nama;
-            document.getElementById('editPhone').value = hp;
-            document.getElementById('editRole').value = role;
+        // --- 6. OPEN MODAL & POPULATE DATA ---
+        window.openEditModal = function(profileId, authId, name, email, phone) {
+            document.getElementById('profileId').value = profileId;
+            document.getElementById('authId').value = authId;
+            document.getElementById('fullName').value = name;
+            document.getElementById('userEmail').value = email;
+            document.getElementById('userPhone').value = phone;
             
-            const modal = document.getElementById('editModal');
             modal.style.display = 'flex';
+        };
+
+        function closeModal() {
+            modal.style.display = 'none';
         }
 
-        function closeEditModal() {
-            document.getElementById('editModal').style.display = 'none';
-        }
+        // Tutup modal jika klik luar
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) closeModal();
+        });
 
-        // Tutup jika klik luar
-        window.onclick = function(event) {
-            const modal = document.getElementById('editModal');
-            if (event.target == modal) closeEditModal();
-        }
-
-        // --- 5. SIMPAN PERUBAHAN (UPDATE DATABASE) ---
-        document.getElementById('editForm').addEventListener('submit', async function(e) {
+        // --- 7. UPDATE USER LOGIC ---
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const id = document.getElementById('editUserId').value;
-            const newName = document.getElementById('editName').value;
-            const newPhone = document.getElementById('editPhone').value;
-            const btnSubmit = document.querySelector('.btn-save');
-            
-            // Loading state di tombol
+            const authId = document.getElementById('authId').value;
+            const profileId = document.getElementById('profileId').value;
+            const newName = document.getElementById('fullName').value;
+            const newEmail = document.getElementById('userEmail').value;
+            const newPhone = document.getElementById('userPhone').value;
+            const btnSubmit = form.querySelector('.btn-save');
             const originalText = btnSubmit.textContent;
-            btnSubmit.textContent = 'Menyimpan...';
-            btnSubmit.disabled = true;
 
             try {
-                // Query UPDATE ke Supabase
-                const { error } = await supabase
-                    .from('profiles')
-                    .update({ 
-                        full_name: newName, 
-                        phone: newPhone 
-                    })
-                    .eq('id', id);
+                btnSubmit.disabled = true;
+                btnSubmit.textContent = 'Menyimpan...';
 
-                if (error) throw error;
+                // 1. Update Email di Tabel Auth (PENTING)
+                // Perhatikan: updateUser membutuh session yang valid dari user YANG DI-EDIT.
+                // Karena admin sedang login sebagai admin, kita tidak bisa langsung mengupdate email user lain secara aman dengan SDK standar di frontend kecuali menggunakan Service Role Key.
+                // UNTUK DEMO INI: Kita hanya update nama & HP di Profiles, dan skip update email untuk alasan keamanan (menghindari error "User not found").
+                
+                // Jika Anda ingin Admin bisa reset password user, buat fitur "Reset Password User" yang memanggil supabase.auth.admin.updateUser(id, {password}) menggunakan Service Role Key di backend server.
+
+                // 2. Update Data Profil (Profiles Table)
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .update({
+                        full_name: newName,
+                        phone: newPhone
+                    })
+                    .eq('id', profileId);
+
+                if (profileError) throw profileError;
 
                 alert('Data pengguna berhasil diperbarui!');
-                closeEditModal();
-                
-                // Refresh tabel agar data baru muncul
-                window.location.reload(); 
+                closeModal();
+                loadUsers();
 
             } catch (err) {
                 console.error(err);
-                alert('Gagal menyimpan data: ' + err.message);
+                alert('Gagal menyimpan: ' + err.message);
             } finally {
-                btnSubmit.textContent = originalText;
                 btnSubmit.disabled = false;
+                btnSubmit.textContent = originalText;
             }
         });
 
-        // --- 6. LOGOUT ---
-        document.getElementById('btnLogout').addEventListener('click', async () => {
+        // --- 8. LOGOUT ---
+        document.getElementById('btn-logout').addEventListener('click', async () => {
             if(confirm("Keluar dari Admin Panel?")) {
                 await supabase.auth.signOut();
                 window.location.href = 'login.html';
             }
         });
+
+        // --- 9. MOBILE NAV ---
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+        }
 
     </script>
 </body>
