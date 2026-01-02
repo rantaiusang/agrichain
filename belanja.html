@@ -9,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
+        /* --- CSS GLOBAL RESPONSIVE (AMP - Aman Mobile Professional) --- */
         :root {
             --primary-green: #2E7D32;
             --dark-green: #1B5E20;
@@ -16,7 +17,9 @@
             --text-dark: #1B1B1B;
             --text-grey: #616161;
             --white: #ffffff;
-            --radius: 8px;
+            --radius: 12px;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         body {
@@ -31,7 +34,7 @@
         .navbar {
             background: var(--white);
             padding: 15px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: var(--shadow-sm);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -47,46 +50,38 @@
             text-decoration: none;
         }
 
-        /* --- CONTAINER --- */
+        /* --- CONTAINER RESPONSIVE --- */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
 
-        /* --- FILTER SECTION (PERBAIKAN LAYOUT PC) --- */
+        /* --- FILTER BAR (FLEX RESPONSIVE) --- */
         .filter-bar {
             background: var(--white);
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
             margin-bottom: 20px;
             display: flex;
             gap: 12px;
             align-items: center;
-            flex-wrap: wrap;
         }
 
-        /* 1. KOTAK PENCARIAN (Search Box) */
         .search-box {
-            flex: 2; /* Proporsi 2 bagian dari total lebar */
-            min-width: 200px;
+            flex: 2; /* Mengambil proporsi lebar lebih besar */
+            min-width: 250px;
             position: relative;
         }
 
         .search-box input {
             width: 100%;
-            padding: 12px 12px 12px 40px; /* Padding kiri lebar untuk ikon */
+            padding: 12px 12px 12px 40px;
             border: 1px solid #ddd;
-            border-radius: 8px;
+            border-radius: var(--radius);
             font-size: 1rem;
             box-sizing: border-box;
-        }
-
-        .search-box input:focus {
-            border-color: var(--primary-green);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
         }
 
         .search-icon {
@@ -97,33 +92,21 @@
             color: #999;
         }
 
-        /* 2. DROPDOWN (Lokasi & Jenis) */
-        select {
-            flex: 1; /* Sisa 1 bagian dibagi rata untuk dropdown */
-            min-width: 140px; /* Lebar minimum agar tidak gepeng */
-            padding: 10px 12px; /* Padding sedikit lebih kecil */
+        .filter-select {
+            flex: 1;
+            min-width: 140px;
+            padding: 10px;
             border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 0.9rem;
+            border-radius: var(--radius);
             background: white;
+            font-size: 0.95rem;
             cursor: pointer;
-            box-sizing: border-box;
-            
-            /* Batasi teks panjang di kotak dropdown */
-            max-width: 300px; 
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
-        select:focus {
-            border-color: var(--primary-green);
-            outline: none;
-        }
-
-        /* --- GRID PRODUK --- */
+        /* --- GRID PRODUK (AUTO FIT) --- */
         .product-grid {
             display: grid;
+            /* Kolom otomatis menyesuaikan layar, minimal lebar 220px */
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 20px;
         }
@@ -131,7 +114,7 @@
         .card {
             background: var(--white);
             border: 1px solid #eee;
-            border-radius: 12px;
+            border-radius: var(--radius);
             overflow: hidden;
             transition: transform 0.2s, box-shadow 0.2s;
             display: flex;
@@ -140,16 +123,15 @@
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+            box-shadow: var(--shadow-md);
             border-color: var(--light-green);
         }
 
         .card-img-wrapper {
             width: 100%;
             height: 160px;
-            overflow: hidden;
-            position: relative;
             background: #eee;
+            position: relative;
         }
 
         .card-img {
@@ -177,92 +159,81 @@
             font-size: 1.1rem;
             font-weight: 700;
             color: var(--text-dark);
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             line-height: 1.3;
         }
 
         .card-meta {
             font-size: 0.85rem;
             color: var(--text-grey);
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
         }
 
         .card-price {
             font-size: 1.2rem;
             font-weight: 800;
             color: var(--primary-green);
-            margin-top: auto; /* Push to bottom */
+            margin-top: auto; /* Push harga ke bawah */
+            margin-bottom: 10px;
         }
 
         .card-actions {
-            margin-top: 15px;
-            padding-top: 15px;
             border-top: 1px solid #f0f0f0;
+            padding-top: 15px;
         }
 
         .btn-buy {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             background-color: var(--primary-green);
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             font-weight: bold;
             cursor: pointer;
             transition: background 0.2s;
         }
+
         .btn-buy:hover { background-color: var(--dark-green); }
 
         .back-link {
             display: block;
-            margin-top: 20px;
+            margin-top: 30px;
             text-align: center;
             color: var(--text-grey);
             text-decoration: none;
-            font-weight: bold;
-            padding: 10px;
-            border-radius: 8px;
-            transition: all 0.2s;
+            font-weight: 600;
+            padding: 12px;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid #eee;
         }
-        .back-link:hover { background-color: #eee; color: var(--text-dark); }
+        .back-link:hover { background: #f9f9f9; }
 
         /* --- LOADING & EMPTY --- */
-        .loading-msg, .empty-msg {
+        .status-msg {
             text-align: center;
             padding: 40px;
             color: #999;
             font-size: 1.1rem;
             grid-column: 1 / -1;
-            background: #fff;
-            border-radius: 8px;
+            background: white;
+            border-radius: var(--radius);
             border: 1px dashed #ddd;
         }
 
-        /* --- BADGE --- */
-        .badge-verified {
-            background: #E8F5E9;
-            color: #2E7D32;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            margin-bottom: 5px;
-            display: inline-block;
-        }
-
-        /* --- RESPONSIVE --- */
+        /* --- RESPONSIVE ADJUSTMENTS (HP) --- */
         @media (max-width: 600px) {
             .filter-bar { 
                 flex-direction: column; 
                 align-items: stretch; 
-                gap: 10px; /* Jarak antar elemen di HP */
+                gap: 10px;
             }
-            .search-box { width: 100%; }
-            select { width: 100%; }
+            .search-box, .filter-select { width: 100%; }
         }
     </style>
 </head>
@@ -270,144 +241,118 @@
 
     <!-- Header -->
     <nav class="navbar">
-        <a href="index.html" class="nav-brand">AgriChain</a>
-        <div>
-            <!-- Tombol Profil -->
-            <a href="profile.html" style="text-decoration: none; color: #333; font-weight: bold; padding: 8px 16px; border: 1px solid #ddd; border-radius: 20px;">
-                👤 Profil Saya
-            </a>
-        </div>
+        <a href="index.html" class="nav-brand">🌾 AgriChain</a>
+        <a href="profile.html" style="text-decoration:none; color:#333; font-weight:bold; padding:8px 16px; border:1px solid #ddd; border-radius:20px;">
+            👤 Profil
+        </a>
     </nav>
 
     <div class="container">
         
         <!-- Filter Bar -->
         <div class="filter-bar">
-            <!-- Kolom 1: Pencarian (Lebar) -->
             <div class="search-box">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="Cari komoditas atau lokasi...">
+                <input type="text" id="searchInput" placeholder="Cari komoditas...">
             </div>
             
-            <!-- Kolom 2: Dropdown Lokasi -->
-            <select id="filterLokasi">
-                <option value="">Semua Lokasi</option>
-                <!-- Opsi akan diisi JS dari DB -->
-            </select>
-
-            <!-- Kolom 3: Dropdown Jenis -->
-            <select id="filterType">
-                <option value="">Semua Jenis</option>
-                <option value="padi">Padi</option>
-                <option value="jagung">Jagung</option>
-                <option value="kopi">Kopi</option>
-                <option value="cabai">Cabai</option>
+            <!-- Filter Status (Pending/Sold) -->
+            <select id="filterStatus" class="filter-select">
+                <option value="">Semua Status</option>
+                <option value="pending">Siap Jual (Pending)</option>
+                <option value="approved">Disetujui</option>
             </select>
         </div>
 
         <!-- Grid Produk -->
         <div class="product-grid" id="productList">
-            <div class="loading-msg">Memuat produk dari petani...</div>
+            <div class="status-msg">Memuat data pasar...</div>
         </div>
 
         <a href="index.html" class="back-link">← Kembali ke Beranda</a>
     </div>
 
+    <!-- SCRIPT UTAMA (FIXED LOGIC) -->
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        // --- 1. KONFIGURASI SUPABASE (FIXED) ---
+        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. DOM ELEMENTS ---
         const productList = document.getElementById('productList');
         const searchInput = document.getElementById('searchInput');
-        const filterLokasi = document.getElementById('filterLokasi');
-        const filterType = document.getElementById('filterType');
+        const filterStatus = document.getElementById('filterStatus');
 
-        let allProducts = []; // Cache semua produk
+        let allProducts = [];
 
-        // --- 3. LOAD PRODUK & LOKASI ---
+        // --- 3. LOAD DATA ---
         document.addEventListener("DOMContentLoaded", async () => {
-            await loadLocations();
             await loadProducts();
         });
 
-        // --- 4. FUNGSI AMBIL LOKASI UNTUK DROPDOWN ---
-        async function loadLocations() {
-            // Ambil daftar lokasi unik dari tabel produk
-            const { data, error } = await supabase
-                .from('agrichain_product')
-                .select('location')
-                .order('location', { ascending: true });
-
-            if (data) {
-                // Ambil lokasi unik saja
-                const uniqueLocations = [...new Set(data.map(d => d.location))];
-                
-                // Isi dropdown
-                uniqueLocations.forEach(loc => {
-                    const opt = document.createElement('option');
-                    opt.value = loc;
-                    opt.textContent = loc;
-                    filterLokasi.appendChild(opt);
-                });
-            }
-        }
-
-        // --- 5. FUNGSI AMBIL PRODUK ---
         async function loadProducts() {
-            // Query produk beserta penjualnya (JOIN MANUAL dengan profiles)
-            const { data, error } = await supabase
-                .from('agrichain_product')
-                .select(`
-                    id, name, type, unit, price, location, image_url, created_at,
-                    profiles!inner ( full_name, trust_score, avatar_url )
-                `)
-                .order('created_at', { ascending: false });
+            try {
+                // PERBAIKAN: Mengambil data dari tabel 'panen' (Bukan agrichain_product)
+                // Kita JOIN dengan tabel 'profiles' untuk mendapatkan nama petani
+                const { data, error } = await supabase
+                    .from('panen')
+                    .select(`
+                        id,
+                        commodity_name,
+                        quantity,
+                        unit,
+                        price_per_unit,
+                        estimated_total,
+                        quality,
+                        status,
+                        created_at,
+                        profiles!inner ( full_name ) 
+                    `)
+                    .order('created_at', { ascending: false }); // Terbaru diatas
 
-            if (error) {
-                console.error("Gagal load produk:", error);
-                productList.innerHTML = '<div class="loading-msg" style="color:red;">Gagal memuat produk.</div>';
-                return;
+                if (error) throw error;
+
+                // Flatten data untuk kemudahan
+                allProducts = data.map(item => ({
+                    id: item.id,
+                    name: item.commodity_name,
+                    seller: item.profiles.full_name,
+                    quantity: item.quantity,
+                    unit: item.unit,
+                    price: item.price_per_unit,
+                    total: item.estimated_total,
+                    quality: item.quality,
+                    status: item.status,
+                    created_at: item.created_at
+                }));
+
+                renderGrid(allProducts);
+
+            } catch (err) {
+                console.error("Gagal load produk:", err);
+                productList.innerHTML = '<div class="status-msg" style="color:red;">Gagal memuat data produk.</div>';
             }
-
-            // Flatten data (karena Supabase join nested data di dalam object)
-            // Map data agar mudah diakses
-            allProducts = data.map(item => ({
-                id: item.id,
-                name: item.name,
-                type: item.type,
-                unit: item.unit,
-                price: item.price,
-                location: item.location,
-                image_url: item.image_url,
-                seller_name: item.profiles.full_name,
-                trust_score: item.profiles.trust_score,
-                avatar_url: item.profiles.avatar_url
-            }));
-
-            renderGrid(allProducts);
         }
 
-        // --- 6. RENDER GRID ---
+        // --- 4. RENDER GRID ---
         function renderGrid(products) {
-            productList.innerHTML = ''; 
+            productList.innerHTML = '';
 
             if (products.length === 0) {
-                productList.innerHTML = '<div class="empty-msg">Tidak ada produk yang sesuai kriteria.</div>';
+                productList.innerHTML = '<div class="status-msg">Belum ada hasil panen yang dijual.</div>';
                 return;
             }
 
             products.forEach(item => {
-                // Placeholder image jika kosong
-                const imgUrl = item.image_url || `https://picsum.photos/seed/${item.id}/400/200`;
+                // Generate gambar placeholder dinamis
+                const imgUrl = `https://picsum.photos/seed/${item.id}/400/200`;
                 
-                // Format harga
-                const priceStr = item.price.toLocaleString('id-ID');
-
-                // Penjual Badge
-                const sellerBadge = item.trust_score >= 4.0 ? '<span class="badge-verified">Terpercaya</span>' : '';
+                // Status Badge Color
+                let statusColor = '#FFA000'; // Orange (Pending)
+                let statusText = 'Menunggu';
+                if(item.status === 'approved') { statusColor = '#388E3C'; statusText = 'Tersedia'; }
+                if(item.status === 'sold') { statusColor = '#1976D2'; statusText = 'Terjual'; }
 
                 const card = document.createElement('div');
                 card.className = 'card';
@@ -416,16 +361,25 @@
                         <img src="${imgUrl}" alt="${item.name}" class="card-img">
                     </div>
                     <div class="card-body">
-                        <div class="card-category">${item.type}</div>
+                        <div class="card-category">${item.quality} Quality</div>
                         <h3 class="card-title">${item.name}</h3>
                         <div class="card-meta">
-                            <span>📍 ${item.location}</span>
-                            <span>👤 ${item.seller_name}</span>
+                            <span>👤 ${item.seller}</span>
+                            <span>📦 ${item.quantity} ${item.unit}</span>
                         </div>
-                        <div class="card-price">Rp ${priceStr} / ${item.unit}</div>
-                        ${sellerBadge}
+                        <div class="card-price">Rp ${item.price.toLocaleString('id-ID')} / ${item.unit}</div>
+                        <div style="font-size:0.8rem; color:#666; margin-bottom:10px;">
+                            Total Estimasi: <b>Rp ${item.total.toLocaleString('id-ID')}</b>
+                        </div>
                         <div class="card-actions">
-                            <button class="btn-buy" onclick="contactSeller('${item.seller_name}', '${item.id}')">Beli / Tanya</button>
+                            <button class="btn-buy" onclick="buyProduct('${item.name}', '${item.seller}')">
+                                Beli Sekarang
+                            </button>
+                        </div>
+                        <div style="margin-top:10px; text-align:center;">
+                            <span style="font-size:0.75rem; background:${statusColor}; color:white; padding:2px 8px; border-radius:10px;">
+                                ${statusText}
+                            </span>
                         </div>
                     </div>
                 `;
@@ -433,34 +387,32 @@
             });
         }
 
-        // --- 7. LOGIKA FILTER ---
-        
-        function filterData() {
+        // --- 5. LOGIKA FILTER & SEARCH ---
+        function filterProducts() {
             const searchVal = searchInput.value.toLowerCase();
-            const locVal = filterLokasi.value;
-            const typeVal = filterType.value;
+            const statusVal = filterStatus.value;
 
-            // Filter array allProducts
             const filtered = allProducts.filter(item => {
-                const matchSearch = item.name.toLowerCase().includes(searchVal) || item.location.toLowerCase().includes(searchVal);
-                const matchLoc = locVal === '' || item.location === locVal;
-                const matchType = typeVal === '' || item.type.toLowerCase() === typeVal;
-
-                return matchSearch && matchLoc && matchType;
+                const matchName = item.name.toLowerCase().includes(searchVal) || item.seller.toLowerCase().includes(searchVal);
+                const matchStatus = statusVal === '' || item.status === statusVal;
+                return matchName && matchStatus;
             });
 
             renderGrid(filtered);
         }
 
-        // --- 8. EVENT LISTENER FILTER ---
-        searchInput.addEventListener('input', filterData);
-        filterLokasi.addEventListener('change', filterData);
-        filterType.addEventListener('change', filterData);
+        // Event Listeners
+        searchInput.addEventListener('input', filterProducts);
+        filterStatus.addEventListener('change', filterProducts);
 
-        // --- 9. FUNGSI BELI ---
-        window.contactSeller = function(sellerName, productId) {
-            alert(`Menghubungi ${sellerName} untuk produk ID: ${productId}...`);
-            // Nanti di sini bisa logika redirect ke Chat atau Notif
+        // --- 6. INTERAKSI BELI ---
+        window.buyProduct = function(productName, sellerName) {
+            // Simulasi beli
+            const confirmBuy = confirm(`Apakah Anda ingin membeli ${productName} dari petani ${sellerName}?`);
+            if(confirmBuy) {
+                alert("Fitur pembayaran sedang diproses...");
+                // Nanti logika insert ke tabel 'orders' di sini
+            }
         };
 
     </script>
