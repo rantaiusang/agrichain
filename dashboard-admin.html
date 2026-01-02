@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard Super Admin - AgriChain</title>
+    
+    <!-- Library Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         :root {
             --primary-dark: #1A237E;
@@ -212,9 +216,7 @@
         <div class="nav-item" onclick="location.href='admin-pengaturan.html'">⚙️ Pengaturan</div>
         
         <!-- Tombol Keluar -->
-        <div onclick="handleAdminLogout()" 
-             class="nav-item" 
-             style="margin-top: auto; color: #ff8a80; border: 1px solid #ff8a80;">
+        <div id="logoutBtn" class="nav-item" style="margin-top: auto; color: #ff8a80; border: 1px solid #ff8a80; cursor: pointer;">
              🚪 Keluar
         </div>
     </nav>
@@ -255,7 +257,44 @@
     </div>
 
     <script>
-        // Data Simulasi untuk Setiap Role
+        // --- 1. KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- 2. LOGIKA KEAMANAN (Security Check) ---
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Ambil session saat ini
+            const { data: { session }, error } = await supabase.auth.getSession();
+
+            if (error || !session) {
+                alert("Akses Ditolak: Anda belum login.");
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Cek apakah role user adalah ADMIN dari tabel profiles
+            // (Penting: Admin tidak bisa sembarang masuk)
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .single();
+
+            if (!profile || profile.role !== 'ADMIN') {
+                alert("Akses Ditolak: Halaman ini khusus Administrator.");
+                window.location.href = 'index.html'; // Lempar ke halaman user biasa
+                return;
+            }
+
+            console.log("✅ Admin terverifikasi. Dashboard dimuat.");
+            
+            // Load data awal
+            const adminBtn = document.querySelector('.mode-btn');
+            switchMode('admin', adminBtn);
+        });
+
+        // --- 3. DATA SIMULASI (Tetap Sama) ---
         const roleData = {
             admin: {
                 stats: [
@@ -312,17 +351,17 @@
             }
         };
 
-        // Fungsi Ganti Mode
+        // --- 4. FUNGSI GANTI MODE ---
         function switchMode(role, btnElement) {
-            // 1. Update UI Tombol
+            // Update UI Tombol
             const buttons = document.querySelectorAll('.mode-btn');
             buttons.forEach(btn => btn.classList.remove('active'));
             btnElement.classList.add('active');
 
-            // 2. Ambil Data Sesuai Role
+            // Ambil Data
             const data = roleData[role];
 
-            // 3. Render Stats
+            // Render Stats
             const statsContainer = document.getElementById('statsContainer');
             statsContainer.innerHTML = '';
             
@@ -336,7 +375,7 @@
                 statsContainer.appendChild(card);
             });
 
-            // 4. Render Activities
+            // Render Activities
             const listContainer = document.getElementById('listContainer');
             listContainer.innerHTML = '';
 
@@ -353,7 +392,7 @@
                 listContainer.appendChild(item);
             });
 
-            // 5. Ubah Judul List
+            // Update Judul
             const titles = {
                 admin: "Aktivitas Sistem Terkini",
                 petani: "Aktivitas Panen & Penjualan",
@@ -363,24 +402,25 @@
             document.getElementById('listTitle').innerText = titles[role];
         }
 
-        // Fungsi Log Out Admin
-        function handleAdminLogout() {
+        // --- 5. FUNGSI LOGOUT ---
+        const logoutBtn = document.getElementById('logoutBtn');
+        logoutBtn.addEventListener('click', async () => {
             const confirmLogout = confirm("Apakah Anda yakin ingin keluar dari Dashboard Admin?");
             
             if (confirmLogout) {
-                // Hapus semua data sesi
-                localStorage.clear();
-                
-                // Redirect ke Login
-                window.location.href = 'login.html';
+                try {
+                    // Logout resmi dari Supabase
+                    await supabase.auth.signOut();
+                    alert("Anda telah keluar.");
+                } catch (err) {
+                    console.error("Error logout:", err);
+                } finally {
+                    // Redirect ke Login
+                    window.location.href = 'login.html';
+                }
             }
-        }
+        });
 
-        // Init: Load mode Admin saat pertama buka
-        window.onload = () => {
-            const adminBtn = document.querySelector('.mode-btn');
-            switchMode('admin', adminBtn);
-        };
     </script>
 </body>
 </html>
