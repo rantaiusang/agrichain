@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Masuk - AgriChain</title>
     
-    <!-- Library Blockchain -->
+    <!-- Library Blockchain (WalletConnect) -->
     <script src="https://unpkg.com/@walletconnect/web3-provider@1.7.1/dist/index.min.js"></script>
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    
+    <!-- Library Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root { --primary-green: #2E7D32; --light-green: #E8F5E9; --text-dark: #333; --white: #ffffff; --error-red: #D32F2F; }
@@ -64,8 +67,6 @@
             font-size: 1rem;
             box-sizing: border-box;
             background: #fff;
-            -moz-appearance: none;
-            -webkit-appearance: none;
         }
 
         .form-input:focus {
@@ -128,6 +129,7 @@
             border-radius: 50%;
             border: 2px solid #fff;
             box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
+            transition: background-color 0.3s;
         }
 
         #wallet-btn {
@@ -149,7 +151,7 @@
         }
 
         #wallet-btn:hover { background-color: #eff6ff; border-color: #2196F3; color: #2196F3; }
-        #wallet-btn.connected { background-color: #E8F5E9; border-color: #2E7D32; color: #2E7D32; }
+        #wallet-btn.connected { background-color: #E8F5E9; border-color: #2E7D32; color: #2E7D32; cursor: default; }
         #wallet-btn.connected svg { stroke: #2E7D32; }
 
         /* --- EXTRA LINKS --- */
@@ -223,7 +225,7 @@
                 <div class="wallet-status-dot" id="walletDot"></div>
                 <span id="walletStatusText">Hubungkan Dompet (Opsional)</span>
             </div>
-            <button id="wallet-btn">
+            <button id="wallet-btn" type="button">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.778-7.778zm0 15l-2-2m-7.61 7.61a5.5 5.5 0 0 1-3-3V5a3 3 0 0 1 3-3h5a3 3 0 0 1 3 3v5a3 3 0 0 0-3 3z"></path></svg>
                 Hubungkan Dompet (Web3)
             </button>
@@ -239,23 +241,15 @@
     </div>
 
     <!-- SCRIPT UTAMA (LOGIKA LOGIN & REDIRECT) -->
-    <script type="module">
-        // 1. IMPORT DARI MODULAR
-        import { connectWallet, isWalletConnected } from './src/connectWallet.js';
-        import { loginUser } from './src/api.js';
+    <script>
+        // --- 1. KONFIGURASI SUPABASE ---
+        // SAMAKAN DENGAN FILE REGISTER & PROFILE
+        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; 
 
-        // 2. SETUP WALLET (Kita load disini agar cepat)
-        const provider = new WalletConnectProvider.default({
-            rpc: {
-                137: "https://polygon-rpc.com",
-                80001: "https://rpc-mumbai.maticvigil.com"
-            }
-        });
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let web3Provider = null;
-        let userWalletAddress = null;
-
-        // 3. DOM ELEMENTS
+        // --- 2. DOM ELEMENTS ---
         const form = document.getElementById('loginForm');
         const phoneInput = document.getElementById('phone');
         const passInput = document.getElementById('password');
@@ -268,17 +262,42 @@
         const walletDot = document.getElementById('walletDot');
         const walletStatusText = document.getElementById('walletStatusText');
 
-        // 4. FUNGSI KLIK WALLET
+        // --- 3. LOGIKA WALLET CONNECT ---
+        let userWalletAddress = null;
+        let provider = null;
+
+        // Inisialisasi Provider
+        if (typeof WalletConnectProvider !== 'undefined') {
+            provider = new WalletConnectProvider.default({
+                rpc: {
+                    137: "https://polygon-rpc.com",
+                    80001: "https://rpc-mumbai.maticvigil.com"
+                },
+                // Menggunakan bridge default atau custom jika perlu
+                bridge: "https://bridge.walletconnect.org" 
+            });
+        }
+
         walletBtn.addEventListener('click', async function(e) {
             e.preventDefault();
-            console.log("Menghubungkan wallet...");
+            if (!provider) {
+                alert("Library WalletConnect gagal dimuat.");
+                return;
+            }
 
+            // Jika sudah connect, jangan lakukan apa-apa
+            if (provider.connected) return;
+
+            console.log("Menghubungkan wallet...");
             const originalContent = walletBtn.innerHTML;
             walletBtn.innerHTML = "Membuka Aplikasi...";
 
             try {
+                // Trigger QR Code atau Deep Link
                 await provider.enable();
-                web3Provider = new ethers.providers.Web3Provider(provider);
+                
+                // Buat provider Ethers
+                const web3Provider = new ethers.providers.Web3Provider(provider);
                 const signer = web3Provider.getSigner();
                 const address = await signer.getAddress();
                 
@@ -296,12 +315,15 @@
 
             } catch (error) {
                 console.error("Koneksi Dibatalkan/Gagal:", error);
-                alert("Gagal menghubungkan dompet. Silakan cek aplikasi WalletConnect di HP Anda.");
-                walletBtn.innerHTML = originalContent;
+                // Tampilkan pesan error yang lebih halus, jangan alert kasar
+                walletBtn.innerHTML = "Coba Lagi";
+                setTimeout(() => {
+                    walletBtn.innerHTML = originalContent;
+                }, 2000);
             }
         });
 
-        // 5. FUNGSI LOGIN FORM
+        // --- 4. LOGIKA LOGIN FORM ---
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -322,31 +344,61 @@
             errorMsg.style.display = 'none';
 
             try {
-                // Panggil fungsi login dari api.js
-                const result = await loginUser(phone, password);
+                // KUNCI LOGIN: Ubah HP menjadi format email yang sama dengan saat Register
+                const emailForSupabase = phone + "@agrichain.com";
 
-                if (result.success) {
-                    // --- SIMPAN SESI (TOKEN) KE LOCALSTORAGE ---
-                    localStorage.setItem('agrichain_token', result.token || 'dummy_token');
-                    localStorage.setItem('agrichain_user', JSON.stringify(result.user));
+                console.log("Mencoba login dengan:", emailForSupabase);
 
-                    // --- SIMPAN ALAMAT WALLET JIKA SUDAH CONNECT ---
-                    if (userWalletAddress) {
-                        localStorage.setItem('user_wallet_address', userWalletAddress);
-                        console.log("✅ Wallet tersimpan:", userWalletAddress);
-                    }
+                // Panggil Supabase Auth
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: emailForSupabase,
+                    password: password,
+                });
 
-                    alert("Login Berhasil! Mengarahkan ke Beranda...");
+                if (error) throw error;
 
-                    // --- REDIRECT OTOMATIS KE HOME ---
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 500);
+                console.log("Login Sukses:", data.user);
+
+                // Ambil data profil tambahan (opsional, tapi bagus untuk disimpan di session)
+                // Jika kamu ingin menyimpan data role/nama di localStorage:
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', data.user.id)
+                    .single();
+
+                // Simpan Sesi (Supabase menyimpan session otomatis di cookie, 
+                // tapi kita simpan flag di localStorage untuk pengecekan sederhana)
+                localStorage.setItem('agrichain_token', 'access_token_exists'); // Flag sederhana
+                localStorage.setItem('agrichain_user_id', data.user.id);
+                
+                if (profile) {
+                    localStorage.setItem('agrichain_user_role', profile.role);
+                    localStorage.setItem('agrichain_user_name', profile.full_name);
                 }
+
+                // Simpan Wallet jika connect
+                if (userWalletAddress) {
+                    localStorage.setItem('user_wallet_address', userWalletAddress);
+                }
+
+                // Redirect
+                alert("Login Berhasil! Mengarahkan ke Beranda...");
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 500);
 
             } catch (error) {
                 console.error("Login Error:", error);
-                errorMsg.textContent = error.message;
+                
+                let msg = "Nomor HP atau Kata Sandi salah.";
+                if (error.message.includes("Invalid login credentials")) {
+                    msg = "Nomor HP atau Password salah.";
+                } else if (error.message.includes("Email not confirmed")) {
+                    msg = "Akun belum dikonfirmasi (Cek Email/WA).";
+                }
+                
+                errorMsg.textContent = msg;
                 errorMsg.style.display = 'block';
             } finally {
                 // Reset Tombol
@@ -357,11 +409,14 @@
             }
         });
 
-        // 6. CEK SESI SAAT LOAD (Opsional - Jika reload di halaman login)
-        window.addEventListener("DOMContentLoaded", () => {
-            const token = localStorage.getItem('agrichain_token');
-            if (token) {
-                alert("Anda sudah login. Mengarahkan ke Beranda...");
+        // --- 5. CEK SESI SAAT LOAD ---
+        window.addEventListener("DOMContentLoaded", async () => {
+            // Cek apakah user masih login via Supabase Session
+            const { data: { session } } = await supabase.auth.getSession();
+            
+            if (session) {
+                console.log("Sesi masih aktif, redirecting...");
+                // Jangan alert, langsung redirect biar UX smooth
                 window.location.href = 'index.html';
             }
         });
