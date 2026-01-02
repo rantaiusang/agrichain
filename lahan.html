@@ -9,7 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        /* --- CSS VARIABLES --- */
         :root {
             --primary-green: #2E7D32;
             --dark-green: #1B5E20;
@@ -28,9 +27,8 @@
             padding: 20px;
         }
 
-        /* --- CONTAINER & HEADER --- */
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             background: var(--white);
             padding: 30px;
@@ -48,6 +46,7 @@
         }
 
         h2 { margin: 0; color: var(--primary-green); }
+        
         .btn-add {
             background: var(--primary-green);
             color: white;
@@ -57,95 +56,74 @@
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 2px 5px rgba(46, 125, 50, 0.2);
+            transition: background 0.2s;
+        }
+        .btn-add:hover { background: var(--dark-green); }
+
+        /* --- FORM --- */
+        .form-container {
+            display: none; /* Hidden by default */
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border: 1px solid #eee;
         }
 
-        /* --- FORM EDITOR --- */
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark); }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: var(--text-dark); font-size: 0.9rem; }
         
         input, select {
             width: 100%;
             padding: 12px;
             border: 1px solid #ddd;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 1rem;
             box-sizing: border-box;
-            transition: border-color 0.2s;
         }
-        input:focus, select:focus {
-            border-color: var(--primary-green);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
-        }
+        input:focus, select:focus { border-color: var(--primary-green); outline: none; }
 
-        .form-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
+        .form-actions { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-save { flex: 1; background: var(--primary-green); color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-cancel { flex: 1; background: #e0e0e0; color: #333; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
-        .btn-save {
-            background: var(--primary-green);
-            color: white;
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        .btn-cancel {
-            background: #f0f0f0;
-            color: #666;
-            border: 1px solid #ddd;
-            flex: 1;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        /* --- TABEL LAHAN --- */
-        .table-wrapper {
-            overflow-x: auto;
-            margin-top: 30px;
-        }
-
+        /* --- TABEL --- */
+        .table-wrapper { overflow-x: auto; }
         table {
             width: 100%;
             border-collapse: collapse;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: var(--shadow);
+            min-width: 600px; /* Agar tabel tidak gepeng di HP */
         }
-
-        thead { background: var(--light-green); }
-
+        
         th, td {
             padding: 15px;
             text-align: left;
             border-bottom: 1px solid #eee;
         }
 
-        th { font-weight: 700; color: var(--primary-green); text-transform: uppercase; font-size: 0.85rem; }
-        tr:last-child td { border-bottom: none; }
+        th {
+            background: var(--light-green);
+            color: var(--primary-green);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
         tr:hover { background-color: #fafafa; }
 
-        /* Tombol Aksi Tabel */
         .action-btn {
             padding: 6px 12px;
             border-radius: 4px;
             font-size: 0.8rem;
             font-weight: 600;
             cursor: pointer;
-            margin-right: 5px;
             border: none;
+            margin-right: 5px;
         }
-        .btn-edit { background: #FFD700; color: #333; }
-        .btn-delete { background: #e74c3c; color: white; }
+        .btn-edit { background: #FFC107; color: #333; }
+        .btn-delete { background: #ff5252; color: white; }
 
-        /* --- NOTIFIKASI (TOAST) --- */
+        /* --- TOAST --- */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -159,15 +137,15 @@
             opacity: 0;
             transition: opacity 0.3s;
             pointer-events: none;
-            z-index: 999;
+            z-index: 1000;
         }
         .toast.show { opacity: 1; }
         .toast.success { background: var(--primary-green); }
 
-        /* --- RESPONSIVE --- */
+        /* Responsive */
         @media (max-width: 600px) {
-            .form-actions { flex-direction: column; }
             .page-header { flex-direction: column; gap: 10px; text-align: center; }
+            .form-actions { flex-direction: column; }
         }
     </style>
 </head>
@@ -175,18 +153,16 @@
 
     <div class="container">
         <div class="page-header">
-            <h2>Manajemen Lahan Petani</h2>
+            <h2>Manajemen Lahan</h2>
             <button class="btn-add" onclick="showForm()">+ Tambah Lahan</button>
         </div>
 
-        <!-- FORM INPUT / EDIT (Hidden by default) -->
-        <div id="lahanForm" style="display: none; background: #f9f9f9; padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+        <!-- FORM INPUT / EDIT -->
+        <div id="formContainer" class="form-container">
             <h3 style="margin-top: 0; color: var(--text-dark);" id="formTitle">Input Data Lahan</h3>
-            
-            <form id="formLahan">
-                <!-- Hidden ID untuk Edit Mode -->
+            <form id="lahanForm">
                 <input type="hidden" id="lahanId">
-
+                
                 <div class="form-group">
                     <label for="namaLahan">Nama Lahan</label>
                     <input type="text" id="namaLahan" placeholder="Contoh: Sawah Bakti I" required>
@@ -199,13 +175,12 @@
 
                 <div class="form-group">
                     <label for="lokasi">Lokasi (Kabupaten/Kecamatan)</label>
-                    <input type="text" id="lokasi" placeholder="Contoh: Cianjur, Warungkondang" required>
+                    <input type="text" id="lokasi" placeholder="Cianjur, Warungkondang" required>
                 </div>
 
                 <div class="form-group">
                     <label for="jenisTanah">Jenis Tanah</label>
                     <select id="jenisTanah" required>
-                        <option value="">Pilih Jenis Tanah...</option>
                         <option value="Sawah Irigasi">Sawah Irigasi</option>
                         <option value="Sawah Tadah Hujan">Sawah Tadah Hujan</option>
                         <option value="Kebun Sayur">Kebun Sayur</option>
@@ -216,7 +191,7 @@
 
                 <div class="form-group">
                     <label for="komoditas">Komoditas Utama</label>
-                    <input type="text" id="komoditas" placeholder="Contoh: Padi Cianjur, Jagung Manis" required>
+                    <input type="text" id="komoditas" placeholder="Padi Cianjur, Jagung Manis" required>
                 </div>
 
                 <div class="form-actions">
@@ -226,79 +201,90 @@
             </form>
         </div>
 
-        <!-- TABEL DAFTAR LAHAN -->
+        <!-- TABEL LAHAN -->
         <div class="table-wrapper">
             <table id="tabelLahan">
                 <thead>
                     <tr>
                         <th style="width: 25%;">Nama Lahan</th>
-                        <th style="width: 15%;">Luas</th>
+                        <th style="width: 15%;">Luas (m²)</th>
                         <th style="width: 20%;">Lokasi</th>
                         <th style="width: 15%;">Jenis Tanah</th>
                         <th style="width: 15%;">Komoditas</th>
-                        <th style="width: 25%;">Aksi</th>
+                        <th style="width: 10%;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Data akan di-render via JavaScript -->
-                    <tr>
-                        <td colspan="7" style="text-align: center; color: #999;">Memuat data lahan...</td>
-                    </tr>
+                    <tr><td colspan="6" style="text-align: center; color: #999;">Memuat data lahan...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- Elemen Toast Notifikasi -->
+    <!-- Toast Notifikasi -->
     <div id="toast" class="toast">Data berhasil disimpan!</div>
 
-    <!-- Script Utama -->
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        // --- 1. KONFIGURASI SUPABASE (FIXED) ---
+        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentUserId = null;
 
         // --- 2. DOM ELEMENTS ---
+        const formContainer = document.getElementById('formContainer');
         const formLahan = document.getElementById('lahanForm');
         const tabelBody = document.querySelector('#tabelLahan tbody');
         const formTitle = document.getElementById('formTitle');
         const toast = document.getElementById('toast');
 
-        // --- 3. LOAD DATA LAHAN ---
-        async function loadLahan() {
-            tabelBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #999;">Memuat data lahan...</td></tr>';
-            
-            const { data, error } = await supabase
-                .from('farmlands')
-                .select('*')
-                .order('name', { ascending: true });
-
-            if (error) {
-                console.error(error);
-                tabelBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">Gagal memuat data.</td></tr>';
+        // --- 3. INIT & LOAD ---
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Cek Login & Ambil User ID
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'login.html';
                 return;
             }
+            currentUserId = session.user.id;
 
-            renderTable(data);
+            loadLahan();
+        });
+
+        // --- 4. LOAD DATA ---
+        async function loadLahan() {
+            try {
+                const { data, error } = await supabase
+                    .from('farmlands')
+                    .select('*')
+                    .eq('user_id', currentUserId) // Hanya lahan milik user ini
+                    .order('name', { ascending: true });
+
+                if (error) throw error;
+
+                renderTable(data);
+
+            } catch (err) {
+                console.error(err);
+                tabelBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Gagal memuat data.</td></tr>';
+            }
         }
 
-        // --- 4. RENDER TABEL ---
-        function renderTable(lahanList) {
+        // --- 5. RENDER TABEL ---
+        function renderTable(data) {
             tabelBody.innerHTML = '';
 
-            if (lahanList.length === 0) {
-                tabelBody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Belum ada data lahan.</td></tr>';
+            if (!data || data.length === 0) {
+                tabelBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada data lahan.</td></tr>';
                 return;
             }
 
-            lahanList.forEach(item => {
+            data.forEach(item => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><strong>${item.name}</strong></td>
-                    <td>${item.area_size.toLocaleString()} m²</td>
+                    <td>${item.area_size.toLocaleString()}</td>
                     <td>${item.location}</td>
                     <td>${item.soil_type}</td>
                     <td>${item.commodity}</td>
@@ -311,21 +297,20 @@
             });
         }
 
-        // --- 5. TAMPILKAN FORM (Mode Add) ---
+        // --- 6. HANDLE FORM SHOW/HIDE ---
         function showForm() {
-            formLahan.style.display = 'block';
-            formTitle.innerText = "Input Data Lahan Baru";
-            document.getElementById('formLahan').reset();
-            document.getElementById('lahanId').value = ''; // Kosongkan ID untuk mode Add
+            formContainer.style.display = 'block';
+            formTitle.innerText = "Tambah Lahan Baru";
+            formLahan.reset();
+            document.getElementById('lahanId').value = ''; // Kosongkan ID = Mode Add
         }
 
-        // --- 6. SEMBUNYIKAN FORM ---
         function hideForm() {
-            formLahan.style.display = 'none';
+            formContainer.style.display = 'none';
         }
 
-        // --- 7. LOGIKA SIMPAN (ADD / UPDATE) ---
-        document.getElementById('formLahan').addEventListener('submit', async function(e) {
+        // --- 7. SIMPAN / UPDATE ---
+        formLahan.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const id = document.getElementById('lahanId').value;
@@ -336,8 +321,7 @@
             const komoditas = document.getElementById('komoditas').value;
 
             try {
-                // Mapping Kolom HTML -> Kolom Database
-                const dataPayload = {
+                const payload = {
                     user_id: currentUserId,
                     name: nama,
                     area_size: parseInt(luas),
@@ -347,27 +331,19 @@
                 };
 
                 if (id) {
-                    // UPDATE (Edit Mode)
-                    const { error } = await supabase
-                        .from('farmlands')
-                        .update(dataPayload)
-                        .eq('id', id);
-                    
+                    // UPDATE
+                    const { error } = await supabase.from('farmlands').update(payload).eq('id', id);
                     if (error) throw error;
-                    showToast("Data lahan berhasil diperbarui!", "success");
-
+                    showToast("Data lahan berhasil diperbarui!");
                 } else {
-                    // INSERT (Add Mode)
-                    const { error } = await supabase
-                        .from('farmlands')
-                        .insert([dataPayload]);
-                    
+                    // INSERT
+                    const { error } = await supabase.from('farmlands').insert([payload]);
                     if (error) throw error;
-                    showToast("Lahan baru berhasil ditambahkan!", "success");
+                    showToast("Lahan baru berhasil ditambahkan!");
                 }
 
                 hideForm();
-                loadLahan(); // Refresh tabel
+                loadLahan();
 
             } catch (err) {
                 console.error(err);
@@ -375,75 +351,40 @@
             }
         });
 
-        // --- 8. LOGIKA EDIT ---
-        window.editLahan = function(id) {
-            // Kita ambil data dari elemen DOM atau query ulang ke DB.
-            // Untuk efisiensi demo, kita asumsi data DOM terbaru, tapi idealnya query DB.
-            // Di sini saya gunakan trik membaca data dari input form hidden logic atau query.
-            // Agar aman, kita query ulang 1 data saja.
-            
-            supabase
-                .from('farmlands')
-                .select('*')
-                .eq('id', id)
-                .single()
-                .then(({ data, error }) => {
-                    if (error) return;
-                    
-                    showForm(); // Tampilkan form
-                    formTitle.innerText = "Edit Data Lahan";
+        // --- 8. EDIT ---
+        window.editLahan = async function(id) {
+            // Ambil data lama dari DB
+            const { data, error } = await supabase.from('farmlands').select('*').eq('id', id).single();
+            if(error) return;
 
-                    // Isi form dengan data
-                    document.getElementById('lahanId').value = data.id;
-                    document.getElementById('namaLahan').value = data.name;
-                    document.getElementById('luas').value = data.area_size;
-                    document.getElementById('lokasi').value = data.location;
-                    document.getElementById('jenisTanah').value = data.soil_type;
-                    document.getElementById('komoditas').value = data.commodity;
-                    
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                });
+            showForm();
+            formTitle.innerText = "Edit Data Lahan";
+            document.getElementById('lahanId').value = data.id;
+            document.getElementById('namaLahan').value = data.name;
+            document.getElementById('luas').value = data.area_size;
+            document.getElementById('lokasi').value = data.location;
+            document.getElementById('jenisTanah').value = data.soil_type;
+            document.getElementById('komoditas').value = data.commodity;
         };
 
-        // --- 9. LOGIKA HAPUS ---
+        // --- 9. HAPUS ---
         window.hapusLahan = async function(id) {
-            const confirmDelete = confirm("Apakah Anda yakin ingin menghapus data lahan ini?");
-            if (confirmDelete) {
-                const { error } = await supabase
-                    .from('farmlands')
-                    .delete()
-                    .eq('id', id);
-
-                if (error) {
-                    alert("Gagal menghapus: " + error.message);
-                } else {
-                    showToast("Data lahan berhasil dihapus.");
-                    loadLahan(); // Refresh tabel
-                }
+            if(!confirm("Yakin ingin menghapus data lahan ini?")) return;
+            const { error } = await supabase.from('farmlands').delete().eq('id', id);
+            if(!error) {
+                showToast("Lahan berhasil dihapus.");
+                loadLahan();
+            } else {
+                alert("Gagal menghapus.");
             }
         };
 
-        // --- 10. HELPER NOTIFIKASI ---
-        function showToast(message, type = "success") {
-            toast.innerText = message;
+        // --- 10. TOAST HELPER ---
+        function showToast(msg, type = "success") {
+            toast.textContent = msg;
             toast.className = 'toast show ' + type;
             setTimeout(() => { toast.className = 'toast'; }, 3000);
         }
-
-        // --- 11. INIT ---
-        document.addEventListener("DOMContentLoaded", async () => {
-            // Cek Login
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                window.location.href = 'login.html';
-                return;
-            }
-            currentUserId = session.user.id;
-
-            // Load Data
-            loadLahan();
-        });
-
     </script>
 </body>
 </html>
