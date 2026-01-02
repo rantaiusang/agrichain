@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil Petani - AgriChain</title>
+    <title>Profil Saya - AgriChain</title>
     
-    <!-- Library Blockchain (Opsional, belum dipakai di script tapi disiapkan) -->
-    <script src="https://unpkg.com/@web3modal/web3modal"></script>
-    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
-    
-    <!-- Library Supabase (WAJIB) -->
+    <!-- Library Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -20,110 +16,140 @@
             --text-dark: #333;
             --text-grey: #666;
             --white: #ffffff;
-            --shadow: 0 2px 8px rgba(0,0,0,0.05);
-            --radius: 8px;
+            --shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --border: #e0e0e0;
         }
 
         body {
-            font-family: "Segoe UI", Roboto, sans-serif;
-            background-color: #f4f6f8;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
             margin: 0;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
         }
 
         .container {
-            max-width: 600px;
-            margin: 0 auto;
+            width: 100%;
+            max-width: 500px;
         }
 
         .card {
             background: var(--white);
-            border-radius: 12px;
+            border-radius: 16px;
             box-shadow: var(--shadow);
-            padding: 30px;
+            padding: 2.5rem 2rem;
             margin-bottom: 20px;
+            animation: slideUp 0.5s ease-out;
         }
 
-        /* Header Profil */
+        /* Header */
         .profile-header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 2rem;
+            position: relative;
         }
 
         .avatar {
             width: 100px;
             height: 100px;
-            background: var(--light-green);
+            background: linear-gradient(135deg, #81C784, #2E7D32);
             border-radius: 50%;
             margin: 0 auto 15px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 3rem;
-            color: var(--primary-green);
+            color: white;
+            box-shadow: 0 8px 16px rgba(46, 125, 50, 0.3);
             border: 4px solid var(--white);
-            box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2);
         }
 
         .profile-name {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 800;
             color: var(--text-dark);
-            margin: 0;
+            margin: 0 0 5px 0;
         }
 
         .profile-role {
             display: inline-block;
-            background: var(--primary-green);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            margin-top: 5px;
+            background: var(--light-green);
+            color: var(--primary-green);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
-        /* Form Styles */
-        h2 { color: var(--primary-green); text-align: center; margin-bottom: 20px; }
+        /* Form */
+        h2 { 
+            color: var(--primary-green); 
+            text-align: center; 
+            margin: 0 0 1.5rem 0;
+            font-size: 1.25rem;
+        }
         
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark); }
+        .form-group { margin-bottom: 1.25rem; }
+        
+        label { 
+            display: block; 
+            margin-bottom: 0.5rem; 
+            font-weight: 600; 
+            font-size: 0.9rem; 
+            color: var(--text-dark);
+        }
         
         input, select {
             width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            padding: 14px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
             font-size: 1rem;
             box-sizing: border-box;
-            transition: border-color 0.2s;
+            transition: all 0.3s ease;
+            background: #fff;
         }
         
         input:focus, select:focus {
             border-color: var(--primary-green);
             outline: none;
-            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+            box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.1);
+        }
+
+        input:disabled, select:disabled {
+            background-color: #f9f9f9;
+            color: #888;
+            cursor: not-allowed;
+            border-color: #eee;
         }
 
         .btn-save {
             width: 100%;
-            padding: 14px;
+            padding: 16px;
             background: var(--primary-green);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 1rem;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
+            transition: all 0.2s;
+            margin-top: 1rem;
+            box-shadow: 0 4px 6px rgba(46, 125, 50, 0.2);
         }
 
-        .btn-save:hover { background: var(--dark-green); }
-        .btn-loading { background: #81C784; cursor: not-allowed; }
+        .btn-save:hover { 
+            background: var(--dark-green); 
+            transform: translateY(-2px);
+        }
+        
+        .btn-save:active { transform: translateY(0); }
+
+        .btn-loading { background: #81C784; pointer-events: none; }
 
         .spinner {
             display: inline-block;
@@ -132,17 +158,69 @@
             border: 3px solid rgba(255,255,255,0.3);
             border-radius: 50%;
             border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
             display: none;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* Links */
+        .action-links {
+            text-align: center;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border);
+            padding-top: 1.5rem;
+        }
+
+        .link {
+            display: block;
+            color: var(--text-grey);
+            text-decoration: none;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
         
-        .loading-overlay {
-            display: none;
+        .link:hover { color: var(--primary-green); }
+
+        .link.logout { color: #D32F2F; font-weight: 600; }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success { background: var(--primary-green); }
+        .toast.error { background: #D32F2F; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .loader-screen {
             text-align: center;
             color: var(--text-grey);
-            margin-top: 20px;
+            padding: 40px;
         }
     </style>
 </head>
@@ -150,72 +228,81 @@
 
     <div class="container">
         <div class="card">
-            <!-- Header Profil -->
-            <div class="profile-header">
-                <div class="avatar">👨‍🌾</div>
-                <h1 id="displayName" class="profile-name">Memuat...</h1>
-                <span id="displayRole" class="profile-role">...</span>
+            
+            <!-- Loading Screen -->
+            <div id="initialLoader" class="loader-screen">
+                <div class="spinner" style="display:inline-block; width:30px; height:30px; border-width:4px; border-color:var(--primary-green); border-top-color:transparent;"></div>
+                <p>Memuat data profil...</p>
             </div>
 
-            <!-- Pesan Loading Awal -->
-            <div id="initialLoader" class="loading-overlay">Sedang mengambil data profil...</div>
-
-            <h2>Edit Profil</h2>
-
-            <!-- Form Edit Profil -->
-            <form id="profileForm" style="display: none;"> <!-- Disembunyikan dulu sampai data loading -->
-                <div class="form-group">
-                    <label for="nama">Nama Lengkap</label>
-                    <input type="text" id="nama" required>
+            <!-- Konten Utama (Disembunyikan saat loading) -->
+            <div id="mainContent" style="display: none;">
+                <div class="profile-header">
+                    <div class="avatar" id="avatarIcon">👨‍🌾</div>
+                    <h1 id="displayName" class="profile-name">Nama User</h1>
+                    <span id="displayRole" class="profile-role">ROLE</span>
                 </div>
 
-                <div class="form-group">
-                    <label for="desa">Alamat / Desa</label>
-                    <input type="text" id="desa" placeholder="Contoh: Kp. Bojong, Desa Sukamaju" required>
+                <h2>Edit Profil</h2>
+                <form id="profileForm">
+                    <div class="form-group">
+                        <label for="nama">Nama Lengkap</label>
+                        <input type="text" id="nama" required placeholder="Masukkan nama lengkap">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="role">Role Akun</label>
+                        <select id="role" disabled>
+                            <option value="PETANI">Petani</option>
+                            <option value="PEMBELI">Pembeli</option>
+                            <option value="LEMBAGA">Lembaga / Koperasi</option>
+                            <option value="ADMIN">Administrator</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="desa">Alamat / Desa</label>
+                        <input type="text" id="desa" required placeholder="Contoh: Kp. Bojong, Desa Sukamaju">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="luas">Luas Lahan (m²)</label>
+                        <input type="number" id="luas" required placeholder="0" min="0">
+                    </div>
+
+                    <button type="submit" class="btn-save" id="btnSubmit">
+                        <span class="spinner" id="spinner"></span>
+                        <span id="btnText">Simpan Perubahan</span>
+                    </button>
+                </form>
+
+                <div class="action-links">
+                    <a href="index.html" class="link">&larr; Kembali ke Beranda</a>
+                    <a href="#" id="logoutBtn" class="link logout">Keluar Akun (Logout)</a>
                 </div>
-
-                <div class="form-group">
-                    <label for="role">Jenis Akun</label>
-                    <select id="role" disabled style="background-color: #f9f9f9; cursor: not-allowed;">
-                        <option value="PETANI">Petani</option>
-                        <option value="PEMBELI">Pembeli</option>
-                        <option value="LEMBAGA">Lembaga</option>
-                        <option value="ADMIN">Admin</option>
-                    </select>
-                    <small style="color: #888;">Role tidak dapat diubah setelah pendaftaran.</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="luas">Luas Lahan (Meter Persegi)</label>
-                    <input type="number" id="luas" placeholder="0" required>
-                </div>
-
-                <button type="submit" class="btn-save" id="btnSubmit">
-                    <span class="spinner" id="spinner"></span>
-                    <span id="btnText">Simpan Perubahan</span>
-                </button>
-            </form>
-
-            <!-- Tombol Kembali -->
-            <div style="text-align: center; margin-top: 20px;">
-                <a href="index.html" style="color: #666; text-decoration: none;">&larr; Kembali ke Beranda</a>
-                <br>
-                <a href="login.html" onclick="localStorage.clear(); return true;" style="color: #D32F2F; font-size: 0.8rem; text-decoration: none; margin-top: 10px; display: inline-block;">(Logout)</a>
             </div>
         </div>
     </div>
 
+    <!-- Toast Notification Container -->
+    <div id="toast" class="toast">
+        <span id="toastIcon">✅</span>
+        <span id="toastMessage">Pesan Notifikasi</span>
+    </div>
+
     <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        // PASTIKAN SAMA DENGAN FILE REGISTER DAN LOGIN
-        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
-        
+        // --- 1. KONFIGURASI SUPABASE (SAMA DENGAN REGISTER & LOGIN) ---
+        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
+        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X'; 
+
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. DOM ELEMENTS ---
+        const initialLoader = document.getElementById('initialLoader');
+        const mainContent = document.getElementById('mainContent');
         const form = document.getElementById('profileForm');
+        
         const namaInput = document.getElementById('nama');
         const desaInput = document.getElementById('desa');
         const luasInput = document.getElementById('luas');
@@ -223,18 +310,42 @@
         
         const displayName = document.getElementById('displayName');
         const displayRole = document.getElementById('displayRole');
+        const avatarIcon = document.getElementById('avatarIcon');
+        
         const btnSubmit = document.getElementById('btnSubmit');
         const spinner = document.getElementById('spinner');
         const btnText = document.getElementById('btnText');
-        const initialLoader = document.getElementById('initialLoader');
+        const logoutBtn = document.getElementById('logoutBtn');
 
-        // --- 3. LOGIKA LOAD HALAMAN ---
+        // --- 3. FUNGSI TOAST NOTIFICATION ---
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toastMessage');
+            const iconEl = document.getElementById('toastIcon');
+
+            msgEl.textContent = message;
+            
+            if (type === 'success') {
+                toast.className = 'toast success show';
+                iconEl.textContent = '✅';
+            } else {
+                toast.className = 'toast error show';
+                iconEl.textContent = '⚠️';
+            }
+
+            // Sembunyikan setelah 3 detik
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // --- 4. LOAD DATA PROFIL ---
         document.addEventListener("DOMContentLoaded", async () => {
-            // Cek apakah user masih login
-            const { data: { session } } = await supabase.auth.getSession();
+            // Cek Sesi
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
-            if (!session) {
-                alert("Sesi Anda berakhir. Silakan login kembali.");
+            if (sessionError || !session) {
+                console.warn("Sesi tidak ditemukan");
                 window.location.href = 'login.html';
                 return;
             }
@@ -242,80 +353,108 @@
             const user = session.user;
             console.log("User ID:", user.id);
 
-            // Ambil data dari tabel 'profiles' berdasarkan ID User
-            const { data: profile, error } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', user.id) // Pastikan kolom id di tabel profiles cocok dengan auth id
-                .single();
+            try {
+                // Ambil Data Profil
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .single();
 
-            if (error || !profile) {
-                console.error("Gagal ambil profil:", error);
-                alert("Gagal memuat data profil. Silakan refresh halaman.");
-                return;
+                if (profileError) throw profileError;
+
+                // Isi Data ke Form dan Header
+                const nama = profile.full_name || "Petani AgriChain";
+                const role = profile.role || "PETANI";
+                
+                displayName.textContent = nama;
+                displayRole.textContent = role;
+                
+                namaInput.value = nama;
+                desaInput.value = profile.desa || "";
+                luasInput.value = profile.luas_lahan || 0;
+                roleInput.value = role;
+
+                // Ganti Icon berdasarkan Role
+                if(role === 'ADMIN') avatarIcon.textContent = '🛡️';
+                else if(role === 'PEMBELI') avatarIcon.textContent = '🛒';
+                else if(role === 'LEMBAGA') avatarIcon.textContent = '🏛️';
+                else avatarIcon.textContent = '👨‍🌾';
+
+                // Tampilkan UI, sembunyikan loading
+                mainContent.style.display = 'block';
+                initialLoader.style.display = 'none';
+
+            } catch (err) {
+                console.error("Error Load Profil:", err);
+                alert("Gagal memuat data profil: " + err.message);
+                // Opsional: tetap tampilkan form kosong atau redirect
+                mainContent.style.display = 'block';
+                initialLoader.style.display = 'none';
             }
-
-            console.log("Data Profil:", profile);
-
-            // Isi UI dengan Data Asli
-            displayName.textContent = profile.full_name || "Nama Belum Diatur";
-            displayRole.textContent = profile.role || "USER";
-            
-            namaInput.value = profile.full_name || "";
-            desaInput.value = profile.desa || "";
-            luasInput.value = profile.luas_lahan || 0;
-            roleInput.value = profile.role || "PETANI";
-
-            // Tampilkan form, sembunyikan loading awal
-            form.style.display = 'block';
-            initialLoader.style.display = 'none';
         });
 
-        // --- 4. LOGIKA UPDATE PROFIL ---
+        // --- 5. UPDATE PROFIL ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            // Ambil nilai input
-            const updatedData = {
-                full_name: namaInput.value,
-                desa: desaInput.value,
-                luas_lahan: parseInt(luasInput.value)
-                // Role tidak diupdate karena biasanya fixed
-            };
+            // Validasi Sederhana
+            if(!namaInput.value.trim()) {
+                showToast("Nama tidak boleh kosong", "error");
+                return;
+            }
 
             // UI Loading
             btnSubmit.classList.add('btn-loading');
             btnSubmit.disabled = true;
             spinner.style.display = 'inline-block';
-            btnText.textContent = 'MEMPERBARUI...';
+            btnText.textContent = 'MENYIMPAN...';
 
             try {
-                // Dapatkan user id lagi (atau simpan di variabel global saat load)
                 const { data: { session } } = await supabase.auth.getSession();
+                if (!session) throw new Error("Sesi habis");
+
                 const userId = session.user.id;
 
-                // Update ke Supabase
+                // Kirim Update
                 const { error } = await supabase
                     .from('profiles')
-                    .update(updatedData)
+                    .update({
+                        full_name: namaInput.value.trim(),
+                        desa: desaInput.value.trim(),
+                        luas_lahan: parseInt(luasInput.value) || 0
+                    })
                     .eq('id', userId);
 
                 if (error) throw error;
 
-                // Update Header UI agar terlihat instan
-                displayName.textContent = updatedData.full_name;
+                // Update Header Nama Agar Real-time
+                displayName.textContent = namaInput.value;
 
-                alert("Profil berhasil diperbarui!");
+                showToast("Profil berhasil diperbarui!", "success");
 
             } catch (err) {
-                console.error("Gagal update:", err);
-                alert("Terjadi kesalahan saat menyimpan data. Periksa koneksi internet.");
+                console.error("Error Update:", err);
+                showToast("Gagal menyimpan: " + err.message, "error");
             } finally {
-                // Reset Tombol
+                // Reset UI Tombol
                 btnSubmit.classList.remove('btn-loading');
                 btnSubmit.disabled = false;
                 spinner.style.display = 'none';
                 btnText.textContent = 'Simpan Perubahan';
+            }
+        });
+
+        // --- 6. LOGOUT LOGIC ---
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const confirmLogout = confirm("Apakah Anda yakin ingin keluar akun?");
+            
+            if (confirmLogout) {
+                await supabase.auth.signOut();
+                // Hapus cache lokal jika ada
+                localStorage.clear();
+                window.location.href = 'login.html';
             }
         });
 
