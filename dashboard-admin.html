@@ -183,7 +183,7 @@
         .stat-value { font-size: 1.8rem; font-weight: bold; margin: 10px 0; }
         .stat-label { font-size: 0.9rem; color: var(--text-grey); }
 
-        /* --- MODE SWITCHER --- */
+        /* --- ROLE SWITCHER --- */
         .role-switcher {
             background: white;
             padding: 15px;
@@ -195,6 +195,8 @@
             justify-content: space-between;
             border-left: 5px solid var(--accent-gold);
         }
+        .role-title { font-weight: bold; color: var(--primary-dark); }
+        .role-badge { font-size: 0.8rem; color: var(--text-grey); }
         .mode-selector { display: flex; gap: 10px; }
         .mode-btn {
             padding: 8px 16px;
@@ -231,11 +233,9 @@
             <span>AgriAdmin</span>
         </div>
         
-        <!-- Navigasi (HREF TIDAK BOLEH ADA JIKA ADA addEventListener) -->
         <div class="nav-item active">📊 Dashboard</div>
         <div class="nav-item" onclick="location.href='admin-users.html'">👥 Users</div>
         
-        <!-- FITUR BARU: Kelola Komoditas -->
         <div class="nav-item" style="background: rgba(255,255,255,0.1); color: #FFD700;" onclick="scrollToCommodities()">
             🌾 Kelola Komoditas
         </div>
@@ -243,7 +243,7 @@
         <div class="nav-item" onclick="location.href='admin-blockchain.html'">⛓️ Blockchain</div>
         <div class="nav-item" onclick="location.href='admin-pengaturan.html'">⚙️ Pengaturan</div>
         
-        <!-- Tombol Keluar: JANGAN PAKAI onclick DI SINI -->
+        <!-- Tombol Logout -->
         <div id="logoutBtn" class="nav-item" style="margin-top: auto; color: #ff8a80; border: 1px solid #ff8a80; cursor: pointer;">
              🚪 Keluar
         </div>
@@ -252,7 +252,6 @@
     <!-- Main Content -->
     <div class="main-content">
         
-        <!-- Header Stats -->
         <div class="grid-stats" id="statsContainer">
             <div class="stat-card admin">
                 <div class="stat-label">Total User</div>
@@ -262,13 +261,13 @@
                 <div class="stat-label">Komoditas Aktif</div>
                 <div class="stat-value" id="totalCommodityCount">...</div>
             </div>
-            <div class="stat-card buyer">
+            <div class="stat-card">
                 <div class="stat-label">Transaksi Hari Ini</div>
                 <div class="stat-value">Rp 12.5 Jt</div>
             </div>
         </div>
 
-        <!-- 1. BAGIAN BARU: INPUT KOMODITAS -->
+        <!-- 1. Form Input Komoditas -->
         <div class="admin-form-card" id="commoditiesSection">
             <h3 style="margin:0; color:var(--primary-dark);">➕ Tambah Komoditas Baru</h3>
             <p style="margin-bottom:20px; font-size:0.9rem; color:#666;">Masukkan data harga pasar agar muncul di form petani.</p>
@@ -285,9 +284,9 @@
                 <div class="form-group">
                     <label>Satuan</label>
                     <select id="inputUnit" class="form-control">
-                        <option value="Kg">Kilogram (Kg)</option>
+                        <option value="Kg">Kg</option>
                         <option value="Ton">Ton</option>
-                        <option value="Pcs">Pcs / Butir</option>
+                        <option value="Pcs">Pcs</option>
                         <option value="Karung">Karung</option>
                         <option value="Ikat">Ikat</option>
                     </select>
@@ -296,7 +295,7 @@
             </form>
         </div>
 
-        <!-- 2. DAFTAR KOMODITAS -->
+        <!-- 2. Daftar Komoditas -->
         <div class="table-container" id="commoditiesSection">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <h3 style="margin:0; color:var(--primary-dark);">Daftar Harga Pasar</h3>
@@ -313,17 +312,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Data akan diisi oleh JS -->
                     <tr><td colspan="4" style="text-align:center; color:#999;">Memuat data...</td></tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- 3. MODE SWITCHER (SAMA SEPERTI SEBELUMNYA) -->
+        <!-- 3. Mode Switcher -->
         <div class="role-switcher">
             <div>
-                <div class="role-title" style="font-weight:bold; color:var(--primary-dark);">Mode Tampilan Super Admin</div>
-                <div class="role-badge" style="font-size:0.8rem; color:#666;">Simulasi pandangan user lain</div>
+                <div class="role-title">Mode Tampilan Super Admin</div>
+                <div class="role-badge">Simulasi pandangan user lain</div>
             </div>
             <div class="mode-selector">
                 <button class="mode-btn active" onclick="switchMode('admin', this)">Admin</button>
@@ -350,14 +348,14 @@
                 return;
             }
 
-            // Cek Role dari tabel profiles
+            // Cek Role
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('role')
                 .eq('id', session.user.id)
                 .single();
 
-            // Jika bukan ADMIN, tendang keluar
+            // Jika bukan ADMIN, tendang
             if (!profile || profile.role !== 'ADMIN') {
                 alert("Akses Ditolak: Halaman ini khusus Administrator.");
                 window.location.href = 'index.html';
@@ -384,10 +382,8 @@
 
                 if (error) throw error;
 
-                // Update Count
                 countDisplay.textContent = data.length;
 
-                // Render Table
                 tableBody.innerHTML = '';
                 if (data.length === 0) {
                     tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Belum ada data komoditas.</td></tr>';
@@ -409,7 +405,7 @@
 
             } catch (err) {
                 console.error(err);
-                tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Gagal memuat data. Cek nama tabel.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Gagal memuat data.</td></tr>';
             }
         }
 
@@ -438,7 +434,7 @@
 
                 alert('Komoditas berhasil ditambahkan!');
                 document.getElementById('addCommodityForm').reset();
-                loadCommodities();
+                loadCommodities(); 
                 loadStats();
 
             } catch (err) {
@@ -469,7 +465,7 @@
             }
         }
 
-        // --- 6. LOAD STATS ---
+        // --- 6. LOAD STATS (FIXED BRACES) ---
         async function loadStats() {
             try {
                 const { count } = await supabase
@@ -491,26 +487,20 @@
             document.getElementById('commoditiesSection').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // --- 7. LOGIKA MODE SWITCHER ---
+        // --- 7. MODE SWITCHER ---
         function switchMode(role, btn) {
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            // Bisa ditambahkan logika ubah tampilan grafik sesuai role jika mau
         }
 
-        // --- 8. LOGIKA LOGOUT (FIXED) ---
+        // --- 8. LOGOUT (FIXED) ---
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             if(confirm("Keluar dari Admin?")) {
                 try {
                     await supabase.auth.signOut();
-                    // Hapus localStorage juga agar bersih
-                    localStorage.removeItem('agrichain_user_id');
-                    localStorage.removeItem('agrichain_user_role');
-                    localStorage.removeItem('agrichain_user_name');
                     window.location.href = 'login.html';
                 } catch (err) {
-                    console.error("Logout error:", err);
-                    // Paksa logout meskipun error
+                    console.error(err);
                     window.location.href = 'login.html';
                 }
             }
