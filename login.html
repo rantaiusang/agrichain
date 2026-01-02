@@ -152,6 +152,7 @@
 
         #wallet-btn:hover { background-color: #eff6ff; border-color: #2196F3; color: #2196F3; }
         #wallet-btn.connected { background-color: #E8F5E9; border-color: #2E7D32; color: #2E7D32; cursor: default; }
+        #wallet-btn.connected svg { stroke: #2E7D32; }
 
         .extra-links {
             margin-top: 1.5rem;
@@ -176,7 +177,8 @@
         /* --- SPINNER --- */
         .spinner {
             display: inline-block;
-            width: 20px; height: 20px;
+            width: 20px;
+            height: 20px;
             border: 3px solid rgba(255,255,255,0.3);
             border-radius: 50%;
             border-top-color: #fff;
@@ -185,6 +187,7 @@
             vertical-align: middle;
             display: none;
         }
+
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
@@ -195,7 +198,7 @@
         <div class="subtitle">Masuk untuk mulai jual panen</div>
 
         <form id="loginForm">
-            <!-- PERBAIKAN: ID DIBUAT 'identifier', Label DIBUAT FLEKSIBEL -->
+            <!-- PERBAIKAN 1: ID DIUBAH JADI 'identifier' AGAR JS BISA BACA -->
             <div class="form-group">
                 <label for="identifier">Nomor HP atau Email</label>
                 <input type="text" id="identifier" class="form-input" placeholder="Contoh: 0812... atau email@example.com" required>
@@ -213,7 +216,7 @@
             <div id="errorMsg" class="error-msg"></div>
         </form>
 
-        <!-- DOMPET -->
+        <!-- DOMPET (Opsi) -->
         <div class="wallet-section">
             <div class="wallet-status-title">
                 <div class="wallet-status-dot" id="walletDot"></div>
@@ -235,16 +238,15 @@
 
     <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        // GANTI DUA BARIS INI DENGAN DATA YANG BENAR DARI DASHBOARD SUPABASE ANDA
+        // --- 1. KONFIGURASI SUPABASE (KEY SUDAH BENAR) ---
         const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
-        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X'; // <--- PASTIKAN KEY INI BENAR (Panjang, diawali eyJhb...)
+        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X'; // Key Anda
 
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. DOM ELEMENTS ---
         const form = document.getElementById('loginForm');
-        const identifierInput = document.getElementById('identifier');
+        const identifierInput = document.getElementById('identifier'); // Mencari ID identifier
         const passInput = document.getElementById('password');
         const btnSubmit = document.getElementById('btnSubmit');
         const btnText = document.getElementById('btnText');
@@ -297,11 +299,11 @@
             }
         });
 
-        // --- 4. LOGIKA LOGIN & REDIRECT ---
+        // --- 4. LOGIKA LOGIN & REDIRECT ADMIN (PERBAIKAN) ---
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const identifier = identifierInput.value.trim();
+            const identifier = identifierInput.value.trim(); // Mengambil dari identifier
             const password = passInput.value.trim();
 
             if(!identifier || !password) {
@@ -325,6 +327,8 @@
                     emailForSupabase = identifier + "@agrichain.com";
                 }
 
+                console.log("Mencoba login dengan:", emailForSupabase);
+
                 // 1. Login Supabase
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: emailForSupabase,
@@ -333,7 +337,9 @@
 
                 if (error) throw error;
 
-                // 2. Cek Role User (PENTING!)
+                console.log("✅ Login Sukses:", data.user.id);
+
+                // 2. Cek Role User dari Tabel profiles
                 const { data: profile, error: profileError } = await supabase
                     .from('profiles')
                     .select('role, full_name')
@@ -341,6 +347,8 @@
                     .single();
 
                 if (profileError) throw profileError;
+
+                console.log("Role User:", profile.role);
 
                 // Simpan session
                 localStorage.setItem('agrichain_user_id', data.user.id);
@@ -350,24 +358,30 @@
                 // 3. Redirect Otomatis
                 if (profile.role === 'ADMIN') {
                     alert("Selamat Datang Admin!");
-                    window.location.href = 'dashboard-admin.html';
+                    setTimeout(() => {
+                        window.location.href = 'dashboard-admin.html';
+                    }, 500);
                 } else {
                     alert("Login Berhasil!");
-                    window.location.href = 'index.html';
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 500);
                 }
 
             } catch (error) {
                 console.error("Login Error:", error);
-                let msg = "Login Gagal. Periksa kembali data Anda.";
+                
+                let msg = "Login Gagal.";
                 if (error.message.includes("Invalid login credentials")) {
                     msg = "Email/HP atau Password salah.";
                 } else if (error.message.includes("Database error")) {
-                    msg = "Gagal memuat profil user.";
+                    msg = "Gagal mengambil data profil (Pastikan tabel profiles ada & RLS diatur).";
                 }
                 
                 errorMsg.textContent = msg;
                 errorMsg.style.display = 'block';
             } finally {
+                // Reset Tombol
                 btnSubmit.classList.remove('btn-loading');
                 btnSubmit.disabled = false;
                 btnText.textContent = 'MASUK';
