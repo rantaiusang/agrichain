@@ -43,16 +43,19 @@
             top: 0;
             z-index: 100;
             overflow-y: auto;
+            transition: width 0.3s;
         }
 
         .brand {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: bold;
             margin-bottom: 40px;
             color: var(--accent-gold);
             display: flex;
             align-items: center;
             gap: 10px;
+            white-space: nowrap;
+            overflow: hidden;
         }
 
         .nav-item {
@@ -66,6 +69,8 @@
             gap: 10px;
             color: rgba(255,255,255,0.7);
             text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
         }
 
         .nav-item:hover, .nav-item.active {
@@ -78,6 +83,7 @@
             margin-left: 250px;
             flex: 1;
             padding: 30px;
+            transition: margin-left 0.3s;
         }
 
         /* --- FORM INPUT --- */
@@ -111,6 +117,7 @@
             border: 1px solid #ddd;
             border-radius: 6px;
             font-size: 0.95rem;
+            box-sizing: border-box;
         }
 
         .btn-add {
@@ -178,46 +185,16 @@
         }
         .stat-card.admin { border-color: var(--primary-dark); }
         .stat-card.petani { border-color: var(--success); }
+        .stat-card.buyer { border-color: var(--accent-gold); }
         
         .stat-value { font-size: 1.8rem; font-weight: bold; margin: 10px 0; }
         .stat-label { font-size: 0.9rem; color: var(--text-grey); }
 
-        /* --- MODE SWITCHER --- */
-        .role-switcher {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-left: 5px solid var(--accent-gold);
-        }
-        .role-title { font-weight: bold; color: var(--primary-dark); }
-        .role-badge { font-size: 0.8rem; color: #666; }
-        .mode-selector { display: flex; gap: 10px; }
-        .mode-btn {
-            padding: 8px 16px;
-            border: 1px solid #ddd;
-            background: #f9f9f9;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        .mode-btn.active {
-            background: var(--primary-dark);
-            color: white;
-            border-color: var(--primary-dark);
-        }
-
         /* --- RESPONSIVE --- */
         @media (max-width: 768px) {
-            .sidebar { width: 60px; padding: 15px 10px; }
-            .brand span, .nav-item span { display: none; }
-            .main-content { margin-left: 60px; padding: 15px; }
+            .sidebar { width: 0; padding: 0; overflow: hidden; }
+            .sidebar.open { width: 250px; padding: 20px; }
+            .main-content { margin-left: 0; padding: 15px; }
             .form-grid { grid-template-columns: 1fr; }
             .btn-add { width: 100%; }
         }
@@ -226,34 +203,36 @@
 <body>
 
     <!-- Sidebar -->
-    <nav class="sidebar">
+    <nav class="sidebar" id="sidebar">
         <div class="brand">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
             <span>AgriAdmin</span>
         </div>
         
-        <!-- Navigasi (TAG DIV DITUTUP DENGAN BENAR) -->
         <div class="nav-item active">📊 Dashboard</div>
-        <div class="nav-item" onclick="location.href='admin-users.html'">👥 Users</div>
+        <div class="nav-item" onclick="window.location.href='admin-users.html'">👥 Users</div>
         
-        <!-- FITUR BARU: Kelola Komoditas -->
-        <div class="nav-item" style="background: rgba(255,255,255,0.1); color: #FFD700;" onclick="scrollToCommodities()">
-            🌾 Kelola Komoditas
+        <!-- Menu Aktif -->
+        <div class="nav-item" style="background: rgba(255,255,255,0.1); color: #FFD700;">
+            🌾 Kelola Harga Pasar
         </div>
 
-        <!-- TAG DITUTUP AGAR TIDAK MERUSAK STRUKTUR -->
-        <div class="nav-item" onclick="location.href='admin-blockchain.html'">⛓️ Blockchain</div>
-        <div class="nav-item" onclick="location.href='admin-pengaturan.html'">⚙️ Pengaturan</div>
+        <div class="nav-item" onclick="window.location.href='admin-blockchain.html'">⛓️ Blockchain</div>
+        <div class="nav-item" onclick="window.location.href='index.html'">🌐 Lihat Website</div>
         
-        <!-- Tombol Keluar: ID DIGANTI MENJADI btn-logout AGAR UNIK -->
-        <div id="btn-logout" class="nav-item" style="margin-top: auto; color: #ff8a80; border: 1px solid #ff8a80; cursor: pointer;">
+        <!-- Tombol Keluar -->
+        <div id="btn-logout" style="margin-top: auto; padding: 15px; color: #ff8a80; border: 1px solid #ff8a80; border-radius: 6px; cursor: pointer; text-align: center;">
              🚪 Keluar
         </div>
     </nav>
 
     <!-- Main Content -->
     <div class="main-content">
-        
+        <!-- Mobile Toggle -->
+        <div style="margin-bottom: 20px; display: none;" id="mobileToggle">
+            <button onclick="toggleSidebar()" style="padding: 10px; background: var(--primary-dark); color: white; border: none; border-radius: 5px;">☰ Menu</button>
+        </div>
+
         <!-- Header Stats -->
         <div class="grid-stats" id="statsContainer">
             <div class="stat-card admin">
@@ -265,43 +244,42 @@
                 <div class="stat-value" id="totalCommodityCount">...</div>
             </div>
             <div class="stat-card buyer">
-                <div class="stat-label">Transaksi Hari Ini</div>
-                <div class="stat-value">Rp 12.5 Jt</div>
+                <div class="stat-label">Estimasi Transaksi</div>
+                <div class="stat-value">Rp 0</div>
             </div>
         </div>
 
         <!-- 1. FORM TAMBAH KOMODITAS -->
-        <div class="admin-form-card" id="commoditiesSection">
-            <h3 style="margin:0; color:var(--primary-dark);">➕ Tambah Komoditas Baru</h3>
-            <p style="margin-bottom:20px; font-size:0.9rem; color:#666;">Masukkan data harga pasar agar muncul di form petani.</p>
+        <div class="admin-form-card">
+            <h3 style="margin:0; color:var(--primary-dark);">➕ Update Harga Pasar Baru</h3>
+            <p style="margin-bottom:20px; font-size:0.9rem; color:#666;">Data ini akan muncul di form input petani dan grafik harga.</p>
             
             <form id="addCommodityForm" class="form-grid">
                 <div class="form-group">
                     <label>Nama Komoditas</label>
-                    <input type="text" id="inputName" class="form-control" placeholder="Contoh: Kentang Dieng" required>
+                    <input type="text" id="inputName" class="form-control" placeholder="Contoh: Padi Giling" required>
                 </div>
                 <div class="form-group">
                     <label>Harga (Rp)</label>
-                    <input type="number" id="inputPrice" class="form-control" placeholder="12000" required>
+                    <input type="number" id="inputPrice" class="form-control" placeholder="6200" required>
                 </div>
                 <div class="form-group">
                     <label>Satuan</label>
                     <select id="inputUnit" class="form-control">
                         <option value="Kg">Kilogram (Kg)</option>
                         <option value="Ton">Ton</option>
-                        <option value="Pcs">Pcs / Butir</option>
                         <option value="Karung">Karung</option>
-                        <option value="Ikat">Ikat</option>
+                        <option value="Pcs">Pcs</option>
                     </select>
                 </div>
                 <button type="submit" class="btn-add">Simpan</button>
             </form>
         </div>
 
-        <!-- 2. DAFTAR KOMODITAS -->
+        <!-- 2. DAFTAR HARGA -->
         <div class="table-container">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <h3 style="margin:0; color:var(--primary-dark);">Daftar Harga Pasar</h3>
+                <h3 style="margin:0; color:var(--primary-dark);">Daftar Harga Pasar Aktif</h3>
                 <button onclick="loadCommodities()" style="border:1px solid #ddd; background:white; padding:5px 10px; cursor:pointer;">🔄 Refresh</button>
             </div>
             
@@ -309,7 +287,7 @@
                 <thead>
                     <tr>
                         <th>Nama Komoditas</th>
-                        <th>Harga</th>
+                        <th>Harga Saat Ini</th>
                         <th>Satuan</th>
                         <th>Aksi</th>
                     </tr>
@@ -321,37 +299,30 @@
             </table>
         </div>
 
-        <!-- 3. MODE SWITCHER -->
-        <div class="role-switcher">
-            <div>
-                <div class="role-title">Mode Tampilan Super Admin</div>
-                <div class="role-badge">Simulasi pandangan user lain</div>
-            </div>
-            <div class="mode-selector">
-                <button class="mode-btn active" onclick="switchMode('admin', this)">Admin</button>
-                <button class="mode-btn" onclick="switchMode('petani', this)">Petani</button>
-                <button class="mode-btn" onclick="switchMode('buyer', this)">Buyer</button>
-            </div>
-        </div>
-
     </div>
 
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
+        // --- 1. KONFIGURASI SUPABASE (FIXED) ---
+        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. LOGIKA KEAMANAN ---
         document.addEventListener("DOMContentLoaded", async () => {
-            const { data: { session }, error } = await supabase.auth.getSession();
+            // Cek Mobile
+            if(window.innerWidth <= 768) {
+                document.getElementById('mobileToggle').style.display = 'block';
+            }
 
+            // Cek Session
+            const { data: { session }, error } = await supabase.auth.getSession();
             if (error || !session) {
-                alert("Akses Ditolak");
+                alert("Akses Ditolak: Silakan Login.");
                 window.location.href = 'login.html';
                 return;
             }
 
+            // Cek Role Admin
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('role')
@@ -359,24 +330,25 @@
                 .single();
 
             if (!profile || profile.role !== 'ADMIN') {
-                alert("Akses Ditolak");
+                alert("Akses Ditolak: Anda bukan Admin.");
                 window.location.href = 'index.html';
                 return;
             }
 
-            console.log("✅ Admin terverifikasi.");
+            console.log("✅ Admin Verified.");
             loadCommodities();
             loadStats();
         });
 
-        // --- 3. LOAD DATA KOMODITAS ---
+        // --- 3. LOAD DATA KOMODITAS (FIXED: market_prices) ---
         async function loadCommodities() {
             const tableBody = document.querySelector('#commodityTable tbody');
             const countDisplay = document.getElementById('totalCommodityCount');
             
             try {
+                // PERBAIKAN: Mengambil data dari tabel 'market_prices'
                 const { data, error } = await supabase
-                    .from('harga_pasar') 
+                    .from('market_prices')
                     .select('*')
                     .order('commodity_name', { ascending: true });
 
@@ -386,7 +358,7 @@
 
                 tableBody.innerHTML = '';
                 if (data.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Belum ada data komoditas.</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Belum ada data harga pasar.</td></tr>';
                     return;
                 }
 
@@ -395,7 +367,7 @@
                     row.innerHTML = `
                         <td><strong>${item.commodity_name}</strong></td>
                         <td>Rp ${parseInt(item.current_price).toLocaleString('id-ID')}</td>
-                        <td><span style="background:#eee; padding:2px 8px; border-radius:4px; font-size:0.8rem;">${item.unit}</span></td>
+                        <td><span style="background:#eee; padding:2px 8px; border-radius:4px; font-size:0.8rem;">${item.unit || 'Kg'}</span></td>
                         <td>
                             <button class="btn-delete" onclick="deleteCommodity(${item.id})">Hapus</button>
                         </td>
@@ -422,8 +394,9 @@
             const unit = document.getElementById('inputUnit').value;
 
             try {
+                // PERBAIKAN: Insert ke tabel 'market_prices'
                 const { error } = await supabase
-                    .from('harga_pasar')
+                    .from('market_prices')
                     .insert([{
                         commodity_name: name,
                         current_price: parseInt(price),
@@ -432,7 +405,7 @@
 
                 if (error) throw error;
 
-                alert('Komoditas berhasil ditambahkan!');
+                alert('Harga berhasil ditambahkan!');
                 document.getElementById('addCommodityForm').reset();
                 loadCommodities();
                 loadStats();
@@ -448,11 +421,12 @@
 
         // --- 5. HAPUS KOMODITAS ---
         async function deleteCommodity(id) {
-            if(!confirm('Yakin ingin menghapus komoditas ini?')) return;
+            if(!confirm('Yakin ingin menghapus harga ini?')) return;
 
             try {
+                // PERBAIKAN: Delete dari tabel 'market_prices'
                 const { error } = await supabase
-                    .from('harga_pasar')
+                    .from('market_prices')
                     .delete()
                     .eq('id', id);
 
@@ -474,7 +448,7 @@
                 document.getElementById('userCount').textContent = count || 0;
 
                 const { count: commCount } = await supabase
-                    .from('harga_pasar')
+                    .from('market_prices')
                     .select('*', { count: 'exact', head: true });
                 document.getElementById('totalCommodityCount').textContent = commCount || 0;
 
@@ -483,17 +457,12 @@
             }
         }
 
-        function scrollToCommodities() {
-            document.getElementById('commoditiesSection').scrollIntoView({ behavior: 'smooth' });
+        // --- 7. MOBILE NAV ---
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
         }
 
-        function switchMode(role, btn) {
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
-
-        // --- 7. LOGOUT (FIXED) ---
-        // Menggunakan ID yang unik 'btn-logout' untuk menghindari konflik
+        // --- 8. LOGOUT ---
         document.getElementById('btn-logout').addEventListener('click', async () => {
             if(confirm("Keluar dari Admin?")) {
                 await supabase.auth.signOut();
