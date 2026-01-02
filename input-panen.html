@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Jual Hasil Panen - AgriChain</title>
+    
+    <!-- Library Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <style>
         /* --- CSS VARIABLES & RESET --- */
         :root {
@@ -24,7 +28,7 @@
             background-color: #f4f6f8;
             color: var(--text-dark);
             margin: 0;
-            padding: 0; /* Padding 0 agar Navbar menempel atas */
+            padding: 0; 
             padding-bottom: 40px;
         }
 
@@ -68,11 +72,6 @@
         .nav-link:hover {
             background-color: var(--light-green);
             color: var(--primary-green);
-        }
-
-        .nav-link.active {
-            background-color: var(--primary-green);
-            color: white;
         }
 
         .btn-nav-profile {
@@ -229,6 +228,8 @@
             border-radius: var(--border-radius);
             font-weight: bold;
             cursor: pointer;
+            text-decoration: none;
+            display: flex; align-items: center; justify-content: center;
         }
         .btn-cancel:hover { background: #e0e0e0; }
 
@@ -256,6 +257,17 @@
             box-shadow: 0 4px 12px rgba(46, 125, 50, 0.2);
         }
         .btn-submit.active:hover { background-color: var(--dark-green); }
+
+        /* --- SPINNER LOADING --- */
+        .spinner {
+            width: 18px; height: 18px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* --- TOAST --- */
         .toast {
@@ -297,11 +309,11 @@
         <!-- Menu Navigasi -->
         <ul class="nav-links">
             <li><a href="index.html" class="nav-link">🏠 Beranda</a></li>
-            <li><a href="lahan.html" class="nav-link">🌾 Lahan Saya</a></li>
+            <li><a href="belanja.html" class="nav-link">🛒 Belanja</a></li>
             <li><a href="harga.html" class="nav-link">💰 Info Harga</a></li>
         </ul>
 
-        <a href="profil.html" class="btn-nav-profile">👤 Profil Saya</a>
+        <a href="profile.html" class="btn-nav-profile">👤 Profil</a>
     </nav>
 
     <!-- 2. KONTEN FORM -->
@@ -319,10 +331,8 @@
                     <label for="cropType">Jenis Tanaman</label>
                     <select id="cropType" onchange="HarvestModule.updateEstimate()">
                         <option value="" disabled selected>Pilih tanaman...</option>
-                        <option value="padi" data-price="6500">Padi (Beras)</option>
-                        <option value="jagung" data-price="4000">Jagung Pipil</option>
-                        <option value="kopi" data-price="45000">Kopi Biji (Kering)</option>
-                        <option value="cabai" data-price="35000">Cabai Merah</option>
+                        <!-- Opsi harga akan diisi oleh JS dari Database -->
+                        <option value="loading" disabled>Sedang memuat harga pasar...</option>
                     </select>
                     <div class="helper-text">Pilih jenis yang paling mirip.</div>
                 </div>
@@ -361,7 +371,7 @@
                     </div>
                     
                     <div class="price-note">
-                        *Harga di atas hanya saran dari sistem berdasarkan data pasar minggu ini. Anda tetap punya hak penuh menawar.
+                        *Harga di atas hanya saran dari sistem berdasarkan data pasar minggu ini.
                     </div>
                 </div>
 
@@ -377,7 +387,8 @@
                 <div class="form-actions">
                     <a href="index.html" class="btn-cancel">Batal</a>
                     <button type="button" id="btnSubmit" class="btn-submit" onclick="HarvestModule.submit()">
-                        <span>Masukkan ke Penjualan</span>
+                        <span class="spinner" id="spinner"></span>
+                        <span id="btnText">Masukkan ke Penjualan</span>
                     </button>
                 </div>
 
@@ -388,14 +399,46 @@
     <!-- Toast Notifikasi -->
     <div id="toast" class="toast">Data berhasil disimpan!</div>
 
-    <!-- 3. JAVASCRIPT MODULAR (PEMISAHAN FUNGSI) -->
+    <!-- 3. JAVASCRIPT MODULAR (SUPABASE INTEGRATION) -->
     <script>
-        // --- MODUL 1: DATA PASAR (LOGIKA DATABASE) ---
+        // --- KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let currentUserId = null;
+        let marketPrices = {}; // Cache harga pasar
+
+        // --- MODUL 1: DATA PASAR (AMBIL DARI DATABASE) ---
         const MarketData = {
-            'padi': 6500,
-            'jagung': 4000,
-            'kopi': 45000,
-            'cabai': 35000
+            init: async function() {
+                // Ambil harga terkini dari tabel market_prices
+                const { data, error } = await supabase
+                    .from('market_prices')
+                    .select('commodity_name, current_price')
+                    .order('commodity_name', { ascending: true });
+                
+                if (data) {
+                    const select = document.getElementById('cropType');
+                    select.innerHTML = '<option value="" disabled selected>Pilih tanaman...</option>';
+                    
+                    data.forEach(item => {
+                        // Normalisasi nama (huruf kecil semua) untuk key
+                        const key = item.commodity_name.toLowerCase().replace(/ /g, '');
+                        marketPrices[key] = item.current_price;
+
+                        // Tambahkan option ke HTML
+                        const opt = document.createElement('option');
+                        opt.value = key;
+                        opt.setAttribute('data-price', item.current_price);
+                        opt.textContent = item.commodity_name;
+                        select.appendChild(opt);
+                    });
+                }
+            },
+            getPrice: function(key) {
+                return marketPrices[key] || 0;
+            }
         };
 
         // --- MODUL 2: FUNGSI BANTUAN (UTILITIES) ---
@@ -472,15 +515,15 @@
                 }
             },
 
-            submit: function() {
+            submit: async function() {
                 const btn = document.getElementById('btnSubmit');
-                const originalText = btn.innerHTML;
+                const originalHTML = btn.innerHTML;
                 
                 // Validasi Input
                 const cropType = document.getElementById('cropType').value;
                 const quantity = document.getElementById('quantity').value;
                 const quality = document.getElementById('quality').value;
-                const estimatedPrice = document.getElementById('totalPriceDisplay').textContent;
+                const estimatedPriceText = document.getElementById('totalPriceDisplay').textContent;
 
                 if(!cropType || !quantity) {
                     Utils.showToast("Mohon lengkapi jenis dan berat panen.");
@@ -488,18 +531,22 @@
                 }
 
                 // UI Loading
-                btn.innerHTML = "Menyimpan...";
+                btn.innerHTML = `<span class="spinner" style="display:inline-block"></span> Menyimpan...`;
                 btn.disabled = true;
 
-                // Simulasi Kirim ke Backend (API)
-                setTimeout(() => {
-                    console.log("Data dikirim ke API:", {
-                        cropType,
-                        quantity,
-                        quality,
-                        estimatedPrice,
-                        userConfirmed: true
-                    });
+                try {
+                    // 1. Kirim Data ke Tabel 'harvest_sales'
+                    const { error } = await supabase
+                        .from('harvest_sales')
+                        .insert([{
+                            user_id: currentUserId,
+                            crop_type: cropType,
+                            quantity: parseInt(quantity),
+                            quality: quality,
+                            estimated_price: 0 // Supabase tidak simpan string Rp, bisa dihitung nanti di backend atau di sini convert ke int
+                        }]);
+
+                    if (error) throw error;
 
                     // Reset Form
                     document.getElementById('harvestForm').reset();
@@ -508,29 +555,38 @@
                     document.getElementById('totalPriceDisplay').textContent = "Rp 0";
                     document.getElementById('priceConfirm').checked = false;
                     
-                    btn.innerHTML = originalText;
+                    btn.innerHTML = originalHTML;
                     btn.disabled = true;
                     btn.classList.remove('active');
 
                     Utils.showToast("Data panen berhasil dimasukkan ke Pasar!");
                     
                     // Redirect ke Beranda (Opsional)
-                    // window.location.href = 'index.html';
+                    setTimeout(() => { window.location.href = 'index.html'; }, 1500);
 
-                }, 1500);
+                } catch (err) {
+                    console.error("Submit Error:", err);
+                    Utils.showToast("Gagal menyimpan: " + err.message);
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
+                }
             }
         };
 
-        // 4. INISIALISASI SAAT LOAD
-        document.addEventListener("DOMContentLoaded", () => {
-            // Cek Login Sesi
-            const token = localStorage.getItem('agrichain_token');
-            if (!token) {
-                // Jika belum login, lempar ke halaman login (Opsional, untuk demo biarkan)
-                console.log("Sesi user tidak ditemukan.");
+        // --- 4. INIT ---
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Cek Login
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
             }
+            currentUserId = session.user.id;
 
-            // Kembalikan tombol submit ke state disabled default
+            // Load Data Pasar
+            await MarketData.init();
+
+            // Init Tombol
             HarvestModule.toggleSubmitButton();
         });
 
