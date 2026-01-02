@@ -70,6 +70,7 @@
             gap: 10px;
         }
 
+        /* Tombol Header */
         .btn-action {
             padding: 8px 20px;
             background-color: var(--primary-green);
@@ -84,11 +85,22 @@
             display: flex;
             align-items: center;
             gap: 5px;
+            font-size: 0.9rem;
         }
 
         .btn-action:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3);
+        }
+        
+        /* Tombol Sekunder (Putih) */
+        .btn-secondary-outline {
+            background-color: var(--white);
+            color: var(--primary-green);
+            border: 2px solid var(--primary-green);
+        }
+        .btn-secondary-outline:hover {
+            background-color: var(--light-green);
         }
 
         .wallet-status-dot {
@@ -254,7 +266,7 @@
             border-radius: 12px;
             box-shadow: var(--shadow-md);
             border: 1px solid #eee;
-            height: 100%; /* Ensure cards stretch */
+            height: 100%;
         }
 
         .monitor-header {
@@ -272,7 +284,7 @@
             color: var(--primary-green);
         }
 
-        /* --- SUB TABS MONITOR (Dalam Monitor) --- */
+        /* --- SUB TABS MONITOR --- */
         .monitor-sub-nav {
             display: flex;
             justify-content: center;
@@ -288,7 +300,7 @@
             cursor: pointer;
             font-size: 0.9rem;
             color: var(--text-grey);
-            transition: var(--transition);
+            transition: all 0.2s;
         }
 
         .monitor-sub-btn:hover {
@@ -313,7 +325,7 @@
         /* Canvas Container for Chart.js */
         .canvas-container {
             position: relative;
-            height: 300px; /* Tinggi fix agar grafik tidak gepeng */
+            height: 300px;
             width: 100%;
         }
 
@@ -322,7 +334,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- MARKET SECTION (Cards) --- */
+        /* --- MARKET SECTION (HOME TAB) --- */
         .market-section {
             background: var(--white);
             padding: 30px 20px;
@@ -409,6 +421,9 @@
             font-weight: 600;
             cursor: pointer;
             transition: background 0.2s;
+            text-decoration: none; /* Agar link jadi tombol */
+            display: inline-block; 
+            text-align: center;
         }
         .btn-view:hover { background-color: var(--dark-green); }
 
@@ -452,18 +467,19 @@
             flex-direction: column;
             border: 1px solid #ddd;
             transform-origin: bottom right;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .chat-header {
             background: var(--primary-green);
-            padding: 10px 15px;
+            padding: 12px 15px;
             color: white;
             border-radius: 16px 16px 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-weight: bold;
+            font-size: 0.95rem;
         }
 
         .close-chat {
@@ -477,6 +493,7 @@
             overflow-y: auto;
             padding: 10px;
             background: #f9f9f9;
+            font-size: 0.9rem;
         }
 
         .chat-bubble {
@@ -502,7 +519,7 @@
         }
 
         .chat-bubble.ai {
-            background: #E8F5E9;
+            background: var(--light-green);
             color: #2E7D32;
             align-self: flex-start;
             border-bottom-left-radius: 12px;
@@ -518,6 +535,16 @@
             gap: 5px;
         }
 
+        .chat-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+        .chat-input:focus { outline: none; border-color: var(--primary-green); }
+
         .chat-btn-send {
             background: var(--primary-green);
             color: white;
@@ -529,6 +556,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: background 0.2s;
         }
         .chat-btn-send:hover { background: var(--dark-green); }
 
@@ -550,7 +578,7 @@
             white-space: nowrap;
         }
         .toast.show { opacity: 1; }
-
+        
         /* Modal Helper */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -569,6 +597,8 @@
             .hero h1 { font-size: 2rem; }
             .hero-image { display: none; }
             .chat-container { width: 90%; right: 5%; bottom: 80px; }
+            .monitoring-nav { flex-wrap: wrap; gap: 5px; }
+            .monitor-tab { flex: 1; padding: 6px 10px; font-size: 0.8rem; text-align: center; }
         }
     </style>
 </head>
@@ -583,7 +613,12 @@
             </a>
             
             <div style="display: flex; gap: 10px; align-items: center;">
-                <!-- Tombol Dompet -->
+                <!-- 1. TOMBOL LOGIN (BARU) -->
+                <a href="login.html" class="btn-action btn-secondary-outline">
+                    Masuk / Daftar
+                </a>
+
+                <!-- 2. TOMBOL DOMPET (PROFIL) -->
                 <button id="btnWallet" class="btn-action" onclick="window.location.href='profile.html'">
                     <div class="wallet-status-dot" id="walletDot"></div>
                     <span id="walletText">Profil Saya</span>
@@ -608,6 +643,7 @@
                     <p>AgriChain menghubungkan Petani, Pembeli, dan Lembaga secara transparan. Tanpa perantara, data tersimpan aman di jaringan Polygon.</p>
                     
                     <div class="cta-group">
+                        <!-- Perbaikan Link -->
                         <a href="input-panen.html" class="cta-btn cta-primary">
                             <span>🌾</span> Mulai Jual Panen
                         </a>
@@ -629,6 +665,7 @@
             <div class="container">
                 <div class="section-header">
                     <h2 style="margin:0; color: var(--primary-green);">Panen Siap Jual</h2>
+                    <!-- Perbaikan Link -->
                     <a href="belanja.html" style="color: var(--primary-green); text-decoration: none; font-weight: bold;">+ Lihat Semua Produk</a>
                 </div>
 
@@ -647,7 +684,7 @@
             <!-- SUB NAVS: PASAR, ANALISA, LAHAN -->
             <div class="monitor-sub-nav">
                 <button class="monitor-sub-btn active" id="subBtnMarket" onclick="openMonitorTab(event, 'monMarket')">📈 Pasar</button>
-                <button class="monitor-sub-btn" id="subBtnAnalisa" onclick="openMonitorTab(event, 'monAnalisa')">📊 Analisa</button>
+                <button class="monitor-sub-btn" id="subBtnAnalisa" onclick="openMonitorTab(event, 'monAnalisa')">📉 Analisa</button>
                 <button class="monitor-sub-btn" id="subBtnFarm" onclick="openMonitorTab(event, 'monFarm')">🌾 Lahan</button>
             </div>
 
@@ -658,7 +695,7 @@
                     <div class="monitor-card">
                         <div class="monitor-header">
                             <span class="monitor-title">💹 Tren Harga Padi (1 Minggu)</span>
-                            <span style="font-size:0.8rem; color:#999;">Sen - Min</span>
+                            <span style="font-size:0.8rem; color:#999;">Data Pasar Real-time</span>
                         </div>
                         <div class="canvas-container">
                             <canvas id="chartHargaPadi"></canvas>
@@ -710,7 +747,7 @@
                                     <span style="font-size:0.8rem; color: var(--primary-green);">Status: Selesai Ditangani</span>
                                 </div>
                                 <button onclick="showHamaDetail('Ulat Grayak', '1 Februari', 'Serangan di blok A2. Tanaman padi usia 45 HST. Ditemukan 5 ula per rumpun.', 'Serius')" 
-                                        style="padding: 5px 12px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
+                                        style="padding: 4px 8px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
                                     Detail
                                 </button>
                             </li>
@@ -720,7 +757,7 @@
                                     <span style="font-size:0.8rem; color: #999;">Status: Pemantauan</span>
                                 </div>
                                 <button onclick="showHamaDetail('Kutu Daun', '3 Januari', 'Ditemukan sedikit di daun muda. Level bahaya rendah.', 'Ringan')" 
-                                        style="padding: 5px 12px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
+                                        style="padding: 4px 8px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
                                     Detail
                                 </button>
                             </li>
@@ -730,7 +767,7 @@
                                     <span style="font-size:0.8rem; color: #999;">Status: Sembuh</span>
                                 </div>
                                 <button onclick="showHamaDetail('Walang Sangit', '5 Januari', 'Serangan di malam hari. Penyemprotan insektisida berhasil.', 'Ringan')" 
-                                        style="padding: 5px 12px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
+                                        style="padding: 4px 8px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
                                     Detail
                                 </button>
                             </li>
@@ -748,7 +785,7 @@
                             <p style="margin: 10px 0;"><strong>Status Cuaca:</strong> Panas Terik (32°C)</p>
                             <p style="margin-bottom: 15px;"><strong>Saran:</strong> Siram sore hari ini (16:00).</p>
                             <button onclick="aturJadwalSiram()" 
-                                    style="padding: 10px 20px; background: var(--primary-green); color: white; border:none; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                                    style="padding: 8px 20px; background: var(--primary-green); color: white; border:none; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
                                 ⚡ Atur Otomatis
                             </button>
                         </div>
@@ -762,7 +799,7 @@
 
     <!-- 1. FLOATING CHAT BUTTON -->
     <div id="chatFloatBtn" class="chat-float-btn">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-.7 5.2 8.5 8.5 0 0 1-7.8 4 8.5 8.5 0 0 1-4.7-4.5 8.5 8.5 0 0 1-1.3-1.7 8.5 8.5 0 0 1-5.5-2.3 2.9-2.9 5.9-3.5 4.1-1.3 4.8-2.8 1.5-3.3 1.5-6.6 0-10.6 4.2-10.6 8.4 0 1.3.5 1.6 3.2-2.3 5.2-4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3-1.3 0-.3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path><path d="M14.9 18c.1 0 .3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path></svg>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-.7 5.2 8.5 8.5 0 0 1-7.8 4 8.5 8.5 0 0 1-4.7-4.5 8.5 8.5 0 0 1-1.3-1.7 8.5 8.5 0 0 1-5.5-2.3 2.9-2.9 5.9-3.5 4.1-1.3 4.8-2.8 1.5-3.3 1.5-6.6 0-10.6 4.2-10.6 8.4 0 1.3-.5-1.6-3.2-2.3-5.2-4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3-1.3 0-.3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3-1.3 0-.3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2 10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path><path d="M14.9 18c.1 0 .3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3-1.3 0-.3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path></svg>
     </div>
 
     <!-- 2. CHAT CONTAINER -->
@@ -924,8 +961,8 @@
                     options: { 
                         responsive: true, 
                         maintainAspectRatio: false,
-                        plugins: {
-                            legend: { position: 'bottom' }
+                        plugins: { 
+                            legend: { position: 'bottom' } 
                         }
                     }
                 });
@@ -1016,7 +1053,7 @@
                 }
             } else {
                 // Jika belum login
-                walletText.textContent = "Masuk";
+                walletText.textContent = "Profil Saya"; // Default text
             }
         });
 
@@ -1051,7 +1088,7 @@
 
             // Simulasi AI balas
             setTimeout(() => {
-                const aiResponse = "Pertanyaan Anda menarik. Sistem kami sedang mencari referensi hukum tanam tersebut.";
+                const aiResponse = "Pertanyaan Anda menarik. Sistem kami sedang menganalisis kondisi lahan Anda.";
                 addChatMessage('ai', aiResponse);
             }, 1000);
         });
@@ -1064,28 +1101,30 @@
             const badgeColor = tingkat === 'Serius' ? '#ffebee' : '#e8f5e9';
             const badgeTextColor = tingkat === 'Serius' ? '#c62828' : '#2e7d32';
 
-            const modalHtml = `
-                <div id="hamaModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; display:flex; justify-content:center; align-items:center;">
-                    <div style="background:white; padding:25px; border-radius:12px; max-width:400px; width:90%; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
-                        <h3 style="margin:0 0 10px 0; color:var(--primary-green);">🐛 Detail Laporan</h3>
-                        <div style="margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid #eee;">
-                            <p style="margin:5px 0;"><strong>Hama:</strong> ${namaHama}</p>
-                            <p style="margin:5px 0;"><strong>Tanggal:</strong> ${tanggal}</p>
-                            <p style="margin:5px 0;"><strong>Tingkat:</strong> 
-                                <span style="background:${badgeColor}; color:${badgeTextColor}; padding:2px 8px; border-radius:4px; font-size:0.85rem;">${tingkat}</span>
-                            </p>
-                        </div>
-                        <p style="color:#555; line-height:1.5;">${deskripsi}</p>
-                        <div style="text-align:right; margin-top:20px;">
-                            <button onclick="document.getElementById('hamaModal').remove()" 
-                                    style="padding:8px 20px; background:#ccc; border:none; border-radius:5px; cursor:pointer; color:#333;">Tutup</button>
-                            <button onclick="alert('Laporan dikirim ke Ahli Agronomi!'); document.getElementById('hamaModal').remove();" 
-                                    style="padding:8px 20px; background:var(--primary-green); border:none; border-radius:5px; cursor:pointer; color:white; margin-left:5px;">Konsultasi</button>
-                        </div>
+            const modalDiv = document.createElement('div');
+            modalDiv.id = 'hamaModal';
+            modalDiv.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; display:flex; justify-content:center; align-items:center;";
+            
+            modalDiv.innerHTML = `
+                <div style="background:white; padding:25px; border-radius:12px; max-width:400px; width:90%; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+                    <h3 style="margin:0 0 10px 0; color:var(--primary-green);">🐛 Detail Laporan</h3>
+                    <div style="margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid #eee;">
+                        <p style="margin:5px 0;"><strong>Hama:</strong> ${namaHama}</p>
+                        <p style="margin:5px 0;"><strong>Tanggal:</strong> ${tanggal}</p>
+                        <p style="margin:5px 0;"><strong>Tingkat:</strong> 
+                            <span style="background:${badgeColor}; color:${badgeTextColor}; padding:2px 8px; border-radius:4px; font-size:0.85rem;">${tingkat}</span>
+                        </p>
+                    </div>
+                    <p style="color:#555; line-height:1.5;">${deskripsi}</p>
+                    <div style="text-align:right; margin-top:20px;">
+                        <button onclick="document.getElementById('hamaModal').remove()" 
+                                style="padding:8px 20px; background:#ccc; border:none; border-radius:5px; cursor:pointer; color:#333;">Tutup</button>
+                        <button onclick="alert('Laporan dikirim ke Ahli Agronomi!'); document.getElementById('hamaModal').remove();" 
+                                style="padding:8px 20px; background:var(--primary-green); border:none; border-radius:5px; cursor:pointer; color:white; margin-left:5px;">Konsultasi</button>
                     </div>
                 </div>
             `;
-            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.body.appendChild(modalDiv);
         };
 
         window.aturJadwalSiram = function() {
