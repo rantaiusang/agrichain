@@ -183,7 +183,7 @@
         .stat-value { font-size: 1.8rem; font-weight: bold; margin: 10px 0; }
         .stat-label { font-size: 0.9rem; color: var(--text-grey); }
 
-        /* --- MODE SWITCHER (Opsional) --- */
+        /* --- MODE SWITCHER --- */
         .role-switcher {
             background: white;
             padding: 15px;
@@ -231,20 +231,20 @@
             <span>AgriAdmin</span>
         </div>
         
-        <!-- Navigasi (HREF DI PERBAIKI) -->
+        <!-- Navigasi (HREF TIDAK BOLEH ADA JIKA ADA addEventListener) -->
         <div class="nav-item active">📊 Dashboard</div>
-        <div class="nav-item" onclick="window.location.href='admin-users.html'">👥 Users</div>
+        <div class="nav-item" onclick="location.href='admin-users.html'">👥 Users</div>
         
         <!-- FITUR BARU: Kelola Komoditas -->
         <div class="nav-item" style="background: rgba(255,255,255,0.1); color: #FFD700;" onclick="scrollToCommodities()">
             🌾 Kelola Komoditas
         </div>
 
-        <div class="nav-item" onclick="window.location.href='admin-blockchain.html'">⛓️ Blockchain</div>
-        <div class="nav-item" onclick="window.location.href='admin-pengaturan.html'">⚙️ Pengaturan</div>
+        <div class="nav-item" onclick="location.href='admin-blockchain.html'">⛓️ Blockchain</div>
+        <div class="nav-item" onclick="location.href='admin-pengaturan.html'">⚙️ Pengaturan</div>
         
-        <!-- Tombol Keluar -->
-        <div id="logoutBtn" class="nav-item" style="margin-top: auto; color: #ff8a80; border: 1px solid #ff8a80;">
+        <!-- Tombol Keluar: JANGAN PAKAI onclick DI SINI -->
+        <div id="logoutBtn" class="nav-item" style="margin-top: auto; color: #ff8a80; border: 1px solid #ff8a80; cursor: pointer;">
              🚪 Keluar
         </div>
     </nav>
@@ -268,9 +268,9 @@
             </div>
         </div>
 
-        <!-- 1. FORM TAMBAH KOMODITAS -->
+        <!-- 1. BAGIAN BARU: INPUT KOMODITAS -->
         <div class="admin-form-card" id="commoditiesSection">
-            <h3 style="margin-top:0; color:var(--primary-dark);">➕ Tambah Komoditas Baru</h3>
+            <h3 style="margin:0; color:var(--primary-dark);">➕ Tambah Komoditas Baru</h3>
             <p style="margin-bottom:20px; font-size:0.9rem; color:#666;">Masukkan data harga pasar agar muncul di form petani.</p>
             
             <form id="addCommodityForm" class="form-grid">
@@ -297,7 +297,7 @@
         </div>
 
         <!-- 2. DAFTAR KOMODITAS -->
-        <div class="table-container">
+        <div class="table-container" id="commoditiesSection">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <h3 style="margin:0; color:var(--primary-dark);">Daftar Harga Pasar</h3>
                 <button onclick="loadCommodities()" style="border:1px solid #ddd; background:white; padding:5px 10px; cursor:pointer;">🔄 Refresh</button>
@@ -322,8 +322,8 @@
         <!-- 3. MODE SWITCHER (SAMA SEPERTI SEBELUMNYA) -->
         <div class="role-switcher">
             <div>
-                <div class="role-title">Mode Tampilan Super Admin</div>
-                <div class="role-badge">Simulasi pandangan user lain</div>
+                <div class="role-title" style="font-weight:bold; color:var(--primary-dark);">Mode Tampilan Super Admin</div>
+                <div class="role-badge" style="font-size:0.8rem; color:#666;">Simulasi pandangan user lain</div>
             </div>
             <div class="mode-selector">
                 <button class="mode-btn active" onclick="switchMode('admin', this)">Admin</button>
@@ -336,13 +336,12 @@
 
     <script>
         // --- 1. KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
+        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. LOGIKA KEAMANAN (CEK ADMIN) ---
         document.addEventListener("DOMContentLoaded", async () => {
-            // Cek Login
             const { data: { session }, error } = await supabase.auth.getSession();
 
             if (error || !session) {
@@ -378,7 +377,6 @@
             const countDisplay = document.getElementById('totalCommodityCount');
             
             try {
-                // GANTI 'harga_pasar' JIKA NAMA TABEL ANDA BERBEDA
                 const { data, error } = await supabase
                     .from('harga_pasar') 
                     .select('*')
@@ -411,7 +409,7 @@
 
             } catch (err) {
                 console.error(err);
-                tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:red;">Gagal memuat data. Cek nama tabel.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Gagal memuat data. Cek nama tabel.</td></tr>';
             }
         }
 
@@ -428,7 +426,6 @@
             const unit = document.getElementById('inputUnit').value;
 
             try {
-                // GANTI 'harga_pasar' JIKA NAMA TABEL ANDA BERBEDA
                 const { error } = await supabase
                     .from('harga_pasar')
                     .insert([{
@@ -441,8 +438,8 @@
 
                 alert('Komoditas berhasil ditambahkan!');
                 document.getElementById('addCommodityForm').reset();
-                loadCommodities(); // Refresh tabel
-                loadStats(); // Refresh angka stats
+                loadCommodities();
+                loadStats();
 
             } catch (err) {
                 console.error(err);
@@ -458,7 +455,6 @@
             if(!confirm('Yakin ingin menghapus komoditas ini?')) return;
 
             try {
-                // GANTI 'harga_pasar' JIKA NAMA TABEL ANDA BERBEDA
                 const { error } = await supabase
                     .from('harga_pasar')
                     .delete()
@@ -473,16 +469,14 @@
             }
         }
 
-        // --- 6. LOAD STATS (TOTAL USER & TOTAL KOMODITAS) ---
+        // --- 6. LOAD STATS ---
         async function loadStats() {
             try {
-                // Hitung total user dari tabel profiles
                 const { count } = await supabase
                     .from('profiles')
                     .select('*', { count: 'exact', head: true });
                 document.getElementById('userCount').textContent = count || 0;
 
-                // Hitung total komoditas
                 const { count: commCount } = await supabase
                     .from('harga_pasar')
                     .select('*', { count: 'exact', head: true });
@@ -497,18 +491,28 @@
             document.getElementById('commoditiesSection').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Logika Role Switcher
+        // --- 7. LOGIKA MODE SWITCHER ---
         function switchMode(role, btn) {
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             // Bisa ditambahkan logika ubah tampilan grafik sesuai role jika mau
         }
 
-        // Logout
+        // --- 8. LOGIKA LOGOUT (FIXED) ---
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             if(confirm("Keluar dari Admin?")) {
-                await supabase.auth.signOut();
-                window.location.href = 'login.html';
+                try {
+                    await supabase.auth.signOut();
+                    // Hapus localStorage juga agar bersih
+                    localStorage.removeItem('agrichain_user_id');
+                    localStorage.removeItem('agrichain_user_role');
+                    localStorage.removeItem('agrichain_user_name');
+                    window.location.href = 'login.html';
+                } catch (err) {
+                    console.error("Logout error:", err);
+                    // Paksa logout meskipun error
+                    window.location.href = 'login.html';
+                }
             }
         });
     </script>
