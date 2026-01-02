@@ -152,7 +152,6 @@
 
         #wallet-btn:hover { background-color: #eff6ff; border-color: #2196F3; color: #2196F3; }
         #wallet-btn.connected { background-color: #E8F5E9; border-color: #2E7D32; color: #2E7D32; cursor: default; }
-        #wallet-btn.connected svg { stroke: #2E7D32; }
 
         .extra-links {
             margin-top: 1.5rem;
@@ -172,16 +171,12 @@
         }
         
         .forgot-link { color: #666; text-decoration: none; }
-        .forgot-link:hover { color: var(--primary-green); text-decoration: underline; }
-
         .register-link { color: var(--primary-green); font-weight: bold; text-decoration: none; }
-        .register-link:hover { text-decoration: underline; }
 
         /* --- SPINNER --- */
         .spinner {
             display: inline-block;
-            width: 20px;
-            height: 20px;
+            width: 20px; height: 20px;
             border: 3px solid rgba(255,255,255,0.3);
             border-radius: 50%;
             border-top-color: #fff;
@@ -190,7 +185,6 @@
             vertical-align: middle;
             display: none;
         }
-
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
@@ -201,10 +195,10 @@
         <div class="subtitle">Masuk untuk mulai jual panen</div>
 
         <form id="loginForm">
+            <!-- PERBAIKAN: ID DIBUAT 'identifier', Label DIBUAT FLEKSIBEL -->
             <div class="form-group">
-                <!-- Label diubah jadi Email/HP agar fleksibel -->
-                <label for="identifier">Nomor HP</label>
-                <input type="text" id="identifier" class="form-input" placeholder="Contoh: 08..." required>
+                <label for="identifier">Nomor HP atau Email</label>
+                <input type="text" id="identifier" class="form-input" placeholder="Contoh: 0812... atau email@example.com" required>
             </div>
             
             <div class="form-group">
@@ -219,7 +213,7 @@
             <div id="errorMsg" class="error-msg"></div>
         </form>
 
-        <!-- DOMPET (Opsi) -->
+        <!-- DOMPET -->
         <div class="wallet-section">
             <div class="wallet-status-title">
                 <div class="wallet-status-dot" id="walletDot"></div>
@@ -241,15 +235,16 @@
 
     <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. KONFIGURASI SUPABASE (SUDAH DIISI DENGAN MILIK ANDA) ---
+        // --- 1. KONFIGURASI SUPABASE ---
+        // GANTI DUA BARIS INI DENGAN DATA YANG BENAR DARI DASHBOARD SUPABASE ANDA
         const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
-        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
+        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X'; // <--- PASTIKAN KEY INI BENAR (Panjang, diawali eyJhb...)
 
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. DOM ELEMENTS ---
         const form = document.getElementById('loginForm');
-        const identifierInput = document.getElementById('identifier'); // Bisa HP atau Email
+        const identifierInput = document.getElementById('identifier');
         const passInput = document.getElementById('password');
         const btnSubmit = document.getElementById('btnSubmit');
         const btnText = document.getElementById('btnText');
@@ -279,7 +274,6 @@
             if (!provider) { alert("Library gagal dimuat."); return; }
             if (provider.connected) return;
 
-            console.log("Menghubungkan wallet...");
             const originalContent = walletBtn.innerHTML;
             walletBtn.innerHTML = "Membuka Aplikasi...";
 
@@ -303,7 +297,7 @@
             }
         });
 
-        // --- 4. LOGIKA LOGIN & REDIRECT ADMIN (DIPERBARUI) ---
+        // --- 4. LOGIKA LOGIN & REDIRECT ---
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -324,14 +318,12 @@
             errorMsg.style.display = 'none';
 
             try {
-                // LOGIKA: Cek apakah input itu Email atau HP
+                // LOGIKA: Cek apakah input Email atau HP
                 let emailForSupabase = identifier;
                 if (!identifier.includes('@')) {
-                    // Jika tidak ada @, berarti input HP. Tambahkan domain palsu.
+                    // Jika input HP, tambahkan domain
                     emailForSupabase = identifier + "@agrichain.com";
                 }
-
-                console.log("Mencoba login dengan:", emailForSupabase);
 
                 // 1. Login Supabase
                 const { data, error } = await supabase.auth.signInWithPassword({
@@ -341,84 +333,47 @@
 
                 if (error) throw error;
 
-                console.log("✅ Login Sukses:", data.user.id);
-
-                // 2. AMBIL ROLE USER (PENTING UNTUK REDIRECT)
+                // 2. Cek Role User (PENTING!)
                 const { data: profile, error: profileError } = await supabase
                     .from('profiles')
                     .select('role, full_name')
                     .eq('id', data.user.id)
                     .single();
 
-                if (profileError) {
-                    console.warn("Gagal ambil profile, asumsi user biasa.", profileError);
-                }
+                if (profileError) throw profileError;
 
-                // Simpan data ke localStorage
+                // Simpan session
                 localStorage.setItem('agrichain_user_id', data.user.id);
-                localStorage.setItem('agrichain_user_role', profile ? profile.role : 'USER');
-                localStorage.setItem('agrichain_user_name', profile ? profile.full_name : 'User');
-                
-                if (userWalletAddress) {
-                    localStorage.setItem('user_wallet_address', userWalletAddress);
-                }
+                localStorage.setItem('agrichain_user_role', profile.role);
+                localStorage.setItem('agrichain_user_name', profile.full_name);
 
-                // 3. REDIRECT OTOMATIS BERDASARKAN ROLE
-                if (profile && profile.role === 'ADMIN') {
-                    console.log("🔐 User adalah Admin. Redirect ke Dashboard...");
-                    alert("Selamat Datang, Admin! Mengarahkan ke Dashboard...");
-                    setTimeout(() => {
-                        window.location.href = 'dashboard-admin.html';
-                    }, 1000);
+                // 3. Redirect Otomatis
+                if (profile.role === 'ADMIN') {
+                    alert("Selamat Datang Admin!");
+                    window.location.href = 'dashboard-admin.html';
                 } else {
-                    console.log("🌾 User biasa / Petani. Redirect ke Beranda...");
-                    alert("Login Berhasil! Mengarahkan ke Beranda...");
-                    setTimeout(() => {
-                        window.location.href = 'index.html';
-                    }, 1000);
+                    alert("Login Berhasil!");
+                    window.location.href = 'index.html';
                 }
 
             } catch (error) {
                 console.error("Login Error:", error);
-                
-                let msg = "Nomor HP / Email atau Kata Sandi salah.";
+                let msg = "Login Gagal. Periksa kembali data Anda.";
                 if (error.message.includes("Invalid login credentials")) {
-                    msg = "Kredensial login salah.";
-                } else if (error.message.includes("Email not confirmed")) {
-                    msg = "Akun belum dikonfirmasi.";
+                    msg = "Email/HP atau Password salah.";
+                } else if (error.message.includes("Database error")) {
+                    msg = "Gagal memuat profil user.";
                 }
                 
                 errorMsg.textContent = msg;
                 errorMsg.style.display = 'block';
             } finally {
-                // Reset Tombol
                 btnSubmit.classList.remove('btn-loading');
                 btnSubmit.disabled = false;
                 btnText.textContent = 'MASUK';
                 spinner.style.display = 'none';
             }
         });
-
-        // --- 5. CEK SESI SAAT LOAD ---
-        window.addEventListener("DOMContentLoaded", async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            
-            if (session) {
-                // Jika sudah login, ambil role untuk redirect yang tepat
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', session.user.id)
-                    .single();
-                
-                if (profile && profile.role === 'ADMIN') {
-                    window.location.href = 'dashboard-admin.html';
-                } else {
-                    window.location.href = 'index.html';
-                }
-            }
-        });
-
     </script>
 </body>
 </html>
