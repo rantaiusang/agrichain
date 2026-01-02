@@ -16,7 +16,7 @@
         :root { --primary-green: #2E7D32; --light-green: #E8F5E9; --text-dark: #333; --white: #ffffff; --error-red: #D32F2F; }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--light-green);
             margin: 0;
             display: flex;
@@ -34,30 +34,12 @@
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
         }
 
-        .logo {
-            color: var(--primary-green);
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
-            font-weight: 800;
-            text-align: center;
-        }
-
-        .subtitle {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 2rem;
-            text-align: center;
-        }
+        .logo { color: var(--primary-green); font-size: 2rem; margin-bottom: 0.5rem; font-weight: 800; text-align: center; }
+        .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 2rem; text-align: center; }
 
         .form-group { margin-bottom: 1.2rem; text-align: left; }
         
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-dark);
-        }
+        label { display: block; margin-bottom: 0.5rem; font-size: 0.9rem; font-weight: 600; color: var(--text-dark); }
 
         .form-input {
             width: 100%;
@@ -94,13 +76,14 @@
 
         .error-msg {
             color: var(--error-red);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             margin-top: 10px;
             text-align: center;
             display: none;
             padding: 10px;
             background: #FFEBEE;
             border-radius: 8px;
+            word-break: break-word; /* Agar pesan panjang tidak merusak tampilan */
         }
 
         /* --- DOMPET --- */
@@ -192,7 +175,7 @@
 
     <div class="login-card">
         <div class="logo">AgriChain</div>
-        <div class="subtitle">Masuk untuk mulai bertransaksi</div>
+        <div class="subtitle">Masuk untuk mulai jual panen</div>
 
         <form id="loginForm">
             <!-- HANYA EMAIL -->
@@ -232,16 +215,13 @@
         <a href="index.html" class="link-home">← Kembali ke Beranda</a>
     </div>
 
-    <!-- SCRIPT UTAMA (SIMPLIFIED - EMAIL ONLY) -->
+    <!-- SCRIPT UTAMA (SIMPAN - EMAIL ONLY) -->
     <script>
         // --- 1. KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
         const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
 
-        const supabaseClient = supabase.createClient(
-            SUPABASE_URL,
-            SUPABASE_KEY
-        );
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. DOM ELEMENTS ---
         const form = document.getElementById('loginForm');
@@ -252,14 +232,14 @@
         const spinner = document.getElementById('spinner');
         const errorMsg = document.getElementById('errorMsg');
         
-        // Wallet Elements (Disimpan agar fungsi wallet tetap jalan)
+        // Wallet Elements
         const walletBtn = document.getElementById('wallet-btn');
         const walletDot = document.getElementById('walletDot');
         const walletStatusText = document.getElementById('walletStatusText');
         let userWalletAddress = null;
         let provider = null;
 
-        // --- 3. LOGIKA WALLET CONNECT (Tetap Sama) ---
+        // --- 3. LOGIKA WALLET CONNECT (SAMA SEPERTI SEBELUMNYA) ---
         if (typeof WalletConnectProvider !== 'undefined') {
             provider = new WalletConnectProvider.default({
                 rpc: {
@@ -275,6 +255,7 @@
             if (!provider) { alert("Library gagal dimuat."); return; }
             if (provider.connected) return;
 
+            console.log("Menghubungkan wallet...");
             const originalContent = walletBtn.innerHTML;
             walletBtn.innerHTML = "Membuka Aplikasi...";
 
@@ -298,10 +279,11 @@
             }
         });
 
-        // --- 4. LOGIKA LOGIN EMAIL ONLY (DIPERBAIKI) ---
+        // --- 4. LOGIKA LOGIN EMAIL ONLY (DIPERBAIKI ERROR HANDLING) ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            // --- PENTING: MEMOTONG SPASI ---
             const email = identifierInput.value.trim();
             const password = passInput.value.trim();
 
@@ -319,37 +301,74 @@
             errorMsg.style.display = 'none';
 
             try {
-                // LANGSUNG LOGIN TANPA KONVERSI
-                const { data, error } = await supabaseClient.auth.signInWithPassword({
-                    email: email, // Pakai email langsung dari input
+                // 1. Login Supabase
+                console.log("Mencoba login dengan:", email);
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
                     password: password
                 });
 
                 if (error) throw error;
 
-                console.log("✅ Login Sukses:", data.user.id);
+                console.log("✅ Login Auth Sukses:", data.user.id);
 
-                // Cek Role
-                const { data: profile, error: profileError } = await supabaseClient
-                    .from('profiles')
-                    .select('role, full_name')
-                    .eq('id', data.user.id)
-                    .single();
+                // 2. Ambil Role User
+                // Cek ke tabel profiles
+                let profile = null;
+                let profileError = null;
 
-                if (profileError) throw profileError;
+                try {
+                    const { data: profileData } = await supabase
+                        .from('profiles')
+                        .select('role, full_name')
+                        .eq('id', data.user.id)
+                        .single();
+                    
+                    profile = profileData;
+                } catch (err) {
+                    profileError = err;
+                    console.warn("Gagal mengambil profile (mungkin tabel profiles belum ada):", err);
+                }
+
+                // 3. Logika Redirect
+                // Jika login Auth Sukses, TAPI Profil Error atau Profil Kosong
+                if (!profile) {
+                    // Ini kemungkinan terjadi jika saat Register, langkah 2 (insert ke profiles) gagal.
+                    // Solusi: Kita izinkan user masuk ke index.html (User Biasa) dulu.
+                    // Jangan memblock user dengan "Password salah".
+                    console.warn("User berhasil login Auth, tapi profil tidak ditemukan. Redirect ke Index.");
+                    alert("Selamat Datang! (Profil sistem belum terdeteksi sepenuhnya)");
+                    window.location.href = 'index.html';
+                    return;
+                }
 
                 console.log("Role User:", profile.role);
 
-                // Redirect
+                // Redirect berdasarkan Role
                 if (profile.role === 'ADMIN') {
+                    console.log("Redirect ke Admin Dashboard");
                     window.location.href = 'dashboard-admin.html';
                 } else {
+                    console.log("Redirect ke Beranda (Petani/Buyer)");
                     window.location.href = 'index.html';
                 }
 
             } catch (err) {
-                console.error(err);
-                errorMsg.textContent = "Email atau Kata Sandi salah.";
+                console.error("❌ Login Error:", err);
+                
+                // --- DEBUGGING TAMPILKAN PESAN ERROR ASLI ---
+                // Supaya Anda tahu pastinya kenapa salah
+                let msg = "Terjadi kesalahan sistem. Detail: " + err.message;
+                
+                if (err.message.includes('Invalid login credentials')) {
+                    msg = "Kombinasi Email atau Kata Sandi SALAH. Silakan cek kembali.";
+                } else if (err.message.includes('Email not confirmed')) {
+                    msg = "Akun Anda belum dikonfirmasi. Silakan cek email Anda.";
+                } else if (err.message.includes('Database error')) {
+                    msg = "Gagal mengakses data profil (Database Error). Anda tetap bisa masuk.";
+                }
+                
+                errorMsg.textContent = msg;
                 errorMsg.style.display = 'block';
             } finally {
                 // Reset Tombol
