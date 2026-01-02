@@ -408,23 +408,22 @@
 
     <!-- LOGIC SCRIPT -->
     <script>
-        // --- KONFIGURASI ---
-        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        // --- 1. KONFIGURASI SUPABASE (SUDAH DIISI) ---
+        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- STATE MANAGEMENT ---
+        // --- 2. STATE MANAGEMENT ---
         const AppState = {
             currentUser: null,
             prices: {},
             isSubmitting: false,
-            // Variabel untuk menyimpan satuan saat ini
             currentUnit: 'unit' 
         };
 
-        // --- MODULES ---
+        // --- 3. MODULES ---
 
-        // 1. UTILS
+        // UTILS
         const Utils = {
             formatRupiah: (number) => {
                 return new Intl.NumberFormat('id-ID', {
@@ -467,13 +466,13 @@
             }
         };
 
-        // 2. MARKET DATA
+        // MARKET DATA
         const MarketModule = {
             init: async () => {
                 try {
-                    // PENTING: Kita select kolom 'unit' juga
+                    // Mengambil data dari tabel 'harga_pasar' (sesuai database)
                     const { data, error } = await supabase
-                        .from('market_prices')
+                        .from('harga_pasar') 
                         .select('commodity_name, current_price, unit') 
                         .order('commodity_name', { ascending: true });
 
@@ -488,7 +487,7 @@
                 } catch (err) {
                     console.error("Gagal load harga:", err);
                     Utils.showToast("Gagal memuat data harga pasar", "error");
-                    // Gunakan Dummy Data agar UI tidak rusak
+                    // Gunakan Dummy Data
                     MarketModule.loadDummyData();
                 }
             },
@@ -498,22 +497,18 @@
                 select.innerHTML = '<option value="" disabled selected>Pilih jenis tanaman...</option>';
                 
                 data.forEach(item => {
-                    // Normalisasi key
                     const key = item.commodity_name.toLowerCase().replace(/[^a-z0-9]/g, '');
                     
-                    // Simpan data harga dan SATUAN di State
                     AppState.prices[key] = {
                         price: item.current_price,
-                        unit: item.unit || 'unit' // Fallback jika unit null di DB
+                        unit: item.unit || 'unit'
                     };
 
                     const opt = document.createElement('option');
                     opt.value = key;
-                    // Simpan unit di dataset untuk akses cepat saat onChange
                     opt.dataset.unit = item.unit || 'unit'; 
                     opt.dataset.price = item.current_price;
                     
-                    // Tampilkan di dropdown: "Padi (Rp 5.000 / Karung)"
                     const unitText = (item.unit || 'unit').toUpperCase();
                     opt.textContent = `${item.commodity_name} (${Utils.formatRupiah(item.current_price)}/${unitText})`;
                     
@@ -522,20 +517,24 @@
             },
 
             loadDummyData: () => {
-                // Data Dummy dengan satuan berbeda-beda
                 const data = [
                     { commodity_name: 'Padi Gabah', current_price: 5000, unit: 'Kg' },
                     { commodity_name: 'Jagung Pipil', current_price: 4000, unit: 'Kg' },
-                    { commodity_name: 'Kelapa', current_price: 2500, unit: 'Pcs' }, // Contoh Pcs
-                    { commodity_name: 'Padi Beras', current_price: 12000, unit: 'Karung' } // Contoh Karung
+                    { commodity_name: 'Kelapa', current_price: 2500, unit: 'Pcs' }, 
+                    { commodity_name: 'Padi Beras', current_price: 12000, unit: 'Karung' } 
                 ];
                 MarketModule.populateSelect(data);
-                document.getElementById('cropType').innerHTML = 
-                    `<option disabled selected>Mode Demo: Data Palsu</option>` + document.getElementById('cropType').innerHTML;
+                const select = document.getElementById('cropType');
+                // Tambahkan indikator mode demo di awal dropdown
+                const demoOpt = document.createElement('option');
+                demoOpt.disabled = true;
+                demoOpt.selected = true;
+                demoOpt.textContent = "Mode Demo: Data Palsu";
+                select.prepend(demoOpt);
             }
         };
 
-        // 3. FORM HANDLER
+        // FORM HANDLER
         const HarvestModule = {
             updateEstimate: () => {
                 const cropSelect = document.getElementById('cropType');
@@ -545,19 +544,14 @@
                 const totalDisplay = document.getElementById('totalPriceDisplay');
                 const baseDisplay = document.getElementById('basePriceDisplay');
 
-                // Ambil Option yang dipilih
                 const selectedOpt = cropSelect.options[cropSelect.selectedIndex];
                 const qualityOpt = qualitySelect.options[qualitySelect.selectedIndex];
                 
-                // Ambil harga & satuan dari State atau dataset
                 const basePrice = parseInt(selectedOpt?.dataset.price) || 0;
-                // Ambil satuan dari dataset option, jika tidak ada ambil dari state
                 const unitName = selectedOpt?.dataset.unit || AppState.prices[cropSelect.value]?.unit || 'unit';
                 
-                // Simpan satuan global untuk label hint
                 AppState.currentUnit = unitName;
 
-                // Update UI Label Satuan (Bagian Perbaikan Utama)
                 const labelEl = document.getElementById('quantityLabel');
                 const hintEl = document.getElementById('quantityHint');
                 
@@ -572,14 +566,12 @@
                 const quantity = parseFloat(quantityInput.value) || 0;
                 const multiplier = parseFloat(qualityOpt.dataset.multiplier) || 1;
 
-                // Kalkulasi Harga
                 if (quantity > 0 && basePrice > 0) {
                     estCard.classList.add('active');
                     const finalPricePerUnit = Math.round(basePrice * multiplier);
                     const total = quantity * finalPricePerUnit;
 
                     totalDisplay.textContent = Utils.formatRupiah(total);
-                    // Update label harga dasar dengan satuan yang tepat
                     baseDisplay.textContent = `Dasar: ${Utils.formatRupiah(finalPricePerUnit)} / ${unitName}`;
                 } else {
                     estCard.classList.remove('active');
@@ -587,7 +579,6 @@
                     baseDisplay.textContent = `Rp 0 / ${AppState.currentUnit}`;
                 }
 
-                // Reset checkbox jika input berubah
                 document.getElementById('priceConfirm').checked = false;
                 HarvestModule.toggleSubmit();
             },
@@ -629,19 +620,19 @@
                 Utils.setLoading(true);
 
                 try {
-                    // Simpan Satuan bersama data penjualan agar catatan akurat
                     const payload = {
                         user_id: AppState.currentUser.id,
                         crop_type: crop,
                         quantity: parseFloat(qty),
-                        unit: AppState.currentUnit, // <--- MENYIMPAN SATUAN
+                        unit: AppState.currentUnit,
                         quality: quality,
                         estimated_price: 0,
                         status: 'pending'
                     };
 
+                    // --- PERBAIKAN UTAMA: NAMA TABEL DIGANTI JADI 'panen' ---
                     const { error } = await supabase
-                        .from('harvest_sales')
+                        .from('panen') // <--- Sesuai nama tabel di Database
                         .insert([payload]);
 
                     if (error) throw error;
@@ -650,7 +641,6 @@
                     document.getElementById('harvestForm').reset();
                     document.getElementById('estimationCard').classList.remove('active');
                     document.getElementById('totalPriceDisplay').textContent = 'Rp 0';
-                    // Reset label ke default
                     document.getElementById('quantityLabel').textContent = "Jumlah Total";
                     
                     setTimeout(() => { window.location.href = 'index.html'; }, 2000);
@@ -676,7 +666,6 @@
 
             await MarketModule.init();
             
-            // Listener untuk update satuan saat ganti komoditas
             document.getElementById('quantity').addEventListener('input', HarvestModule.updateEstimate);
             document.getElementById('cropType').addEventListener('change', HarvestModule.updateEstimate);
             
