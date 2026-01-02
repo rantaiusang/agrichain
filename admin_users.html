@@ -30,7 +30,7 @@
             min-height: 100vh;
         }
 
-        /* --- SIDEBAR (SAME AS DASHBOARD ADMIN) --- */
+        /* --- SIDEBAR --- */
         .sidebar {
             width: 250px;
             background: var(--primary-dark);
@@ -54,6 +54,8 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            white-space: nowrap;
+            overflow: hidden;
         }
 
         .nav-item {
@@ -67,6 +69,8 @@
             gap: 10px;
             color: rgba(255,255,255,0.7);
             text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
         }
 
         .nav-item:hover, .nav-item.active {
@@ -81,26 +85,61 @@
             padding: 30px;
         }
 
-        h2 { color: var(--primary-dark); margin-bottom: 10px; font-size: 1.5rem; }
-        p { color: var(--text-grey); margin-bottom: 30px; }
+        /* --- HEADER & SEARCH --- */
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .btn-search {
+            padding: 12px 20px;
+            background: var(--primary-dark);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            white-space: nowrap;
+        }
 
         /* --- TABLE --- */
-        .table-wrapper {
+        .table-container {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            padding: 20px;
             overflow-x: auto;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 600px;
+            min-width: 700px;
         }
 
         th, td {
-            padding: 15px;
             text-align: left;
+            padding: 15px;
             border-bottom: 1px solid #eee;
         }
 
@@ -108,15 +147,15 @@
             background-color: #f8f9fa;
             color: var(--primary-dark);
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             text-transform: uppercase;
         }
 
         tr:hover { background-color: #fafafa; }
 
-        /* --- BADGES --- */
+        /* --- BADGE --- */
         .badge {
-            padding: 4px 10px;
+            padding: 6px 12px;
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: bold;
@@ -137,18 +176,22 @@
             cursor: pointer;
             font-size: 0.8rem;
             font-weight: 600;
+            transition: transform 0.1s;
         }
+        .btn-edit:hover { transform: scale(1.05); }
 
         /* --- MODAL POPUP --- */
         .modal-overlay {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(0,0,0,0.5);
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 2000;
         }
 
         .modal-box {
@@ -159,10 +202,11 @@
             max-width: 500px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             text-align: center;
+            position: relative;
         }
 
         .form-group { margin-bottom: 20px; text-align: left; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 5px; text-align: left; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; text-align: left; font-size: 0.9rem; }
         
         .input-field {
             width: 100%;
@@ -171,43 +215,44 @@
             border-radius: 6px;
             box-sizing: border-box;
             font-size: 1rem;
+            background: #fafafa;
         }
 
         .modal-actions {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            justify-content: space-between;
+            margin-top: 30px;
         }
-
+        
         .btn-cancel {
-            flex: 1;
-            padding: 10px;
-            background: #e0e0e0;
-            color: #333;
+            background: #f44336;
+            color: white;
             border: none;
+            padding: 10px 20px;
             border-radius: 6px;
             cursor: pointer;
+            flex: 1;
+            margin-right: 10px;
         }
 
         .btn-save {
-            flex: 1;
-            padding: 10px;
             background: var(--primary-dark);
             color: white;
             border: none;
+            padding: 10px 20px;
             border-radius: 6px;
             cursor: pointer;
+            flex: 1;
         }
+        .btn-save:hover { background: #151a30; }
 
         /* --- RESPONSIVE --- */
         @media (max-width: 768px) {
             .sidebar { width: 0; padding: 0; overflow: hidden; }
             .sidebar.open { width: 250px; padding: 20px; }
             .main-content { margin-left: 0; padding: 15px; }
-            .mobile-toggle { display: block; }
-        }
-        @media (min-width: 769px) {
-            .mobile-toggle { display: none; }
+            .search-box { max-width: 100%; }
+            .content-header { flex-direction: column; align-items: stretch; }
         }
     </style>
 </head>
@@ -220,75 +265,92 @@
             <span>AgriAdmin</span>
         </div>
         
-        <div class="nav-item" onclick="window.location.href='dashboard-admin.html'">📊 Dashboard</div>
+        <div class="nav-item" onclick="window.location.href='admin-system-full.html'">📊 Master Control</div>
         <div class="nav-item active">👥 User Management</div>
-        <div class="nav-item" onclick="window.location.href='dashboard-admin.html'">🌾 Kelola Harga</div>
+        <div class="nav-item" onclick="window.location.href='dashboard-admin.html'">🌾 Market Data</div>
         <div class="nav-item" onclick="window.location.href='index.html'">🌐 Lihat Website</div>
         
-        <div class="nav-item" id="btn-logout" style="margin-top: auto; color: #ff8a80; border: 1px solid #ff8a80; cursor: pointer;">
+        <div id="btn-logout" class="nav-item" style="margin-top: auto; color: #ff8a80; border: 1px solid #ff8a80; cursor: pointer;">
              🚪 Keluar
         </div>
     </nav>
 
     <!-- Main Content -->
     <div class="main-content">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        
+        <!-- Header & Search -->
+        <div class="content-header">
             <div>
-                <div class="mobile-toggle">
-                    <button onclick="toggleSidebar()" style="padding:10px; background:var(--primary-dark); color:white; border:none; border-radius:5px;">☰ Menu</button>
-                </div>
+                <h2 style="margin:0; color:var(--primary-dark);">Data Pengguna</h2>
+                <p style="margin:0; color:var(--text-grey);">Kelola data akun Petani, Pembeli, dan Lembaga.</p>
             </div>
-            <!-- Bisa tambah Search Box jika perlu -->
+            <div class="search-box">
+                <input type="text" id="searchInput" class="search-input" placeholder="Cari nama user...">
+                <button class="btn-search" onclick="filterUsers()">Cari</button>
+            </div>
         </div>
 
-        <h2>Kelola Pengguna</h2>
-        <p>Pantau dan edit data petani, pembeli, lembaga yang terdaftar.</p>
-
-        <div class="table-wrapper">
+        <!-- Table -->
+        <div class="table-container">
             <table id="usersTable">
                 <thead>
                     <tr>
                         <th style="width: 25%;">Nama Lengkap</th>
-                        <th style="width: 25%;">Email</th>
-                        <th style="width: 10%;">HP</th>
+                        <th style="width: 25%;">Email / HP</th>
                         <th style="width: 15%;">Role</th>
-                        <th style="width: 10%;">Terdaftar</th>
-                        <th style="width: 15%;">Aksi</th>
+                        <th style="width: 15%;">Terdaftar</th>
+                        <th style="width: 20%;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td colspan="7" style="text-align:center; color:#999;">Memuat data pengguna...</td></tr>
+                    <tr><td colspan="6" style="text-align:center; color:#999;">Memuat data pengguna...</td></tr>
                 </tbody>
             </table>
         </div>
+
     </div>
 
-    <!-- Modal Edit User -->
+    <!-- Modal Edit -->
     <div id="editModal" class="modal-overlay">
         <div class="modal-box">
-            <h3 style="color:var(--primary-dark); margin-top:0;">Edit Pengguna</h3>
+            <h3 style="color:var(--primary-dark); margin-top:0; margin-bottom: 20px;">Edit Pengguna</h3>
             
             <form id="editUserForm">
-                <input type="hidden" id="authId"> <!-- ID dari auth.users untuk update email -->
-                <input type="hidden" id="profileId"> <!-- ID dari profiles untuk update lainnya -->
+                <!-- ID User untuk database (hidden) -->
+                <input type="hidden" id="editProfileId"> 
+
+                <!-- ID Auth User (hidden) - Walaupun email tidak kita ubah, kita butuh ID ini untuk referensi -->
+                <input type="hidden" id="editAuthId">
 
                 <div class="form-group">
                     <label>Nama Lengkap</label>
-                    <input type="text" id="fullName" class="input-field" required>
+                    <input type="text" id="editName" class="input-field" required>
                 </div>
 
                 <div class="form-group">
                     <label>Email (Login ID)</label>
-                    <input type="email" id="userEmail" class="input-field" required>
+                    <input type="email" id="editEmail" class="input-field" disabled style="background:#e0e0e0; cursor:not-allowed;">
+                    <small style="color:#999; display:block; margin-top:4px;">Email tidak dapat diubah demi keamanan akun user.</small>
                 </div>
 
                 <div class="form-group">
                     <label>Nomor HP</label>
-                    <input type="tel" id="userPhone" class="input-field" required>
+                    <input type="tel" id="editPhone" class="input-field" required>
                 </div>
 
+                <div class="form-group">
+                    <label>Role (Aman)</label>
+                    <select id="editRole" class="input-field" disabled style="background:#e0e0e0;">
+                        <option value="PETANI">Petani</option>
+                        <option value="PEMBELI">Pembeli</option>
+                        <option value="LEMBAGA">Lembaga</option>
+                        <option value="ADMIN">Admin</option>
+                    </select>
+                    <small style="color:#999; display:block; margin-top:4px;">Role hanya dapat diubah oleh Super Admin di Database.</small>
+                </div>
+                
                 <div class="modal-actions">
-                    <button type="button" class="btn-cancel" onclick="closeModal()">Batal</button>
+                    <button type="button" class="btn-cancel" onclick="closeEditModal()">Batal</button>
                     <button type="submit" class="btn-save">Simpan Perubahan</button>
                 </div>
             </form>
@@ -308,8 +370,14 @@
         const modal = document.getElementById('editModal');
         const form = document.getElementById('editUserForm');
 
-        // --- 3. INIT & SECURITY CHECK ---
+        // --- 3. INIT & SECURITY ---
         document.addEventListener("DOMContentLoaded", async () => {
+            // Cek Mobile
+            if(window.innerWidth <= 768) {
+                document.querySelector('.content-header').style.flexDirection = 'column';
+                document.querySelector('.content-header').style.alignItems = 'stretch';
+            }
+
             // Cek Session
             const { data: { session }, error } = await supabase.auth.getSession();
 
@@ -319,7 +387,7 @@
                 return;
             }
 
-            // Cek Role Admin di tabel Profiles
+            // Cek Role Admin
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('role')
@@ -327,7 +395,7 @@
                 .single();
 
             if (!profile || profile.role !== 'ADMIN') {
-                alert("Akses Ditolak: Bukan Admin");
+                alert("Akses Ditolak: Anda bukan Admin.");
                 window.location.href = 'index.html';
                 return;
             }
@@ -339,8 +407,7 @@
         // --- 4. LOAD USERS ---
         async function loadUsers() {
             try {
-                // Join table auth.users (ambil email) dengan profiles
-                // Catatan: auth.users adalah tabel bawaan Supabase
+                // Join table profiles dengan auth.users untuk ambil email
                 const { data, error } = await supabase
                     .from('profiles')
                     .select(`
@@ -359,7 +426,7 @@
 
             } catch (err) {
                 console.error(err);
-                tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Gagal memuat data.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Gagal memuat data.</td></tr>';
             }
         }
 
@@ -368,7 +435,7 @@
             tableBody.innerHTML = '';
 
             if (users.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Belum ada pengguna terdaftar.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada pengguna terdaftar.</td></tr>';
                 return;
             }
 
@@ -382,7 +449,7 @@
                 else if(user.role === 'PEMBELI') badgeClass = 'badge-PEMBELI';
                 else if(user.role === 'LEMBAGA') badgeClass = 'badge-LEMBAGA';
 
-                // Tombol Edit (Tidak bisa edit diri sendiri)
+                // Tombol Edit (Admin tidak bisa edit diri sendiri)
                 const isSelf = (user.id === currentAdminId);
                 const editBtn = isSelf 
                     ? '<span style="color:#ccc; font-size:0.8rem;">Anda Sendiri</span>' 
@@ -391,8 +458,10 @@
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><strong>${user.full_name}</strong></td>
-                    <td style="color:#666;">${user.email}</td>
-                    <td>${user.phone || '-'}</td>
+                    <td style="color:#666;">
+                        ${user.email} <br>
+                        <small style="color:#888;">HP: ${user.phone || '-'}</small>
+                    </td>
                     <td><span class="badge ${badgeClass}">${user.role}</span></td>
                     <td style="color:#888; font-size:0.85rem;">${dateStr}</td>
                     <td>${editBtn}</td>
@@ -401,50 +470,74 @@
             });
         }
 
-        // --- 6. OPEN MODAL & POPULATE DATA ---
+        // --- 6. FILTER / SEARCH ---
+        async function filterUsers() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            
+            if(!query) {
+                loadUsers(); // Jika kosong, load semua
+                return;
+            }
+
+            try {
+                // Cari di kolom full_name atau phone yang mirip query (case insensitive)
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select(`
+                        id,
+                        full_name,
+                        phone,
+                        role,
+                        created_at,
+                        auth_users ( email, id as auth_id )
+                    `)
+                    .or(`full_name.ilike.%${query}%`, `phone.ilike.%${query}%`)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                renderTable(data);
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // --- 7. OPEN MODAL & POPULATE DATA ---
         window.openEditModal = function(profileId, authId, name, email, phone) {
-            document.getElementById('profileId').value = profileId;
-            document.getElementById('authId').value = authId;
-            document.getElementById('fullName').value = name;
-            document.getElementById('userEmail').value = email;
-            document.getElementById('userPhone').value = phone;
+            document.getElementById('editProfileId').value = profileId;
+            document.getElementById('editAuthId').value = authId;
+            document.getElementById('editName').value = name;
+            document.getElementById('editEmail').value = email;
+            document.getElementById('editPhone').value = phone;
             
             modal.style.display = 'flex';
-        };
+        }
 
-        function closeModal() {
+        function closeEditModal() {
             modal.style.display = 'none';
         }
 
         // Tutup modal jika klik luar
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal();
+            if (e.target === modal) closeEditModal();
         });
 
-        // --- 7. UPDATE USER LOGIC ---
+        // --- 8. SIMPAN PERUBAHAN (UPDATE DATABASE) ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const authId = document.getElementById('authId').value;
-            const profileId = document.getElementById('profileId').value;
-            const newName = document.getElementById('fullName').value;
-            const newEmail = document.getElementById('userEmail').value;
-            const newPhone = document.getElementById('userPhone').value;
+            const profileId = document.getElementById('editProfileId').value;
+            const newName = document.getElementById('editName').value;
+            const newPhone = document.getElementById('editPhone').value;
             const btnSubmit = form.querySelector('.btn-save');
             const originalText = btnSubmit.textContent;
 
             try {
+                // UI Loading
                 btnSubmit.disabled = true;
                 btnSubmit.textContent = 'Menyimpan...';
 
-                // 1. Update Email di Tabel Auth (PENTING)
-                // Perhatikan: updateUser membutuh session yang valid dari user YANG DI-EDIT.
-                // Karena admin sedang login sebagai admin, kita tidak bisa langsung mengupdate email user lain secara aman dengan SDK standar di frontend kecuali menggunakan Service Role Key.
-                // UNTUK DEMO INI: Kita hanya update nama & HP di Profiles, dan skip update email untuk alasan keamanan (menghindari error "User not found").
-                
-                // Jika Anda ingin Admin bisa reset password user, buat fitur "Reset Password User" yang memanggil supabase.auth.admin.updateUser(id, {password}) menggunakan Service Role Key di backend server.
-
-                // 2. Update Data Profil (Profiles Table)
+                // 1. Update Data Profil (Profiles Table)
                 const { error: profileError } = await supabase
                     .from('profiles')
                     .update({
@@ -455,31 +548,31 @@
 
                 if (profileError) throw profileError;
 
+                // CATATAN KECIL:
+                // Kita TIDAK mengupdate email di table auth.users secara manual di frontend
+                // karena membutuhkan session dari user yang di-edit (yang tidak kita miliki).
+                // Strategi keamanan: Email tetap aman.
+                
                 alert('Data pengguna berhasil diperbarui!');
-                closeModal();
-                loadUsers();
+                closeEditModal();
+                loadUsers(); // Refresh tabel agar data baru muncul
 
             } catch (err) {
                 console.error(err);
-                alert('Gagal menyimpan: ' + err.message);
+                alert('Gagal menyimpan data: ' + err.message);
             } finally {
-                btnSubmit.disabled = false;
                 btnSubmit.textContent = originalText;
+                btnSubmit.disabled = false;
             }
         });
 
-        // --- 8. LOGOUT ---
+        // --- 9. LOGOUT ---
         document.getElementById('btn-logout').addEventListener('click', async () => {
             if(confirm("Keluar dari Admin Panel?")) {
                 await supabase.auth.signOut();
                 window.location.href = 'login.html';
             }
         });
-
-        // --- 9. MOBILE NAV ---
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('open');
-        }
 
     </script>
 </body>
