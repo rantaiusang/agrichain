@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/@web3modal/web3modal"></script>
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
     
-    <!-- PERBAIKAN 1: Library Chart.js Versi Terbaru & Stabil -->
+    <!-- Library Chart.js (Terbaru) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <style>
@@ -735,29 +735,81 @@
                 </div>
             </div>
 
-            <!-- SUB TAB 3: LAHAN (LOG HAMA & CUACA) -->
+            <!-- SUB TAB 3: LAHAN (LOG HAMA & CUACA) - SUDAH DIPERBAIKI -->
             <div id="monFarm" class="monitor-tab-content">
                 <div class="monitor-grid">
+                    
+                    <!-- KARTU 1: LOG SERANGAN HAMA -->
                     <div class="monitor-card">
                         <div class="monitor-header">
                             <span class="monitor-title">📈 Log Serangan Hama</span>
+                            <span style="font-size:0.8rem; color:#999;">Terbaru di atas</span>
                         </div>
                         <ul style="list-style: none; padding: 0;">
-                            <li style="padding: 10px; border-bottom: 1px solid #eee;">🐛 1 Feb: Ulat Grayak (Serius) - <a href="#" style="color:red;">[Detail]</a></li>
-                            <li style="padding: 10px; border-bottom: 1px solid #eee;">🐛 3 Jan: Kutu Daun (Ringan)</li>
-                            <li style="padding: 10px; border-bottom: 1px solid #eee;">🐛 5 Jan: Kutu Daun (Ringan)</li>
+                            <!-- Item 1 -->
+                            <li style="padding: 12px; border-bottom: 1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <div style="font-weight:bold;">🐛 1 Feb: Ulat Grayak</div>
+                                    <span style="font-size:0.8rem; color: var(--primary-green);">Status: Selesai Ditangani</span>
+                                </div>
+                                <!-- TOMBOL DETAIL DIBERI FUNGSI -->
+                                <button onclick="showHamaDetail('Ulat Grayak', '1 Februari', 'Serangan di blok A2. Tanaman padi usia 45 HST. Ditemukan 5 ulu per rumpun.', 'Serius')" 
+                                        style="padding: 5px 12px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
+                                    Detail
+                                </button>
+                            </li>
+                            
+                            <!-- Item 2 -->
+                            <li style="padding: 12px; border-bottom: 1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <div style="font-weight:bold;">🐛 3 Jan: Kutu Daun</div>
+                                    <span style="font-size:0.8rem; color: #999;">Status: Pemantauan</span>
+                                </div>
+                                <button onclick="showHamaDetail('Kutu Daun', '3 Januari', 'Ditemukan sedikit di daun muda. Level bahaya rendah.', 'Ringan')" 
+                                        style="padding: 5px 12px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
+                                    Detail
+                                </button>
+                            </li>
+
+                            <!-- Item 3 -->
+                            <li style="padding: 12px; border-bottom: 1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <div style="font-weight:bold;">🐛 5 Jan: Walang Sangit</div>
+                                    <span style="font-size:0.8rem; color: #999;">Status: Sembuh</span>
+                                </div>
+                                <button onclick="showHamaDetail('Walang Sangit', '5 Januari', 'Serangan di malam hari. Penyemprotan insektisida berhasil.', 'Ringan')" 
+                                        style="padding: 5px 12px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
+                                    Detail
+                                </button>
+                            </li>
                         </ul>
                     </div>
+
+                    <!-- KARTU 2: JADWAL SIRAM & CUACA -->
                     <div class="monitor-card">
                         <div class="monitor-header">
-                            <span class="monitor-title">🌧 Jadwal Siram Otomatis</span>
+                            <span class="monitor-title">🌧 Jadwal Irigasi Cerdas</span>
+                            <span style="font-size:0.8rem; color:#999;">IoT Connected</span>
                         </div>
-                        <div style="background: #E8F5E9; padding: 15px; border-radius: 8px;">
-                            <p><strong>Status Cuaca:</strong> Panas Terik (32°C)</p>
-                            <p><strong>Saran:</strong> Siram sore hari ini (16:00).</p>
-                            <button style="padding: 8px 16px; background: #2E7D32; color: white; border:none; border-radius: 5px; cursor: pointer;">Atur Otomatis</button>
+                        
+                        <div style="background: #E8F5E9; padding: 20px; border-radius: 8px; border: 1px dashed var(--primary-green);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                <span style="font-weight:bold; color:var(--dark-green);">Status Cuaca:</span>
+                                <span style="background:rgba(255,255,255,0.5); padding:2px 8px; border-radius:4px;">☀️ Panas Terik (32°C)</span>
+                            </div>
+                            
+                            <p style="margin: 10px 0; color: #333;"><strong>Saran Sistem:</strong> Tanah kering tingkat 3. Disarankan siram sore ini.</p>
+                            
+                            <div style="margin-top: 15px; text-align: right;">
+                                <!-- TOMBOL ATUR OTOMATIS DIBERI FUNGSI -->
+                                <button onclick="aturJadwalSiram()" 
+                                        style="padding: 10px 20px; background: var(--primary-green); color: white; border:none; border-radius: 5px; cursor: pointer; font-weight:bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                                    ⚡ Atur Otomatis
+                                </button>
+                            </div>
                         </div>
                     </div>
+
                 </div>
             </div>
 
@@ -1100,6 +1152,60 @@
             toast.classList.add('show');
             setTimeout(() => { toast.classList.remove('show'); }, 3000);
         }
+
+        // --- M. FUNGSI INTERAKSI LAHAN (MONITORING) ---
+
+        // 1. Fungsi Menampilkan Detail Hama
+        window.showHamaDetail = function(namaHama, tanggal, deskripsi, tingkat) {
+            // Tentukan warna badge berdasarkan tingkat keparahan
+            let badgeColor = tingkat === 'Serius' ? '#ffebee' : '#e8f5e9';
+            let badgeTextColor = tingkat === 'Serius' ? '#c62828' : '#2e7d32';
+
+            const modalHtml = `
+                <div id="hamaModal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; display:flex; justify-content:center; align-items:center;">
+                    <div style="background:white; padding:25px; border-radius:12px; max-width:400px; width:90%; box-shadow:0 10px 25px rgba(0,0,0,0.2); animation: fadeIn 0.3s;">
+                        <h3 style="margin:0 0 10px 0; color:var(--primary-green);">🐛 Detail Laporan</h3>
+                        <div style="margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid #eee;">
+                            <p><strong>Hama:</strong> ${namaHama}</p>
+                            <p><strong>Tanggal:</strong> ${tanggal}</p>
+                            <p><strong>Tingkat:</strong> 
+                                <span style="background:${badgeColor}; color:${badgeTextColor}; padding:2px 8px; border-radius:4px; font-size:0.85rem;">${tingkat}</span>
+                            </p>
+                        </div>
+                        <p style="color:#555; line-height:1.5;">${deskripsi}</p>
+                        <div style="text-align:right; margin-top:20px;">
+                            <button onclick="document.getElementById('hamaModal').remove()" 
+                                    style="padding:8px 20px; background:#ccc; border:none; border-radius:5px; cursor:pointer; color:#333;">Tutup</button>
+                            <button onclick="alert('Laporan dikirim ke Ahli Agronomi!'); document.getElementById('hamaModal').remove();" 
+                                    style="padding:8px 20px; background:var(--primary-green); border:none; border-radius:5px; cursor:pointer; color:white; margin-left:5px;">Konsultasi</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            // Masukkan HTML modal ke body
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        };
+
+        // 2. Fungsi Atur Jadwal Siram
+        window.aturJadwalSiram = function() {
+            // Contoh sederhana menggunakan prompt, bisa diganti modal nanti
+            const jam = prompt("Masukkan jam otomatis (Contoh: 16:00):", "16:00");
+            
+            if (jam) {
+                // Tampilkan feedback notifikasi (Toast)
+                showToast(`✅ Jadwal siram otomatis diatur pada pukul ${jam}`);
+                
+                // Simulasi update tampilan UI (opsional)
+                // Perhatikan: Karena ini dalam module scope, kita butuh referensi elemen yang tepat
+                const cardContent = document.querySelector('#monFarm .monitor-card:nth-child(2) div[style*="background: #E8F5E9"]');
+                if(cardContent) {
+                    const pTag = cardContent.querySelector('p[style*="margin: 10px 0"]');
+                    if(pTag) {
+                        pTag.innerHTML = `<strong>Status:</strong> <span style="color:green;">Jadwal Aktif</span><br>Siram otomatis akan menyala pukul <strong>${jam}</strong>.`;
+                    }
+                }
+            }
+        };
 
     </script>
 </body>
