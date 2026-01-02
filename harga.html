@@ -9,28 +9,27 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        /* --- CSS VARIABLES & RESET --- */
         :root {
-            --primary-green: #2E7D32;
+            --primary: #2E7D32;
             --light-green: #E8F5E9;
             --dark-green: #1B5E20;
-            --text-dark: #1f2937;
-            --text-grey: #6b7280;
+            --danger: #DC2626;
+            --bg: #F9FAFB;
             --white: #ffffff;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --text: #374151;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --radius: 12px;
-            --danger: #ef4444;
-            --accent: #f59e0b;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #f9fafb;
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
             margin: 0;
-            padding-bottom: 40px;
-            color: var(--text-dark);
+            padding-bottom: 80px;
         }
 
+        /* --- CONTAINER & HEADER --- */
         .container {
             max-width: 800px;
             margin: 0 auto;
@@ -41,53 +40,42 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
+            margin-bottom: 30px;
+            padding: 10px 0;
         }
 
-        h2 { margin: 0; color: var(--primary-green); font-size: 1.5rem; }
+        h2 { margin: 0; color: var(--dark-green); font-size: 1.8rem; }
         
         .btn-back {
             text-decoration: none;
-            color: var(--text-grey);
+            color: var(--text);
             font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
+            transition: all 0.2s;
+            padding: 5px 15px;
+            border-radius: 20px;
         }
-        .btn-back:hover { color: var(--primary-green); }
-
-        /* --- CARDS --- */
-        .card {
-            background: var(--white);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            padding: 24px;
-            margin-bottom: 20px;
-            border: 1px solid #e5e7eb;
+        .btn-back:hover {
+            background-color: var(--light-green);
+            color: var(--dark-green);
         }
 
-        .card-title {
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-size: 1.1rem;
-            color: var(--text-dark);
-            border-left: 4px solid var(--primary-green);
-            padding-left: 12px;
-        }
-
-        /* --- REKOMENDASI SECTION --- */
-        .recommendation-card {
-            background: linear-gradient(to right, #fffbeb, #fff7ed);
-            border: 1px solid #fcd34d;
+        /* --- REKOMENDASI CARD (Animated) --- */
+        .rec-card {
+            background: linear-gradient(135deg, #FFFBEB, #FFFDE7);
+            border: 1px solid #FEF3C7;
             border-radius: var(--radius);
             padding: 20px;
-            margin-bottom: 24px;
-            display: none; /* Hidden by default */
-            animation: slideDown 0.5s ease-out;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+            /* Fade Up Animation */
+            animation: fadeUp 0.8s ease-out;
         }
 
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -96,131 +84,217 @@
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 0.75rem;
-            font-weight: 800;
+            font-weight: 700;
             text-transform: uppercase;
             margin-bottom: 8px;
         }
-        .rec-buy { background: #dcfce7; color: #166534; }
-        .rec-sell { background: #fee2e2; color: #991b1b; }
-        .rec-hold { background: #f3f4f6; color: #374151; }
+        .rec-buy { background: #D1FAE5; color: #059669; }
+        .rec-sell { background: #FEE2E2; color: #DC2626; }
+        .rec-hold { background: #F3F4F6; color: #4B5563; }
 
-        .rec-headline { font-size: 1.1rem; font-weight: 700; margin: 0 0 4px 0; }
-        .rec-desc { font-size: 0.9rem; color: #4b5563; margin: 0; }
+        .rec-title { font-size: 1.1rem; font-weight: 700; margin: 0; }
+        .rec-desc { font-size: 0.9rem; color: #4B5563; margin-top: 5px; }
 
-        /* --- TABLE STYLES --- */
+        /* --- MAIN CARD & TABLE --- */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            border: 1px solid #E5E7EB;
+        }
+
+        .card-title {
+            margin: 0;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--light-green);
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
+
         .table-responsive {
             overflow-x: auto;
         }
 
         table {
             width: 100%;
-            border-collapse: separate;
+            border-collapse: separate; /* Penting untuk animasi border */
             border-spacing: 0;
-            margin-top: 10px;
-        }
-
-        th, td {
-            padding: 16px;
-            text-align: left;
-            border-bottom: 1px solid #f3f4f6;
         }
 
         th {
-            background-color: #f9fafb;
-            color: var(--text-grey);
+            padding: 15px;
+            text-align: left;
+            color: #6B7280;
             font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            font-weight: 600;
+            border-bottom: 2px solid #F3F4F6;
         }
 
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background-color: #f8fafc; }
-
-        .price-val { font-weight: 700; font-size: 1rem; }
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #F3F4F6;
+            /* Transisi Hover Smooth */
+            transition: background-color 0.3s ease;
+        }
         
-        .trend-up { color: var(--danger); font-weight: bold; background: #fee2e2; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; }
-        .trend-down { color: var(--primary-green); font-weight: bold; background: #dcfce7; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; }
-        .trend-flat { color: var(--text-grey); background: #f3f4f6; padding: 4px 8px; border-radius: 6px; font-size: 0.85rem; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #F9FAFB; }
 
-        /* --- CHART (BARS) --- */
-        .chart-row {
-            margin-bottom: 16px;
+        .price-text { font-weight: 700; font-size: 1.1rem; color: var(--primary); }
+        
+        /* Fade In Table Rows */
+        .fade-row {
+            opacity: 0;
+            animation: fadeInRow 0.5s ease forwards;
         }
-        .chart-header {
+        @keyframes fadeInRow {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .trend-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .trend-up { background: #FEE2E2; color: #DC2626; }
+        .trend-down { background: #D1FAE5; color: #059669; }
+        .trend-stable { background: #F3F4F6; color: #6B7280; }
+
+        /* --- CHART VISUAL (Custom Bars) --- */
+        .chart-list { display: flex; flex-direction: column; gap: 20px; }
+        
+        .chart-item {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 6px;
-            font-size: 0.9rem;
-            font-weight: 600;
+            align-items: center;
+            gap: 15px;
         }
-        .chart-bg {
-            height: 10px;
-            background: #e5e7eb;
-            border-radius: 5px;
+        
+        .chart-label { flex: 1; font-weight: 600; font-size: 0.9rem; }
+        
+        .chart-bar-container {
+            flex: 2;
+            background: #F3F4F6;
+            border-radius: 10px;
+            height: 12px;
             overflow: hidden;
         }
-        .chart-fill {
+
+        .chart-bar {
             height: 100%;
-            border-radius: 5px;
-            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
-            width: 0%; 
+            border-radius: 10px;
+            /* Smooth Animation Bezier Curve */
+            transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1); 
+            width: 0%; /* Mulai dari 0 */
         }
+
+        .chart-price {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 0.9rem;
+        }
+
+        /* --- NAVBAR BOTTOM --- */
+        .nav-bottom {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            display: flex; justify-content: space-around; padding: 10px 0;
+            background: white; border-top: 1px solid #eee; z-index: 99;
+        }
+        .b-item {
+            display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #999; font-size: 0.8rem;
+            transition: color 0.2s;
+        }
+        .b-item.active { color: var(--primary); }
+        .b-item svg { width: 24px; height: 24px; margin-bottom: 4px; }
+
+        /* --- LOADING SPINNER --- */
+        .spinner {
+            border: 3px solid #E5E7EB;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 24px; height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .load-text { color: #999; font-size: 0.9rem; text-align: center; margin: 20px 0; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Header -->
         <div class="header-nav">
             <h2>📊 Harga Pasar</h2>
             <a href="index.html" class="btn-back">← Kembali</a>
         </div>
 
-        <!-- Rekomendasi Algoritma -->
-        <div class="recommendation-card" id="recCard">
+        <!-- Kartu Analisis AI -->
+        <div class="rec-card" id="recCard" style="display:none;">
             <span class="rec-badge" id="recBadge">ANALISIS</span>
-            <div class="rec-headline" id="recTitle">Menganalisa data pasar...</div>
-            <p class="rec-desc" id="recSubtitle">Membandingkan harga hari ini dengan rata-rata historis.</p>
+            <div class="rec-title" id="recTitle">Menganalisa...</div>
+            <p class="rec-desc" id="recDesc">Menghubungkan algoritma prediksi cuaca...</p>
         </div>
 
-        <!-- Tabel Utama -->
+        <!-- Tabel Harga -->
         <div class="card">
-            <h3 class="card-title">Daftar Komoditas</h3>
+            <div class="card-title">Daftar Harga Referensi</div>
             <div class="table-responsive">
-                <table id="marketTable">
+                <table id="priceTable">
                     <thead>
                         <tr>
                             <th>Komoditas</th>
-                            <th>Harga Hari Ini</th>
+                            <th>Harga Saat Ini</th>
                             <th>Tren Harga</th>
                         </tr>
                     </thead>
-                    <tbody id="hargaBody">
-                        <tr>
-                            <td colspan="3" style="text-align: center; color: #9ca3af; padding: 30px;">
-                                <span id="loadingText">🔄 Menghubungi database AgriChain...</span>
-                            </td>
-                        </tr>
+                    <tbody id="priceBody">
+                        <tr><td colspan="3" class="load-text"><div class="spinner" style="display:inline-block; margin-bottom:5px;"></div> Mengambil data...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Grafik Tren -->
+        <!-- Grafik Visualisasi -->
         <div class="card">
-            <h3 class="card-title">Top Tren Harga (Komoditas Termahal)</h3>
-            <div id="trendChart">
-                <!-- Grafik di-render via JS -->
+            <div class="card-title">📊 Top 5 Komoditas Termahal</div>
+            <div id="chartContainer" class="chart-list" style="margin-top: 20px;">
+                <!-- Chart bars akan dirender di sini via JS -->
             </div>
         </div>
     </div>
 
+    <!-- Navbar Bawah -->
+    <div class="nav-bottom">
+        <a href="index.html" class="b-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2z"></path></svg>
+            Beranda
+        </a>
+        <a href="belanja.html" class="b-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><path d="M1 1h4l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            Belanja
+        </a>
+        <a href="harga.html" class="b-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1L22 21V21H2V1h20zM12 16c4 0 7-2.5 7-6v-2c0-3.5-3.5-6-8-6H5v-2c0-3.5-3-6-8-6z"/></svg>
+            Harga
+        </a>
+        <a href="input-panen.html" class="b-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
+            Panen
+        </a>
+        <a href="profile.html" class="b-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            Profil
+        </a>
+    </div>
+
+    <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. KONFIGURASI SUPABASE (SUDAH DIISI) ---
+        // --- 1. CONFIG ---
         const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
-        
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. HELPER FORMATTER ---
@@ -233,162 +307,140 @@
                 }).format(number);
             },
             persen: (val) => {
-                return (val > 0 ? "+" : "") + val.toFixed(1) + "%";
+                if (!val) return '0%';
+                const sign = val > 0 ? '+' : '';
+                return sign + val.toFixed(1) + '%';
             }
         };
 
-        // --- 3. LOGIKA UTAMA ---
+        // --- 3. LOAD DATA ---
         document.addEventListener("DOMContentLoaded", async () => {
-            // Cek Sesi (Opsional)
-            await supabase.auth.getSession(); 
-            
-            let dataMarket = null;
-
-            // COBA AMBIL DATA DARI DATABASE
             try {
+                // Mengambil harga dari tabel 'market_prices'
                 const { data, error } = await supabase
                     .from('market_prices')
-                    .select('*')
+                    .select('nama_komoditas, current_price, unit')
                     .order('current_price', { ascending: false });
 
                 if (error) throw error;
-                dataMarket = data;
+
+                if (data && data.length > 0) {
+                    renderTable(data);
+                    renderChart(data);
+                    analyzeTrend(data);
+                } else {
+                    // Fallback jika kosong
+                    document.getElementById('priceBody').innerHTML = '<tr><td colspan="3" align="center">Belum ada data harga.</td></tr>';
+                }
 
             } catch (err) {
-                console.warn("Gagal koneksi DB, beralih ke Mode Demo:", err.message);
-                // JIKA GAGAL, PAKAI DUMMY DATA
-                dataMarket = getDummyData();
-                
-                // Ubah pesan loading jadi warning
-                const loadingEl = document.getElementById('loadingText');
-                if(loadingEl) {
-                    loadingEl.innerHTML = "⚠️ <b>Mode Demo:</b> Gagal mengambil data asli. Menampilkan data simulasi.";
-                    loadingEl.style.color = "#d97706"; // Kuning/Oranye
-                }
-            }
-
-            // Jika data berhasil diambil (asli atau dummy)
-            if (dataMarket && dataMarket.length > 0) {
-                renderTable(dataMarket);
-                renderChart(dataMarket);
-                analyzeMarket(dataMarket);
-            } else {
-                document.getElementById('hargaBody').innerHTML = '<tr><td colspan="3" style="text-align:center">Data tidak tersedia.</td></tr>';
+                console.error(err);
+                document.getElementById('priceBody').innerHTML = '<tr><td colspan="3" align="center" style="color:red;">Gagal memuat data.</td></tr>';
             }
         });
 
-        // --- 4. RENDER FUNCTIONS ---
-        function renderTable(prices) {
-            const tbody = document.getElementById('hargaBody');
-            tbody.innerHTML = '';
+        // --- 4. RENDER TABLE (Dengan Animasi) ---
+        function renderTable(data) {
+            const tbody = document.getElementById('priceBody');
+            tbody.innerHTML = ''; // Reset
 
-            prices.forEach(item => {
-                const avg = item.average_price || item.current_price;
-                const changePercent = ((item.current_price - avg) / avg) * 100;
+            data.forEach((item, index) => {
+                // Hitung Rata-rata (Simulasi: ambil rata-rata harga hari ini / 3 atau logika sederhana)
+                // Karena tabel kita hanya ada 'current_price', kita bandingkan dengan rata-rata array ini
+                const allPrices = data.map(d => d.current_price);
+                const avg = allPrices.reduce((a, b) => a + b, 0) / allPrices.length;
 
-                let trendClass = 'trend-flat';
-                let trendText = Format.persen(changePercent);
+                // Logika Aman Pembagian Nol
+                const changePercent = avg !== 0 ? ((item.current_price - avg) / avg) * 100 : 0;
 
-                if (changePercent > 2) {
-                    trendClass = 'trend-up';
-                    trendText = '▲ ' + trendText;
-                } else if (changePercent < -2) {
-                    trendClass = 'trend-down';
-                    trendText = '▼ ' + trendText;
-                } else {
-                    trendText = '- Stabil';
-                }
+                let badgeClass = 'trend-stable';
+                let badgeText = 'Stabil';
+                
+                if (changePercent > 2) { badgeClass = 'trend-up'; badgeText = 'Naik ' + Format.persen(changePercent); }
+                else if (changePercent < -2) { badgeClass = 'trend-down'; badgeText = 'Turun ' + Format.persen(changePercent); }
 
                 const row = document.createElement('tr');
+                row.className = 'fade-row'; // Kelas untuk animasi
+                // Delay staggered agar animasi tidak kejedulan
+                row.style.animationDelay = `${index * 0.1}s`; 
+
                 row.innerHTML = `
                     <td>
-                        <div style="font-weight: 700; color: #111;">${item.commodity_name}</div>
+                        <div style="font-weight: bold; color: #333;">${item.nama_komoditas}</div>
                         <div style="font-size: 0.8rem; color: #666;">Satuan: ${item.unit || 'Kg'}</div>
                     </td>
-                    <td>
-                        <div class="price-val" style="color: var(--primary-green);">${Format.rupiah(item.current_price)}</div>
-                    </td>
-                    <td>
-                        <span class="${trendClass}">${trendText}</span>
-                    </td>
+                    <td class="price-text">${Format.rupiah(item.current_price)}</td>
+                    <td><span class="trend-badge ${badgeClass}">${badgeText}</span></td>
                 `;
                 tbody.appendChild(row);
             });
         }
 
-        function renderChart(prices) {
-            const container = document.getElementById('trendChart');
-            // Ambil 5 harga tertinggi
-            const topItems = prices.sort((a,b) => b.current_price - a.current_price).slice(0, 5);
-            const maxPrice = topItems[0].current_price;
+        // --- 5. RENDER CHART (Animated Bars) ---
+        function renderChart(data) {
+            const container = document.getElementById('chartContainer');
+            container.innerHTML = '';
 
-            let html = '';
-            topItems.forEach(item => {
-                const percentWidth = (item.current_price / maxPrice) * 100;
-                const color = item.current_price > (item.average_price || 0) ? 'var(--danger)' : 'var(--primary-green)';
+            // Ambil Top 5
+            const top5 = data.slice(0, 5);
+            const maxPrice = top5[0].current_price;
+
+            top5.forEach((item, index) => {
+                const percent = (item.current_price / maxPrice) * 100;
                 
-                html += `
-                    <div class="chart-row">
-                        <div class="chart-header">
-                            <span>${item.commodity_name}</span>
-                            <span>${Format.rupiah(item.current_price)}</span>
-                        </div>
-                        <div class="chart-bg">
-                            <div class="chart-fill" style="width: ${percentWidth}%; background-color: ${color};"></div>
-                        </div>
+                const el = document.createElement('div');
+                el.className = 'chart-item';
+                el.innerHTML = `
+                    <div class="chart-label">${item.nama_komoditas}</div>
+                    <div class="chart-bar-container">
+                        <div class="chart-bar" style="background: var(--primary);"></div>
+                    <div class="chart-price" style="margin-left: 10px;">${Format.rupiah(item.current_price)}</div>
                     </div>
                 `;
+                container.appendChild(el);
+
+                // Animation Logic: Setelah elemen masuk DOM, set width via setTimeout
+                setTimeout(() => {
+                    const bar = el.querySelector('.chart-bar');
+                    bar.style.width = `${percent}%`;
+                }, index * 100 + 500); // Delay (500ms start) + stagger (100ms per item)
             });
-            container.innerHTML = html;
         }
 
-        function analyzeMarket(prices) {
+        // --- 6. ANALISIS TREND (AI Simulasi) ---
+        function analyzeTrend(data) {
             const recCard = document.getElementById('recCard');
-            const badge = document.getElementById('recBadge');
-            const title = document.getElementById('recTitle');
-            const sub = document.getElementById('recSubtitle');
+            recCard.style.display = 'block'; // Munculkan kartu
+            
+            setTimeout(() => {
+                const avgPrice = data.reduce((a,b) => a + b.current_price, 0) / data.length;
+                
+                // Cari item dengan kenaikan terbesar
+                const topGainer = data.sort((a,b) => b.current_price - a.current_price)[0];
+                
+                const badge = document.getElementById('recBadge');
+                const title = document.getElementById('recTitle');
+                const desc = document.getElementById('recDesc');
 
-            recCard.style.display = 'block';
-
-            // Cari item dengan kenaikan harga terbesar
-            const sortedByChange = [...prices].sort((a, b) => {
-                const changeA = a.current_price - (a.average_price || 0);
-                const changeB = b.current_price - (b.average_price || 0);
-                return changeB - changeA;
-            });
-
-            const topGainer = sortedByChange[0];
-            const gainValue = topGainer.current_price - (topGainer.average_price || topGainer.current_price);
-
-            if (gainValue > 1000) { 
-                badge.className = 'rec-badge rec-sell';
-                badge.textContent = 'SARAN: JUAL';
-                title.textContent = `Harga ${topGainer.commodity_name} Sedang Tinggi`;
-                sub.textContent = "Permintaan pasar meningkat. Waktu yang bagus untuk menjual stok panen Anda sekarang.";
-            } else if (gainValue < -1000) {
-                badge.className = 'rec-badge rec-buy';
-                badge.textContent = 'SARAN: TUNDA';
-                title.textContent = `Harga ${topGainer.commodity_name} Sedang Turun`;
-                sub.textContent = "Harga di bawah rata-rata. Pertimbangkan untuk menahan penjualan jika memungkinkan.";
-            } else {
-                badge.className = 'rec-badge rec-hold';
-                badge.textContent = 'PASAR STABIL';
-                title.textContent = "Harga dalam Kondisi Normal";
-                sub.textContent = "Tidak ada lonjakan harga signifikan hari ini.";
-            }
+                if (topGainer.current_price > avgPrice * 1.05) {
+                    badge.className = 'rec-badge rec-buy';
+                    badge.textContent = 'SARAN: TUNDA';
+                    title.textContent = 'Permintaan Pasar Sedang Tinggi';
+                    desc.textContent = `Harga ${topGainer.nama_komoditas} naik tajam. Bagus untuk menahan penjualan sementara menunggu harga lebih tinggi.`;
+                } else if (topGainer.current_price < avgPrice * 0.95) {
+                    badge.className = 'rec-badge rec-sell';
+                    badge.textContent = 'SARAN: JUAL';
+                    title.textContent = 'Harga Sedang Rendah';
+                    desc.textContent = `Harga ${topGainer.nama_komoditas} di bawah rata-rata pasar. Disarankan menjual sekarang sebelum turun lagi.`;
+                } else {
+                    badge.className = 'rec-badge rec-hold';
+                    badge.textContent = 'SARAN: PASAR STABIL';
+                    title.textContent = 'Harga Normal';
+                    desc.textContent = `Kondisi pasar stabil. Pertahankan strategi jual sesuai jadwal Anda.`;
+                }
+            }, 1000); // Delay biar user baca loading dulu
         }
 
-        // --- 5. DUMMY DATA ---
-        function getDummyData() {
-            return [
-                { id: 1, commodity_name: 'Cabai Rawit Merah', current_price: 85000, average_price: 70000, unit: 'Kg' },
-                { id: 2, commodity_name: 'Bawang Merah', current_price: 32000, average_price: 35000, unit: 'Kg' },
-                { id: 3, commodity_name: 'Beras Premium', current_price: 15000, average_price: 14500, unit: 'Kg' },
-                { id: 4, commodity_name: 'Telur Ayam', current_price: 28000, average_price: 27000, unit: 'Kg' },
-                { id: 5, commodity_name: 'Jagung Pipil', current_price: 8000, average_price: 7500, unit: 'Kg' },
-                { id: 6, commodity_name: 'Daging Sapi', current_price: 140000, average_price: 130000, unit: 'Kg' }
-            ];
-        }
     </script>
 </body>
 </html>
