@@ -222,12 +222,12 @@
                 <input type="text" id="fullname" class="form-input" placeholder="Contoh: Budi Santoso" required>
             </div>
 
-            <!-- 3. Nomor HP (Login Key) -->
+            <!-- 3. EMAIL LOGIN KEY (PENTING: DIUBAH DARI HP) -->
             <div class="form-group">
-                <label for="phone">Nomor HP (WhatsApp)</label>
-                <input type="tel" id="phone" class="form-input" placeholder="08xxxxxxxxxx" required>
+                <label for="email">Alamat Email</label>
+                <input type="email" id="email" class="form-input" placeholder="contoh@email.com" required>
                 <div class="info-box">
-                    ℹ️ Nomor HP ini akan digunakan untuk Login Anda. Tidak perlu email.
+                    ℹ️ Alamat Email ini akan digunakan untuk Login Anda.
                 </div>
             </div>
 
@@ -268,7 +268,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT UTAMA (LOGIKA REGISTER + SUPABASE) -->
+    <!-- SCRIPT UTAMA (LOGIKA REGISTER + SUPABASE - EMAIL ONLY) -->
     <script>
         // --- KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
@@ -279,7 +279,7 @@
         // --- DOM ELEMENTS ---
         const form = document.getElementById('registerForm');
         const roleSelect = document.getElementById('role');
-        const phoneInput = document.getElementById('phone');
+        const emailInput = document.getElementById('email'); // Mengambil ID email
         const btnSubmit = document.getElementById('btnSubmit');
         const spinner = document.getElementById('spinner');
         const btnText = document.getElementById('btnText');
@@ -323,7 +323,7 @@
         // --- EVENT LISTENER SAAT LOAD ---
         document.addEventListener("DOMContentLoaded", () => {
             roleSelect.value = "PETANI";
-            phoneInput.value = ""; 
+            emailInput.value = ""; 
         });
 
         // --- LOGIKA SUBMIT FORM ---
@@ -331,7 +331,7 @@
             e.preventDefault();
 
             const fullname = document.getElementById('fullname').value;
-            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value; // Mengambil value email
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const role = document.getElementById('role').value;
@@ -352,18 +352,17 @@
             btnText.textContent = 'MENDAFTARKAN...';
 
             try {
-                // Trik: Nomor HP diubah menjadi format email dummy untuk Supabase Auth
-                const emailForSupabase = phone + "@agrichain.com";
-                console.log("Mencoba mendaftarkan:", emailForSupabase);
+                // EMAIL ONLY: LANGSUNG PAKAI EMAIL TANPA KONVERSI
+                console.log("Mencoba mendaftarkan:", email);
 
                 // LANGKAH 1: Buat Akun Autentikasi Supabase
                 const { data: authData, error: authError } = await supabase.auth.signUp({
-                    email: emailForSupabase,
+                    email: email, // Langsung pakai email
                     password: password,
                     options: {
                         data: {
                             full_name: fullname,
-                            phone_number: phone,
+                            phone_number: '-', // Diset kosong/dash karena tidak input HP
                             role: role
                         }
                     }
@@ -384,7 +383,7 @@
                             { 
                                 id: authData.user.id,    
                                 full_name: fullname,
-                                phone: phone,
+                                phone: '-', // Kolom phone diisi tanda strip karena tidak pakai HP
                                 role: role,
                                 desa: "-",              
                                 luas_lahan: 0
@@ -407,7 +406,7 @@
                 let failDesc = err.message || 'Terjadi kesalahan tak terduga pada sistem.';
 
                 if (failDesc.includes('already registered')) {
-                    failDesc = 'Nomor HP ' + phone + ' sudah terdaftar. Silakan Login langsung.';
+                    failDesc = 'Email ' + email + ' sudah terdaftar. Silakan Login langsung.';
                 } else if (failDesc.includes('Database error')) {
                     failDesc = 'Gagal menyimpan data ke database. Pastikan tabel "profiles" sudah dibuat.';
                 }
