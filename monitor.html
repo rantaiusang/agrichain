@@ -7,49 +7,147 @@
     <!-- Library Chart.js (Grafik) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #2E7D32; --bg: #F1F8E9; }
-        body { font-family: sans-serif; background: var(--bg); padding: 20px; }
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .tab { padding: 10px 20px; background: #ddd; border-radius: 20px; cursor: pointer; font-weight: bold; }
-        .tab.active { background: var(--primary); color: white; }
+        :root { 
+            --primary: #2E7D32; 
+            --bg: #F1F8E9; 
+            --text-color: #333;
+            --card-bg: #ffffff;
+        }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: var(--bg); 
+            padding: 20px; 
+            margin: 0;
+            color: var(--text-color);
+        }
+        .dashboard-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 20px; 
+        }
+        .card { 
+            background: var(--card-bg); 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); 
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        h3 { 
+            margin-top: 0; 
+            color: var(--primary); 
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        .tabs { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 20px; 
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .tab { 
+            padding: 10px 25px; 
+            background: #e0e0e0; 
+            border-radius: 25px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: all 0.3s ease;
+            border: none;
+            color: #555;
+        }
+        .tab:hover { background: #d0d0d0; }
+        .tab.active { 
+            background: var(--primary); 
+            color: white; 
+            box-shadow: 0 4px 6px rgba(46, 125, 50, 0.3);
+        }
         .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease-in-out; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Utility styles for list */
+        ul { list-style: none; padding: 0; }
+        li { padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        li:last-child { border-bottom: none; }
+        
+        .btn-action {
+            padding: 8px 16px; 
+            background: var(--primary); 
+            color: white; 
+            border:none; 
+            border-radius: 6px; 
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .btn-action:hover { background: #1b5e20; }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: bold;
+            padding: 10px 20px;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .back-link:hover {
+            background: var(--primary);
+            color: white;
+        }
     </style>
 </head>
 <body>
 
     <!-- Header -->
-    <h1 style="color: var(--primary-green); text-align: center;">MONITORING</h1>
+    <header style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: var(--primary); margin: 0; font-size: 2rem;">DASHBOARD MONITORING</h1>
+        <p style="color: #666;">Sistem Informasi AgriChain</p>
+    </header>
 
     <!-- Nav Menu -->
-    <div class="tabs">
-        <div class="tab active" onclick="openTab(event, 'tabMarket')">📊 Pasar</div>
-        <div class="tab" onclick="openTab(event, 'tabAnalisa')">📉 Analisa Konsumsi</div>
-        <div class="tab" onclick="openTab(event, 'tabSmartFarm')">🌾 Smart Farm</div>
-    </div>
+    <nav class="tabs">
+        <button class="tab active" onclick="openTab(event, 'tabMarket')">📊 Pasar</button>
+        <button class="tab" onclick="openTab(event, 'tabAnalisa')">📉 Analisa Konsumsi</button>
+        <button class="tab" onclick="openTab(event, 'tabSmartFarm')">🌾 Smart Farm</button>
+    </nav>
 
     <!-- TAB 1: MARKET (GRAFIK HARGA) -->
     <div id="tabMarket" class="tab-content active">
         <div class="dashboard-grid">
+            <!-- GRAFIK 1: DIUBAH JADI PIE CHART -->
             <div class="card">
-                <h3>Tren Harga Padi (1 Minggu)</h3>
-                <canvas id="chartHargaPadi"></canvas>
+                <h3>Kontribusi Harga Harian (Pie)</h3>
+                <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">Persentase harga harian terhadap total akumulasi minggu ini.</p>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="chartHargaPadi"></canvas>
+                </div>
             </div>
+            
+            <!-- GRAFIK 2: BAR CHART (Tetap) -->
             <div class="card">
-                <h3>Perbandingan Harga (Padi vs Jagung)</h3>
-                <canvas id="chartKomoditas"></canvas>
+                <h3>Perbandingan Harga Komoditas</h3>
+                <div style="height: 250px; position: relative;">
+                    <canvas id="chartKomoditas"></canvas>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- TAB 2: ANALISA KONSUMSI (BAR CHART) -->
     <div id="tabAnalisa" class="tab-content">
-        <div class="card">
+        <div class="card" style="max-width: 800px; margin: 0 auto;">
             <h3>Analisa Penggunaan Pupuk (Bulan Ini)</h3>
-            <canvas id="chartKonsumsi"></canvas>
+            <div style="height: 300px; position: relative;">
+                <canvas id="chartKonsumsi"></canvas>
+            </div>
         </div>
     </div>
 
@@ -58,25 +156,35 @@
         <div class="dashboard-grid">
             <div class="card">
                 <h3>📈 Log Serangan Hama</h3>
-                <ul style="list-style: none; padding: 0;">
-                    <li style="padding: 10px; border-bottom: 1px solid #eee;">🐛 1 Feb: Ulat Grayak (Serius) - <a href="#" style="color:red;">[Detail]</a></li>
-                    <li style="padding: 10px; border-bottom: 1px solid #eee;">🐛 3 Jan: Kutu Daun (Ringan)</li>
-                    <li style="padding: 10px; border-bottom: 1px solid #eee;">🐛 5 Jan: Kutu Daun (Ringan)</li>
+                <ul>
+                    <li>
+                        <span>🐛 <strong>1 Feb:</strong> Ulat Grayak</span>
+                        <span style="color: red; font-weight: bold; background: #ffebee; padding: 2px 8px; border-radius: 4px;">Serius</span>
+                    </li>
+                    <li>
+                        <span>🐛 <strong>3 Jan:</strong> Kutu Daun</span>
+                        <span style="color: orange; font-weight: bold; background: #fff3e0; padding: 2px 8px; border-radius: 4px;">Ringan</span>
+                    </li>
+                    <li>
+                        <span>🐛 <strong>5 Jan:</strong> Kutu Daun</span>
+                        <span style="color: orange; font-weight: bold; background: #fff3e0; padding: 2px 8px; border-radius: 4px;">Ringan</span>
+                    </li>
                 </ul>
             </div>
             <div class="card">
-                <h3>💧 Jadwal Siram Otomatis</h3>
-                <div style="background: #E8F5E9; padding: 15px; border-radius: 8px;">
-                    <p><strong>Status Cuaca:</strong> Panas Terik (32°C)</p>
-                    <p><strong>Saran:</strong> Siram sore hari ini (16:00).</p>
-                    <button style="padding: 8px 16px; background: #2E7D32; color: white; border:none; border-radius: 5px; cursor: pointer;">Atur Otomatis</button>
+                <h3>💧 Jadwal Irigasi Cerdas</h3>
+                <div style="background: #E8F5E9; padding: 20px; border-radius: 10px; text-align: center; border: 1px dashed var(--primary);">
+                    <div style="font-size: 2.5rem;">☀️</div>
+                    <p style="margin: 10px 0;"><strong>Status Cuaca:</strong> Panas Terik (32°C)</p>
+                    <p style="margin-bottom: 20px;"><strong>Saran:</strong> Siram sore hari ini (16:00).</p>
+                    <button class="btn-action" onclick="alert('Jadwal otomatis diatur!')">Atur Otomatis</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div style="margin-top: 20px; text-align: center;">
-        <a href="index.html" style="color: var(--primary-green); font-weight: bold;">← Kembali ke Beranda</a>
+    <div style="text-align: center;">
+        <a href="index.html" class="back-link">← Kembali ke Beranda</a>
     </div>
 
     <script>
@@ -93,24 +201,49 @@
                 tabs[i].className = tabs[i].className.replace(" active", "");
             }
             document.getElementById(tabName).style.display = "block";
+            // Sedikit delay agar animasi CSS berjalan
+            setTimeout(() => {
+                document.getElementById(tabName).classList.add("active");
+            }, 10);
             evt.currentTarget.className += " active";
         }
 
-        // --- B. CHART: TREN HARGA PADI (Line Chart) ---
+        // --- B. CHART: KONTRIBUSI HARGA (PIE CHART) ---
+        // Perubahan: Type diubah dari 'line' menjadi 'pie'
         const ctxPadi = document.getElementById('chartHargaPadi');
         new Chart(ctxPadi, {
-            type: 'line',
+            type: 'pie', // <--- DIUBAH DI SINI
             data: {
-                labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
+                labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
                 datasets: [{
-                    label: 'Harga Padi (Rp/Kg)',
+                    label: 'Harga Padi (Rp)',
                     data: [6200, 6300, 6250, 6400, 6500, 6350, 6400],
-                    borderColor: '#2E7D32',
-                    backgroundColor: 'rgba(46, 125, 50, 0.2)',
-                    tension: 0.4
+                    backgroundColor: [
+                        '#2E7D32', // Hijau Utama
+                        '#43A047', // Hijau Muda
+                        '#66BB6A', 
+                        '#81C784', 
+                        '#A5D6A7', 
+                        '#C8E6C9', 
+                        '#E8F5E9'  // Hampir putih
+                    ],
+                    borderColor: '#ffffff',
+                    borderWidth: 2
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 12,
+                            padding: 10
+                        }
+                    }
+                }
+            }
         });
 
         // --- C. CHART: KOMODITAS (Bar Chart) ---
@@ -123,31 +256,47 @@
                     label: 'Rata-rata Harga (Rp/Kg)',
                     data: [6400, 4100, 55000, 18000],
                     backgroundColor: [
-                        'rgba(46, 125, 50, 0.7)',
-                        'rgba(255, 193, 7, 0.7)',
-                        'rgba(139, 69, 19, 0.7)',
-                        'rgba(205, 92, 92, 0.7)'
-                    ]
+                        'rgba(46, 125, 50, 0.8)',
+                        'rgba(255, 193, 7, 0.8)',
+                        'rgba(139, 69, 19, 0.8)',
+                        'rgba(205, 92, 92, 0.8)'
+                    ],
+                    borderRadius: 5
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true }
+                }
+            }
         });
 
-        // --- D. CHART: KONSUMSI PUPUK (Bar Chart) ---
+        // --- D. CHART: KONSUMSI PUPUK (Bar Chart Horizontal) ---
         const ctxKonsumsi = document.getElementById('chartKonsumsi');
         new Chart(ctxKonsumsi, {
-            type: 'bar',
+            type: 'bar', // Anda bisa ubah ini jadi 'doughnut' jika ingin lingkaran lubang tengah
             data: {
-                labels: ['Urea', 'NPK', 'Organik'],
+                labels: ['Pupuk Urea', 'Pupuk NPK', 'Pupuk Organik'],
                 datasets: [{
                     label: 'Penggunaan (Kg)',
                     data: [500, 300, 100],
-                    backgroundColor: '#FFC107'
+                    backgroundColor: [
+                        '#FFC107', 
+                        '#FF9800', 
+                        '#4CAF50'
+                    ],
+                    borderRadius: 5
                 }]
             },
             options: {
-                scales: { y: { beginAtZero: true } },
-                responsive: true, maintainAspectRatio: false
+                indexAxis: 'y', // Membuat bar chart jadi horizontal (biar lebih variatif)
+                scales: { 
+                    x: { beginAtZero: true } 
+                },
+                responsive: true, 
+                maintainAspectRatio: false
             }
         });
     </script>
