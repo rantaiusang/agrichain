@@ -154,7 +154,6 @@
         #wallet-btn.connected { background-color: #E8F5E9; border-color: #2E7D32; color: #2E7D32; cursor: default; }
         #wallet-btn.connected svg { stroke: #2E7D32; }
 
-        /* --- EXTRA LINKS --- */
         .extra-links {
             margin-top: 1.5rem;
             display: flex;
@@ -203,8 +202,9 @@
 
         <form id="loginForm">
             <div class="form-group">
-                <label for="phone">Nomor HP</label>
-                <input type="tel" id="phone" class="form-input" placeholder="Contoh: 08123456789" required>
+                <!-- Label diubah jadi Email/HP agar fleksibel -->
+                <label for="identifier">Nomor HP</label>
+                <input type="text" id="identifier" class="form-input" placeholder="Contoh: 08..." required>
             </div>
             
             <div class="form-group">
@@ -219,7 +219,7 @@
             <div id="errorMsg" class="error-msg"></div>
         </form>
 
-        <!-- DOMPET -->
+        <!-- DOMPET (Opsi) -->
         <div class="wallet-section">
             <div class="wallet-status-title">
                 <div class="wallet-status-dot" id="walletDot"></div>
@@ -236,56 +236,47 @@
             <a href="register.html" class="register-link">Daftar Akun</a>
         </div>
 
-        <!-- TOMBOL KEMBALI KE HOME -->
         <a href="index.html" class="link-home">← Kembali ke Beranda</a>
     </div>
 
-    <!-- SCRIPT UTAMA (LOGIKA LOGIN & REDIRECT) -->
+    <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        // SAMAKAN DENGAN FILE REGISTER & PROFILE
-        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; 
+        // --- 1. KONFIGURASI SUPABASE (SUDAH DIISI DENGAN MILIK ANDA) ---
+        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
+        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
 
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. DOM ELEMENTS ---
         const form = document.getElementById('loginForm');
-        const phoneInput = document.getElementById('phone');
+        const identifierInput = document.getElementById('identifier'); // Bisa HP atau Email
         const passInput = document.getElementById('password');
         const btnSubmit = document.getElementById('btnSubmit');
         const btnText = document.getElementById('btnText');
         const spinner = document.getElementById('spinner');
         const errorMsg = document.getElementById('errorMsg');
-
+        
+        // Wallet Elements
         const walletBtn = document.getElementById('wallet-btn');
         const walletDot = document.getElementById('walletDot');
         const walletStatusText = document.getElementById('walletStatusText');
-
-        // --- 3. LOGIKA WALLET CONNECT ---
         let userWalletAddress = null;
         let provider = null;
 
-        // Inisialisasi Provider
+        // --- 3. LOGIKA WALLET CONNECT ---
         if (typeof WalletConnectProvider !== 'undefined') {
             provider = new WalletConnectProvider.default({
                 rpc: {
                     137: "https://polygon-rpc.com",
                     80001: "https://rpc-mumbai.maticvigil.com"
                 },
-                // Menggunakan bridge default atau custom jika perlu
                 bridge: "https://bridge.walletconnect.org" 
             });
         }
 
         walletBtn.addEventListener('click', async function(e) {
             e.preventDefault();
-            if (!provider) {
-                alert("Library WalletConnect gagal dimuat.");
-                return;
-            }
-
-            // Jika sudah connect, jangan lakukan apa-apa
+            if (!provider) { alert("Library gagal dimuat."); return; }
             if (provider.connected) return;
 
             console.log("Menghubungkan wallet...");
@@ -293,50 +284,39 @@
             walletBtn.innerHTML = "Membuka Aplikasi...";
 
             try {
-                // Trigger QR Code atau Deep Link
                 await provider.enable();
-                
-                // Buat provider Ethers
                 const web3Provider = new ethers.providers.Web3Provider(provider);
-                const signer = web3Provider.getSigner();
-                const address = await signer.getAddress();
-                
-                console.log("✅ Dompet Terhubung:", address);
+                const address = await web3Provider.getSigner().getAddress();
                 userWalletAddress = address;
                 
-                // UI Update
                 const shortAddress = `${address.substring(0,6)}...${address.substring(address.length-4)}`;
                 walletBtn.innerHTML = `🔗 Terhubung (${shortAddress})`;
                 walletBtn.classList.add('connected');
-                
-                walletDot.style.backgroundColor = "#00C851"; // Hijau
-                walletStatusText.textContent = "Dompet Terhubung ke Jaringan Polygon";
+                walletDot.style.backgroundColor = "#00C851";
+                walletStatusText.textContent = "Dompet Terhubung";
                 walletStatusText.style.color = "#00C851";
 
             } catch (error) {
-                console.error("Koneksi Dibatalkan/Gagal:", error);
-                // Tampilkan pesan error yang lebih halus, jangan alert kasar
+                console.error("Wallet Error:", error);
                 walletBtn.innerHTML = "Coba Lagi";
-                setTimeout(() => {
-                    walletBtn.innerHTML = originalContent;
-                }, 2000);
+                setTimeout(() => { walletBtn.innerHTML = originalContent; }, 2000);
             }
         });
 
-        // --- 4. LOGIKA LOGIN FORM ---
+        // --- 4. LOGIKA LOGIN & REDIRECT ADMIN (DIPERBARUI) ---
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const phone = phoneInput.value.trim();
+            const identifier = identifierInput.value.trim();
             const password = passInput.value.trim();
 
-            if(!phone || !password) {
-                errorMsg.textContent = "Nomor HP dan Password wajib diisi!";
+            if(!identifier || !password) {
+                errorMsg.textContent = "Mohon lengkapi semua data!";
                 errorMsg.style.display = 'block';
                 return;
             }
 
-            // UI Loading
+            // Loading UI
             btnSubmit.classList.add('btn-loading');
             btnSubmit.disabled = true;
             btnText.textContent = 'MEMPROSES...';
@@ -344,12 +324,16 @@
             errorMsg.style.display = 'none';
 
             try {
-                // KUNCI LOGIN: Ubah HP menjadi format email yang sama dengan saat Register
-                const emailForSupabase = phone + "@agrichain.com";
+                // LOGIKA: Cek apakah input itu Email atau HP
+                let emailForSupabase = identifier;
+                if (!identifier.includes('@')) {
+                    // Jika tidak ada @, berarti input HP. Tambahkan domain palsu.
+                    emailForSupabase = identifier + "@agrichain.com";
+                }
 
                 console.log("Mencoba login dengan:", emailForSupabase);
 
-                // Panggil Supabase Auth
+                // 1. Login Supabase
                 const { data, error } = await supabase.auth.signInWithPassword({
                     email: emailForSupabase,
                     password: password,
@@ -357,45 +341,51 @@
 
                 if (error) throw error;
 
-                console.log("Login Sukses:", data.user);
+                console.log("✅ Login Sukses:", data.user.id);
 
-                // Ambil data profil tambahan (opsional, tapi bagus untuk disimpan di session)
-                // Jika kamu ingin menyimpan data role/nama di localStorage:
-                const { data: profile } = await supabase
+                // 2. AMBIL ROLE USER (PENTING UNTUK REDIRECT)
+                const { data: profile, error: profileError } = await supabase
                     .from('profiles')
-                    .select('*')
+                    .select('role, full_name')
                     .eq('id', data.user.id)
                     .single();
 
-                // Simpan Sesi (Supabase menyimpan session otomatis di cookie, 
-                // tapi kita simpan flag di localStorage untuk pengecekan sederhana)
-                localStorage.setItem('agrichain_token', 'access_token_exists'); // Flag sederhana
-                localStorage.setItem('agrichain_user_id', data.user.id);
-                
-                if (profile) {
-                    localStorage.setItem('agrichain_user_role', profile.role);
-                    localStorage.setItem('agrichain_user_name', profile.full_name);
+                if (profileError) {
+                    console.warn("Gagal ambil profile, asumsi user biasa.", profileError);
                 }
 
-                // Simpan Wallet jika connect
+                // Simpan data ke localStorage
+                localStorage.setItem('agrichain_user_id', data.user.id);
+                localStorage.setItem('agrichain_user_role', profile ? profile.role : 'USER');
+                localStorage.setItem('agrichain_user_name', profile ? profile.full_name : 'User');
+                
                 if (userWalletAddress) {
                     localStorage.setItem('user_wallet_address', userWalletAddress);
                 }
 
-                // Redirect
-                alert("Login Berhasil! Mengarahkan ke Beranda...");
-                setTimeout(() => {
-                    window.location.href = 'index.html';
-                }, 500);
+                // 3. REDIRECT OTOMATIS BERDASARKAN ROLE
+                if (profile && profile.role === 'ADMIN') {
+                    console.log("🔐 User adalah Admin. Redirect ke Dashboard...");
+                    alert("Selamat Datang, Admin! Mengarahkan ke Dashboard...");
+                    setTimeout(() => {
+                        window.location.href = 'dashboard-admin.html';
+                    }, 1000);
+                } else {
+                    console.log("🌾 User biasa / Petani. Redirect ke Beranda...");
+                    alert("Login Berhasil! Mengarahkan ke Beranda...");
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                }
 
             } catch (error) {
                 console.error("Login Error:", error);
                 
-                let msg = "Nomor HP atau Kata Sandi salah.";
+                let msg = "Nomor HP / Email atau Kata Sandi salah.";
                 if (error.message.includes("Invalid login credentials")) {
-                    msg = "Nomor HP atau Password salah.";
+                    msg = "Kredensial login salah.";
                 } else if (error.message.includes("Email not confirmed")) {
-                    msg = "Akun belum dikonfirmasi (Cek Email/WA).";
+                    msg = "Akun belum dikonfirmasi.";
                 }
                 
                 errorMsg.textContent = msg;
@@ -411,13 +401,21 @@
 
         // --- 5. CEK SESI SAAT LOAD ---
         window.addEventListener("DOMContentLoaded", async () => {
-            // Cek apakah user masih login via Supabase Session
             const { data: { session } } = await supabase.auth.getSession();
             
             if (session) {
-                console.log("Sesi masih aktif, redirecting...");
-                // Jangan alert, langsung redirect biar UX smooth
-                window.location.href = 'index.html';
+                // Jika sudah login, ambil role untuk redirect yang tepat
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', session.user.id)
+                    .single();
+                
+                if (profile && profile.role === 'ADMIN') {
+                    window.location.href = 'dashboard-admin.html';
+                } else {
+                    window.location.href = 'index.html';
+                }
             }
         });
 
