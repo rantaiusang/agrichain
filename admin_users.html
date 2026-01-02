@@ -1,7 +1,379 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <meta charset="U<!DOCTYPE html>
+<html lang="id">
+<head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kelola Users - AgriChain</title>
+    
+    <!-- Library Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root {
+            --primary-dark: #1A237E;
+            --primary-light: #3949AB;
+            --accent-gold: #FFD700;
+            --bg-light: #F5F7FA;
+            --white: #ffffff;
+            --text-dark: #333;
+            --text-grey: #666;
+            --success: #2E7D32;
+            --danger: #C62828;
+        }
+
+        body {
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* --- SIDEBAR (SAMA DASHBOARD ADMIN) --- */
+        .sidebar {
+            width: 250px;
+            background: var(--primary-dark);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: fixed;
+            height: 100%;
+            left: 0;
+            top: 0;
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 40px;
+            color: var(--accent-gold);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-item {
+            padding: 12px 15px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            margin-left: 250px;
+            flex: 1;
+            padding: 30px;
+        }
+
+        /* --- TABLE STYLES --- */
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .btn-search {
+            padding: 10px 20px;
+            background: var(--primary-dark);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            padding: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: var(--primary-dark);
+            font-weight: bold;
+        }
+
+        .role-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .role-ADMIN { background: #FFEBEE; color: #D32F2F; }
+        .role-PETANI { background: #E8F5E9; color: #2E7D32; }
+        .role-PEMBELI { background: #FFF3E0; color: #F57C00; }
+        .role-LEMBAGA { background: #E3F2FD; color: #1565C0; }
+
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .sidebar { width: 60px; padding: 15px 10px; }
+            .brand span, .nav-item span { display: none; }
+            .main-content { margin-left: 60px; padding: 15px; }
+            .search-box { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar (SAMA) -->
+    <nav class="sidebar">
+        <div class="brand">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            <span>AgriAdmin</span>
+        </div>
+        
+        <div class="nav-item" onclick="location.href='dashboard-admin.html'">📊 Dashboard</div>
+        <div class="nav-item active">👥 Users</div>
+        
+        <div class="nav-item" onclick="location.href='dashboard-admin.html'">🌾 Kelola Komoditas</div>
+        <div class="nav-item" onclick="location.href='admin-blockchain.html'">⛓️ Blockchain</div>
+        <div class="nav-item" onclick="location.href='admin-pengaturan.html'">⚙️ Pengaturan</div>
+        
+        <!-- Tombol Logout (ID: btn-logout) -->
+        <div id="btn-logout" class="nav-item" style="margin-top: auto; color: #ff8a80; border: 1px solid #ff8a80; cursor: pointer;">
+             🚪 Keluar
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        
+        <div class="content-header">
+            <h2 style="margin:0; color:var(--primary-dark);">Data Pengguna</h2>
+            <div class="search-box">
+                <input type="text" id="searchInput" class="search-input" placeholder="Cari nama atau email...">
+                <button class="btn-search" onclick="filterUsers()">Cari</button>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="usersTable">
+                <thead>
+                    <tr>
+                        <th>Nama Lengkap</th>
+                        <th>Email / HP</th>
+                        <th>Role</th>
+                        <th>Terdaftar</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data akan diisi oleh JS -->
+                    <tr><td colspan="6" style="text-align:center; color:#999;">Memuat data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
+        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- 2. LOGIKA KEAMANAN (CEK ADMIN) ---
+        document.addEventListener("DOMContentLoaded", async () => {
+            const { data: { session }, error } = await supabase.auth.getSession();
+
+            if (error || !session) {
+                alert("Akses Ditolak");
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .single();
+
+            if (!profile || profile.role !== 'ADMIN') {
+                alert("Akses Ditolak");
+                window.location.href = 'index.html';
+                return;
+            }
+
+            loadUsers();
+        });
+
+        // --- 3. LOAD USER LIST ---
+        async function loadUsers() {
+            const tableBody = document.querySelector('#usersTable tbody');
+            
+            try {
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                tableBody.innerHTML = '';
+                if (data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada user.</td></tr>';
+                    return;
+                }
+
+                data.forEach(user => {
+                    const row = document.createElement('tr');
+                    
+                    // Format Tanggal
+                    const date = new Date(user.created_at).toLocaleDateString('id-ID');
+
+                    row.innerHTML = `
+                        <td><strong>${user.full_name}</strong></td>
+                        <td>${user.phone || '-'}</td>
+                        <td><span class="role-badge role-${user.role}">${user.role}</span></td>
+                        <td style="color:#666; font-size:0.85rem;">${date}</td>
+                        <td>
+                            <button class="btn-delete" onclick="deleteUser('${user.id}')">Hapus</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error(err);
+                document.querySelector('#usersTable tbody').innerHTML = '<tr><td colspan="6" style="text-align:center;">Gagal memuat data.</td></tr>';
+            }
+        }
+
+        // --- 4. FILTER / SEARCH USER ---
+        async function filterUsers() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const tableBody = document.querySelector('#usersTable tbody');
+            
+            try {
+                // Cari di kolom full_name atau phone yang mirip query (case insensitive)
+                const { data, error } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .or(`full_name.ilike.%${query}%`, `phone.ilike.%${query}%`)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                // Render ulang tabel
+                tableBody.innerHTML = '';
+                if (data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">User tidak ditemukan.</td></tr>';
+                    return;
+                }
+
+                data.forEach(user => {
+                    const row = document.createElement('tr');
+                    const date = new Date(user.created_at).toLocaleDateString('id-ID');
+                    row.innerHTML = `
+                        <td><strong>${user.full_name}</strong></td>
+                        <td>${user.phone}</td>
+                        <td><span class="role-badge role-${user.role}">${user.role}</span></td>
+                        <td style="color:#666; font-size:0.85rem;">${date}</td>
+                        <td>
+                            <button class="btn-delete" onclick="deleteUser('${user.id}')">Hapus</button>
+                        </td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // --- 5. HAPUS USER ---
+        async function deleteUser(id) {
+            if(!confirm('Yakin ingin menghapus user ini? Data akan hilang permanen.')) return;
+
+            try {
+                // 1. Hapus dari Auth Supabase
+                const { error: authError } = await supabase.auth.admin.deleteUser(id);
+                if (authError) throw authError;
+
+                // 2. Hapus dari Tabel Profiles (Biasanya cascade, tapi aman dihapus manual)
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .delete()
+                    .eq('id', id);
+
+                if (profileError) throw profileError;
+
+                alert('User berhasil dihapus.');
+                loadUsers(); // Refresh tabel
+
+            } catch (err) {
+                console.error(err);
+                alert('Gagal menghapus: ' + err.message);
+            }
+        }
+
+        // --- 6. LOGOUT ---
+        document.getElementById('btn-logout').addEventListener('click', async () => {
+            if(confirm("Keluar dari Admin?")) {
+                await supabase.auth.signOut();
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>TF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Management - AgriAdmin</title>
     
