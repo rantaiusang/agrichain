@@ -44,7 +44,7 @@
             box-shadow: var(--shadow-sm);
             position: sticky;
             top: 0;
-            z-index: 100; /* Layer Header */
+            z-index: 100;
         }
 
         .container {
@@ -70,7 +70,6 @@
             gap: 10px;
         }
 
-        /* Tombol Header */
         .btn-action {
             padding: 8px 20px;
             background-color: var(--primary-green);
@@ -93,7 +92,6 @@
             box-shadow: 0 4px 8px rgba(46, 125, 50, 0.3);
         }
         
-        /* Tombol Putih (Login) */
         .btn-secondary-outline {
             background-color: var(--white);
             color: var(--primary-green);
@@ -119,9 +117,7 @@
             padding: 40px 20px;
         }
 
-        .hero-text {
-            flex: 1;
-        }
+        .hero-text { flex: 1; }
 
         .hero h1 {
             font-size: 2.5rem;
@@ -166,18 +162,12 @@
         .cta-primary:hover {
             background-color: var(--dark-green);
             transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(46, 125, 50, 0.4);
         }
 
         .cta-secondary {
             background-color: var(--white);
             color: var(--primary-green);
             border: 2px solid var(--primary-green);
-        }
-
-        .cta-secondary:hover {
-            background-color: var(--light-green);
-            transform: translateY(-2px);
         }
 
         .hero-image {
@@ -255,7 +245,7 @@
             line-height: 1.5;
         }
 
-        /* --- MONITORING NAV (MAIN TABS) --- */
+        /* --- MONITORING NAV --- */
         .monitoring-nav {
             background: var(--white);
             padding: 10px 20px;
@@ -264,13 +254,10 @@
             gap: 15px;
             border-bottom: 2px solid var(--light-green);
             box-shadow: var(--shadow-sm);
-            
-            /* --- PERBAIKAN: TAB MENUMPUK HEADER --- */
             position: sticky;
-            top: 0; /* Mengunci di 0 agar di atas header */
-            z-index: 101; /* Layer di atas header (100) */
-            margin-top: 15px; /* Jarak agar tidak menempel logo */
-            /* ------------------------------------------- */
+            top: 0;
+            z-index: 101;
+            margin-top: 15px;
         }
 
         .monitor-tab {
@@ -298,7 +285,7 @@
 
         /* --- MONITOR CONTENT --- */
         .monitor-content {
-            display: none; /* Default Hidden */
+            display: none;
             padding: 20px 0;
             animation: fadeIn 0.4s ease;
         }
@@ -377,10 +364,9 @@
             display: block;
         }
         
-        /* Canvas Container for Chart.js */
         .canvas-container {
             position: relative;
-            height: 300px; /* Tinggi fix agar grafik tidak gepeng */
+            height: 300px;
             width: 100%;
         }
 
@@ -389,7 +375,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- MARKET SECTION (Cards) --- */
+        /* --- MARKET SECTION --- */
         .market-section {
             background: var(--white);
             padding: 30px 20px;
@@ -482,7 +468,7 @@
         }
         .btn-view:hover { background-color: var(--dark-green); }
 
-        /* --- CHAT FLOATING BUTTON --- */
+        /* --- CHAT FLOAT --- */
         .chat-float-btn {
             position: fixed;
             bottom: 20px;
@@ -508,7 +494,6 @@
             box-shadow: 0 6px 20px rgba(46, 125, 50, 0.5);
         }
 
-        /* --- CHAT CONTAINER --- */
         .chat-container {
             position: fixed;
             bottom: 90px;
@@ -537,11 +522,7 @@
             font-size: 0.95rem;
         }
 
-        .close-chat {
-            cursor: pointer;
-            font-size: 1.5rem;
-            line-height: 1;
-        }
+        .close-chat { cursor: pointer; font-size: 1.5rem; line-height: 1; }
 
         .chat-messages {
             height: 300px;
@@ -567,20 +548,12 @@
             color: #333;
             align-self: flex-end;
             margin-left: auto;
-            border-bottom-left-radius: 2px;
-            border-bottom-right-radius: 12px;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
         }
 
         .chat-bubble.ai {
             background: #E8F5E9;
             color: #2E7D32;
             align-self: flex-start;
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 2px;
-            border-top-left-radius: 12px;
-            border-top-right-radius: 12px;
         }
 
         .chat-input-area {
@@ -596,7 +569,6 @@
             border: 1px solid #ddd;
             border-radius: 20px;
             font-size: 0.9rem;
-            font-family: inherit;
         }
         .chat-input:focus { outline: none; border-color: var(--primary-green); }
 
@@ -611,7 +583,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s;
         }
         .chat-btn-send:hover { background: var(--dark-green); }
 
@@ -630,24 +601,20 @@
             transition: opacity 0.3s;
             pointer-events: none;
             z-index: 1000;
-            white-space: nowrap;
         }
         .toast.show { opacity: 1; }
         
-        /* Modal Helper */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 2000;
         }
         .modal-content {
             background: white; padding: 25px; border-radius: 12px; max-width: 400px; width: 90%;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center;
             animation: zoomIn 0.2s ease;
         }
         @keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* Responsive */
         @media (max-width: 600px) {
             .hero h1 { font-size: 2rem; }
             .hero-image { display: none; }
@@ -659,7 +626,7 @@
 </head>
 <body>
 
-    <!-- Header Landing -->
+    <!-- Header -->
     <header class="landing-header">
         <div class="container header-content">
             <a href="index.html" class="brand">
@@ -668,12 +635,7 @@
             </a>
             
             <div style="display: flex; gap: 10px; align-items: center;">
-                <!-- 1. TOMBOL LOGIN (BARU) -->
-                <a href="login.html" class="btn-action btn-secondary-outline">
-                    Masuk / Daftar
-                </a>
-
-                <!-- 2. TOMBOL DOMPET (PROFIL) -->
+                <a href="login.html" class="btn-action btn-secondary-outline">Masuk / Daftar</a>
                 <button id="btnWallet" class="btn-action" onclick="window.location.href='profile.html'">
                     <div class="wallet-status-dot" id="walletDot"></div>
                     <span id="walletText">Profil Saya</span>
@@ -682,40 +644,30 @@
         </div>
     </header>
 
-    <!-- NAVIGASI UTAMA (BERANDA & MONITOR) -->
+    <!-- Navigasi Utama -->
     <div class="monitoring-nav">
-        <!-- Menggunakan ONCLICK langsung agar pasti berfungsi -->
         <div class="monitor-tab active" id="btnHome" onclick="openMainTab('home')">🏠 Beranda</div>
         <div class="monitor-tab" id="btnMonitor" onclick="openMainTab('monitor')">📊 Monitor</div>
     </div>
 
-    <!-- CONTENT: BERANDA (DEFAULT) -->
+    <!-- CONTENT: BERANDA -->
     <main id="homeContent">
-        <!-- Hero Section -->
         <section class="hero">
             <div class="container">
                 <div class="hero-text">
                     <h1>Revolusi Pertanian<br>Dengan Blockchain</h1>
                     <p>AgriChain menghubungkan Petani, Pembeli, dan Lembaga secara transparan. Tanpa perantara, data tersimpan aman di jaringan Polygon.</p>
-                    
                     <div class="cta-group">
-                        <a href="input-panen.html" class="cta-btn cta-primary">
-                            <span>🌾</span> Mulai Jual Panen
-                        </a>
-                        <a href="tanya-konsultan.html" class="cta-btn cta-secondary">
-                            <span>❓</span> Tanya Konsultan
-                        </a>
+                        <a href="input-panen.html" class="cta-btn cta-primary"><span>🌾</span> Mulai Jual Panen</a>
+                        <a href="tanya-konsultan.html" class="cta-btn cta-secondary"><span>❓</span> Tanya Konsultan</a>
                     </div>
                 </div>
             </div>
-
             <div class="hero-image">
-                <img src="https://images.unsplash.com/photo-16252464724-7189a844d954?q=80&w=1000&auto=format&fit=crop" 
-                     alt="AgriChain Illustration">
+                <img src="https://images.unsplash.com/photo-16252464724-7189a844d954?q=80&w=1000&auto=format&fit=crop" alt="AgriChain Illustration">
             </div>
         </section>
 
-        <!-- Features -->
         <section class="features">
             <div class="container">
                 <h2 style="font-size: 2rem; color: var(--primary-green); margin-bottom: 20px;">Keunggulan AgriChain</h2>
@@ -739,14 +691,12 @@
             </div>
         </section>
 
-        <!-- MARKET (Panen Siap Jual) -->
         <section class="market-section">
             <div class="container">
                 <div class="section-header">
                     <h2 style="margin:0; color: var(--primary-green);">Panen Siap Jual</h2>
                     <a href="belanja.html" style="color: var(--primary-green); text-decoration: none; font-weight: bold;">+ Lihat Semua Produk</a>
                 </div>
-
                 <div class="card-grid" id="productList">
                     <div style="text-align: center; color: #999; grid-column: 1 / -1; padding: 20px;">Memuat produk dari petani...</div>
                 </div>
@@ -754,23 +704,20 @@
         </section>
     </main>
 
-    <!-- CONTENT: MONITOR (TERSEMBUNYI DEFAULT HIDDEN) -->
+    <!-- CONTENT: MONITOR -->
     <main id="monitorContent" class="monitor-content">
         <div class="container">
             <h2 style="text-align:center; color: var(--primary-green); margin-bottom: 30px;">📊 Sistem Monitor AgriChain</h2>
             
-            <!-- SUB NAVS: PASAR, ANALISA, LAHAN -->
             <div class="monitor-sub-nav">
-                <!-- Menggunakan ONCLICK langsung agar pasti berfungsi -->
                 <button class="monitor-sub-btn active" id="subBtnMarket" onclick="openMonitorTab(event, 'monMarket')">📈 Pasar</button>
                 <button class="monitor-sub-btn" id="subBtnAnalisa" onclick="openMonitorTab(event, 'monAnalisa')">📊 Analisa</button>
                 <button class="monitor-sub-btn" id="subBtnFarm" onclick="openMonitorTab(event, 'monFarm')">🌾 Lahan</button>
             </div>
 
-            <!-- SUB TAB 1: PASAR (GRAFIK HARGA) -->
+            <!-- TAB PASAR -->
             <div id="monMarket" class="monitor-tab-content active">
                 <div class="monitor-grid">
-                    <!-- GRAFIK 1: LINE CHART -->
                     <div class="monitor-card">
                         <div class="monitor-header">
                             <span class="monitor-title">💹 Tren Harga Padi (1 Minggu)</span>
@@ -780,8 +727,6 @@
                             <canvas id="chartHargaPadi"></canvas>
                         </div>
                     </div>
-                    
-                    <!-- GRAFIK 2: BAR CHART -->
                     <div class="monitor-card">
                         <div class="monitor-header">
                             <span class="monitor-title">💹 Perbandingan Harga (Top 5)</span>
@@ -794,7 +739,7 @@
                 </div>
             </div>
 
-            <!-- SUB TAB 2: ANALISA (BAR CHART) -->
+            <!-- TAB ANALISA -->
             <div id="monAnalisa" class="monitor-tab-content">
                 <div class="monitor-grid">
                     <div class="monitor-card">
@@ -809,11 +754,9 @@
                 </div>
             </div>
 
-            <!-- SUB TAB 3: LAHAN (LOG HAMA & CUACA) -->
+            <!-- TAB LAHAN -->
             <div id="monFarm" class="monitor-tab-content">
                 <div class="monitor-grid">
-                    
-                    <!-- KARTU 1: LOG SERANGAN HAMA -->
                     <div class="monitor-card">
                         <div class="monitor-header">
                             <span class="monitor-title">📈 Log Serangan Hama</span>
@@ -825,35 +768,17 @@
                                     <div style="font-weight:bold;">🐛 1 Feb: Ulat Grayak</div>
                                     <span style="font-size:0.8rem; color: var(--primary-green);">Status: Selesai Ditangani</span>
                                 </div>
-                                <button onclick="showHamaDetail('Ulat Grayak', '1 Februari', 'Serangan di blok A2. Tanaman padi usia 45 HST. Ditemukan 5 ula per rumpun.', 'Serius')" 
-                                        style="padding: 5px 12px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
-                                    Detail
-                                </button>
+                                <button onclick="showHamaDetail('Ulat Grayak', '1 Februari', 'Serangan di blok A2. Tanaman padi usia 45 HST.', 'Serius')" style="padding: 5px 12px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">Detail</button>
                             </li>
                             <li style="padding: 12px; border-bottom: 1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
                                 <div>
                                     <div style="font-weight:bold;">🦠 3 Jan: Kutu Daun</div>
                                     <span style="font-size:0.8rem; color: #999;">Status: Pemantauan</span>
                                 </div>
-                                <button onclick="showHamaDetail('Kutu Daun', '3 Januari', 'Ditemukan sedikit di daun muda. Level bahaya rendah.', 'Ringan')" 
-                                        style="padding: 5px 12px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
-                                    Detail
-                                </button>
-                            </li>
-                            <li style="padding: 12px; border-bottom: 1px solid #eee; display:flex; justify-content:space-between; align-items:center;">
-                                <div>
-                                    <div style="font-weight:bold;">🦠 5 Jan: Walang Sangit</div>
-                                    <span style="font-size:0.8rem; color: #999;">Status: Sembuh</span>
-                                </div>
-                                <button onclick="showHamaDetail('Walang Sangit', '5 Januari', 'Serangan di malam hari. Penyemprotan insektisida berhasil.', 'Ringan')" 
-                                        style="padding: 5px 12px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">
-                                    Detail
-                                </button>
+                                <button onclick="showHamaDetail('Kutu Daun', '3 Januari', 'Ditemukan sedikit di daun muda. Level bahaya rendah.', 'Ringan')" style="padding: 5px 12px; font-size:0.8rem; background: #e0e0e0; border:none; border-radius:4px; cursor:pointer; color:#333;">Detail</button>
                             </li>
                         </ul>
                     </div>
-
-                    <!-- KARTU 2: JADWAL SIRAM & CUACA -->
                     <div class="monitor-card">
                         <div class="monitor-header">
                             <span class="monitor-title">🌧 Jadwal Irigasi Cerdas</span>
@@ -863,25 +788,17 @@
                             <div style="font-size: 2.5rem;">☀️</div>
                             <p style="margin: 10px 0;"><strong>Status Cuaca:</strong> Panas Terik (32°C)</p>
                             <p style="margin-bottom: 15px;"><strong>Saran:</strong> Siram sore hari ini (16:00).</p>
-                            <button onclick="aturJadwalSiram()" 
-                                    style="padding: 10px 20px; background: var(--primary-green); color: white; border:none; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                                ⚡ Atur Otomatis
-                            </button>
+                            <button onclick="aturJadwalSiram()" style="padding: 10px 20px; background: var(--primary-green); color: white; border:none; border-radius: 5px; cursor: pointer; font-weight: bold;">⚡ Atur Otomatis</button>
                         </div>
                     </div>
-
                 </div>
             </div>
 
         </div>
     </main>
 
-    <!-- 1. FLOATING CHAT BUTTON -->
-    <div id="chatFloatBtn" class="chat-float-btn">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-.7 5.2 8.5 8.5 0 0 1-7.8 4 8.5 8.5 0 0 1-4.7-4.5 8.5 8.5 0 0 1-1.3-1.7 8.5 8.5 0 0 1-5.5-2.3 2.9-2.9 5.9-3.5 4.1-1.3 4.8-2.8 1.5-3.3 1.5-6.6 0-10.6 4.2-10.6 8.4 0 1.3-.5-1.6-3.2-2.3-5.2-4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3-1.3 0-.3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path><path d="M14.9 18c.1 0 .3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3-1.3 0-.3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3-1.3 0-.3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3-1.3 0-.3 0 .4 0l3.5-7.2c.6-1.3 1.8-2.5 1.8-4.1 0-3.4-2.8-6.2-1.8-4.1 0-3.4 2.8-6.2 6.2 8.4 0 1.6-.5 1.6-3.2 2.3-5.2 4.1-8.5 6.2-10.6 8.4-2.3 1.6-5.5 2.3-8.4 2.3z"></path></svg>
-    </div>
-
-    <!-- 2. CHAT CONTAINER -->
+    <!-- Chat -->
+    <div id="chatFloatBtn" class="chat-float-btn">💬</div>
     <div id="chatContainer" class="chat-container">
         <div class="chat-header">
             <span>💬 Tanya Pakar (AI)</span>
@@ -900,27 +817,26 @@
 
     <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        // --- 1. KONFIGURASI SUPABASE (FIXED) ---
+        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X'; 
+
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentUserId = null;
         let marketData = []; 
-        let chartInstances = {}; // Simpan chart instance agar bisa di-destroy
+        let chartInstances = {};
 
-        // --- 2. DOM ELEMENTS ---
+        // --- DOM ELEMENTS ---
         const btnWallet = document.getElementById('btnWallet');
         const walletText = document.getElementById('walletText');
         const walletDot = document.getElementById('walletDot');
         const productList = document.getElementById('productList');
-        
-        // Tab Elements
         const btnHome = document.getElementById('btnHome');
         const btnMonitor = document.getElementById('btnMonitor');
         const homeContent = document.getElementById('homeContent');
         const monitorContent = document.getElementById('monitorContent');
-
+        
         // Chat Elements
         const chatFloatBtn = document.getElementById('chatFloatBtn');
         const chatContainer = document.getElementById('chatContainer');
@@ -929,7 +845,7 @@
         const closeChatBtn = document.getElementById('closeChatBtn');
         const sendChatBtn = document.getElementById('sendChatBtn');
 
-        // --- 3. FUNGSI TAB UTAMA (BERANDA / MONITOR) ---
+        // --- FUNGSI TAB UTAMA ---
         window.openMainTab = function(tabName) {
             if (tabName === 'home') {
                 homeContent.style.display = 'block';
@@ -941,31 +857,28 @@
                 monitorContent.style.display = 'block';
                 btnMonitor.classList.add('active');
                 btnHome.classList.remove('active');
-                
-                // Render grafik saat tab monitor dibuka
                 renderCharts();
             }
         };
 
-        // --- 4. FUNGSI SUB TAB MONITOR ---
+        // --- FUNGSI SUB TAB ---
         window.openMonitorTab = function(evt, monName) {
             var i, tabcontent, subtabs;
             tabcontent = document.getElementsByClassName("monitor-tab-content");
             for (i = 0; i < tabcontent.length; i++) {
                 tabcontent[i].style.display = "none";
             }
-            
             subtabs = document.getElementsByClassName("monitor-sub-btn");
             for (i = 0; i < subtabs.length; i++) {
                 subtabs[i].className = subtabs[i].className.replace(" active", "");
             }
-
             document.getElementById(monName).style.display = "block";
             evt.currentTarget.className += " active";
         };
 
-        // --- 5. LOAD DATA MARKET ---
+        // --- LOAD DATA MARKET ---
         async function loadMarketData() {
+            // Mencoba mengambil data dari tabel market_prices
             const { data, error } = await supabase
                 .from('market_prices')
                 .select('commodity_name, current_price')
@@ -973,69 +886,54 @@
 
             if (data) {
                 marketData = data;
-                // Update kedua tab (Beranda & Monitor) secara bersamaan
                 renderProducts(data);
             } else {
-                console.error("Gagal load harga:", error);
-                // JANGAN BUAT ERROR JANGKA CHART, BIARKAN SAAJA ARRAY KOSONG
-                marketData = []; 
+                console.log("Tabel market_prices belum ada atau kosong. Menggunakan data dummy.");
+                marketData = []; // Biarkan kosong agar fallback dummy chart bekerja
+                renderProducts([]);
             }
         }
 
-        // --- 6. RENDER PRODUK (HOME TAB) ---
+        // --- RENDER PRODUK ---
         function renderProducts(prices) {
             productList.innerHTML = ''; 
-
             if (prices.length === 0) {
-                productList.innerHTML = '<div style="text-align: center; color: #999;">Belum ada produk di database.</div>';
+                productList.innerHTML = '<div style="text-align: center; color: #999; grid-column: 1/-1;">Data komoditas sedang dimuat...</div>';
                 return;
             }
-
             prices.forEach(item => {
                 const itemEl = document.createElement('article');
                 itemEl.className = 'card';
-                // Placeholder image seed
                 const imgUrl = `https://picsum.photos/seed/${item.commodity_name.replace(/\s/g,'')}/400/200`;
-
                 itemEl.innerHTML = `
                     <img src="${imgUrl}" alt="${item.commodity_name}" class="card-img">
                     <div class="card-body">
                         <h3 class="card-title">${item.commodity_name}</h3>
-                        <div class="card-meta">
-                            <svg class="icon" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M12,2A10,10 0 0,1 2,12A10,10 0 0,1 2,12M12,2A10,10 0 0,1 2,12Z"/></svg>
-                            <span>Update: Baru</span>
-                        </div>
+                        <div class="card-meta">Update: Baru</div>
                         <div class="card-price">Rp ${item.current_price.toLocaleString('id-ID')} / kg</div>
                     </div>
-                    <div class="card-footer">
-                        <a href="belanja.html" class="btn-view">Lihat Detail</a>
-                    </div>
+                    <div class="card-footer"><a href="belanja.html" class="btn-view">Lihat Detail</a></div>
                 `;
                 productList.appendChild(itemEl);
             });
         }
 
-        // --- 7. RENDER CHARTS (MONITOR TAB) - FALLBACK LOGIC ---
+        // --- RENDER CHARTS ---
         function renderCharts() {
-            // Hapus chart lama jika ada
             for (let key in chartInstances) {
                 if (chartInstances[key]) chartInstances[key].destroy();
             }
 
-            // --- LOGIKA FALLBACK (PENTING!) ---
-            // Jika marketData kosong, gunakan data dummy agar grafik tetap muncul dan tidak error
+            // Data Fallback (PENTING!)
             let chartLabels = ['Padi', 'Jagung', 'Kopi', 'Cabai', 'Kedelai'];
             let chartPrices = [6200, 3500, 45000, 15000, 9000];
-            let chartTitle = "Perbandingan Harga (Demo)";
-
-            // Jika marketData ADA, timpa data dummy dengan data asli
+            
             if (marketData.length > 0) {
                 chartLabels = marketData.map(d => d.commodity_name);
                 chartPrices = marketData.map(d => d.current_price);
-                chartTitle = "Top Komoditas (Real Data)";
             }
 
-            // A. Chart Harga Padi (Selalu Dummy)
+            // Chart 1: Line (Dummy Data)
             const ctxPadi = document.getElementById('chartHargaPadi');
             if (ctxPadi) {
                 chartInstances['chartHargaPadi'] = new Chart(ctxPadi, {
@@ -1047,49 +945,37 @@
                             data: [6200, 6300, 6250, 6400, 6500, 6350, 6400],
                             borderColor: '#2E7D32',
                             backgroundColor: 'rgba(46, 125, 50, 0.2)',
-                            tension: 0.4,
-                            fill: true
+                            tension: 0.4, fill: true
                         }]
                     },
-                    options: { 
-                        responsive: true, 
-                        maintainAspectRatio: false,
-                        plugins: { 
-                            legend: { position: 'bottom' }
-                        }
-                    }
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
                 });
             }
 
-            // B. Chart Komoditas (Real Data Fallback)
+            // Chart 2: Bar (Real Data Fallback)
             const ctxKomoditas = document.getElementById('chartKomoditas');
             if (ctxKomoditas) {
                 chartInstances['chartKomoditas'] = new Chart(ctxKomoditas, {
                     type: 'bar',
                     data: {
-                        labels: chartLabels, // Gunakan label yang sudah diset
+                        labels: chartLabels,
                         datasets: [{
                             label: 'Harga Saat Ini (Rp/Kg)',
-                            data: chartPrices, // Gunakan data yang sudah diset
+                            data: chartPrices,
                             backgroundColor: 'rgba(46, 125, 50, 0.7)',
                             borderColor: 'rgba(46, 125, 50, 1)',
-                            borderWidth: 1,
-                            borderRadius: 5
+                            borderWidth: 1, borderRadius: 5
                         }]
                     },
                     options: { 
-                        responsive: true, 
-                        maintainAspectRatio: false,
+                        responsive: true, maintainAspectRatio: false,
                         scales: { y: { beginAtZero: true } },
-                        plugins: {
-                            legend: { display: false },
-                            title: { display: true, text: chartTitle } // Judul dinamis
-                        }
+                        plugins: { legend: { display: false }, title: { display: true, text: marketData.length > 0 ? "Harga Real (Database)" : "Harga Estimasi (Demo)" } }
                     }
                 });
             }
 
-            // C. Chart Konsumsi (Dummy Data)
+            // Chart 3: Konsumsi (Dummy)
             const ctxKonsumsi = document.getElementById('chartKonsumsi');
             if (ctxKonsumsi) {
                 chartInstances['chartKonsumsi'] = new Chart(ctxKonsumsi, {
@@ -1103,51 +989,31 @@
                             borderRadius: 5
                         }]
                     },
-                    options: {
-                        indexAxis: 'y',
-                        scales: { x: { beginAtZero: true } },
-                        responsive: true, 
-                        maintainAspectRatio: false
-                    }
+                    options: { indexAxis: 'y', scales: { x: { beginAtZero: true } }, responsive: true, maintainAspectRatio: false }
                 });
             }
         }
 
-        // --- 8. LOAD USER & SESI ---
+        // --- INIT ---
         document.addEventListener("DOMContentLoaded", async () => {
-            // Cek Login
             const { data: { session } } = await supabase.auth.getSession();
-            
             if (session) {
                 currentUserId = session.user.id;
-                
-                // Ambil data user untuk header
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('full_name, wallet_address')
-                    .eq('id', currentUserId)
-                    .single();
-
+                const { data: profile } = await supabase.from('profiles').select('full_name, wallet_address').eq('id', currentUserId).single();
                 if (profile) {
-                    // Update text wallet
                     if(profile.wallet_address) {
                         const shortAddr = profile.wallet_address.substring(0,6);
                         walletText.textContent = `Terhubung (${shortAddr}...)`;
                         walletDot.style.backgroundColor = "#00C851";
                     } else {
-                        walletText.textContent = profile.full_name.split(' ')[0]; // Tampilkan nama depan
+                        walletText.textContent = profile.full_name.split(' ')[0];
                     }
-                    
-                    // Load data market DI BACKGROUND agar data siap saat klik monitor
-                    loadMarketData();
                 }
-            } else {
-                // Jika belum login
-                walletText.textContent = "Profil Saya"; // Default text
+                loadMarketData();
             }
         });
 
-        // --- 9. HANDLE CHAT (LOCAL LOGIC) ---
+        // --- CHAT LOGIC ---
         function addChatMessage(sender, text) {
             const bubble = document.createElement('div');
             bubble.className = `chat-bubble ${sender}`;
@@ -1155,81 +1021,33 @@
             chatBox.appendChild(bubble);
             chatBox.scrollTop = chatBox.scrollHeight;
         }
-
         window.toggleChat = function() {
-            if (chatContainer.style.display === 'none' || chatContainer.style.display === '') {
-                chatContainer.style.display = 'flex'; 
-                chatInput.focus();
-
-                // Reset history
-                chatBox.innerHTML = '<div style="text-align: center; color: #999; margin-top: 20px;">Mulai percakapan...</div>';
-
-            } else {
-                chatContainer.style.display = 'none'; 
-            }
+            const isHidden = chatContainer.style.display === 'none' || chatContainer.style.display === '';
+            chatContainer.style.display = isHidden ? 'flex' : 'none';
+            if(isHidden) chatInput.focus();
         };
-
         sendChatBtn.addEventListener('click', function() {
             const q = chatInput.value;
             if (!q.trim()) return;
-
             addChatMessage('user', q);
             chatInput.value = '';
-
-            // Simulasi AI balas
-            setTimeout(() => {
-                const aiResponse = "Pertanyaan Anda menarik. Sistem kami sedang menganalisis kondisi lahan Anda.";
-                addChatMessage('ai', aiResponse);
-            }, 1000);
+            setTimeout(() => { addChatMessage('ai', "Analisis AI: Kondisi tanaman terlihat stabil. Lanjutkan pemupukan NPK sesuai jadwal."); }, 1000);
         });
-
         if (chatFloatBtn) chatFloatBtn.addEventListener('click', window.toggleChat);
         if (closeChatBtn) closeChatBtn.addEventListener('click', window.toggleChat);
 
-        // --- 10. INTERAKSI LAHAN (MONITORING) ---
-        window.showHamaDetail = function(namaHama, tanggal, deskripsi, tingkat) {
-            const badgeColor = tingkat === 'Serius' ? '#ffebee' : '#e8f5e9';
-            const badgeTextColor = tingkat === 'Serius' ? '#c62828' : '#2e7d32';
-
-            const modalDiv = document.createElement('div');
-            modalDiv.id = 'hamaModal';
-            modalDiv.innerHTML = `
-                <div id="hamaModalInner" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:2000; display:flex; justify-content:center; align-items:center;">
-                    <div style="background:white; padding:25px; border-radius:12px; max-width:400px; width:90%; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
-                        <h3 style="margin:0 0 10px 0; color:var(--primary-green);">🐛 Detail Laporan</h3>
-                        <div style="margin-bottom:15px; padding-bottom:15px; border-bottom:1px solid #eee;">
-                            <p style="margin:5px 0;"><strong>Hama:</strong> ${namaHama}</p>
-                            <p style="margin:5px 0;"><strong>Tanggal:</strong> ${tanggal}</p>
-                            <p style="margin:5px 0;"><strong>Tingkat:</strong> 
-                                <span style="background:${badgeColor}; color:${badgeTextColor}; padding:2px 8px; border-radius:4px; font-size:0.85rem;">${tingkat}</span>
-                            </p>
-                        </div>
-                        <p style="color:#555; line-height:1.5;">${deskripsi}</p>
-                        <div style="text-align:right; margin-top:20px;">
-                            <button onclick="document.getElementById('hamaModal').remove()" 
-                                    style="padding:8px 20px; background:#ccc; border:none; border-radius:5px; cursor:pointer; color:#333;">Tutup</button>
-                            <button onclick="alert('Laporan dikirim ke Ahli Agronomi!'); document.getElementById('hamaModal').remove();" 
-                                    style="padding:8px 20px; background:var(--primary-green); border:none; border-radius:5px; cursor:pointer; color:white; margin-left:5px;">Konsultasi</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modalDiv);
+        // --- INTERAKSI MONITOR ---
+        window.showHamaDetail = function(nama, tanggal, deskripsi, tingkat) {
+            alert(`🐛 Detail Hama\n\nNama: ${nama}\nTanggal: ${tanggal}\nStatus: ${tingkat}\n\nDeskripsi: ${deskripsi}`);
         };
-
         window.aturJadwalSiram = function() {
-            showToast(`✅ Jadwal siram otomatis diatur!`);
+            showToast("✅ Jadwal siram otomatis diatur!");
         };
-
-        // --- 11. TOAST HELPER ---
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            if(!toast) return;
-            toast.textContent = message;
-            toast.classList.add('show');
-            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg; t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
         }
-
     </script>
 </body>
 </html>
