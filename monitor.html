@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MONITORING - AgriChain</title>
-    <!-- Library Chart.js (Grafik) -->
+    <title>Monitoring - AgriChain</title>
+    
+    <!-- Library Supabase & Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         :root { 
             --primary: #2E7D32; 
@@ -70,7 +73,6 @@
         
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Utility styles for list */
         ul { list-style: none; padding: 0; }
         li { padding: 12px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
         li:last-child { border-bottom: none; }
@@ -122,18 +124,18 @@
     <!-- TAB 1: MARKET (GRAFIK HARGA) -->
     <div id="tabMarket" class="tab-content active">
         <div class="dashboard-grid">
-            <!-- GRAFIK 1: DIUBAH JADI PIE CHART -->
+            <!-- GRAFIK 1: PIE CHART (DISTRIBUSI HARGA) -->
             <div class="card">
-                <h3>Kontribusi Harga Harian (Pie)</h3>
-                <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">Persentase harga harian terhadap total akumulasi minggu ini.</p>
+                <h3>Distribusi Harga Pasar</h3>
+                <p style="font-size: 0.85rem; color: #666; margin-bottom: 10px;">Komparasi harga saat ini antar komoditas.</p>
                 <div style="height: 250px; position: relative;">
                     <canvas id="chartHargaPadi"></canvas>
                 </div>
             </div>
             
-            <!-- GRAFIK 2: BAR CHART (Tetap) -->
+            <!-- GRAFIK 2: BAR CHART (TREND) -->
             <div class="card">
-                <h3>Perbandingan Harga Komoditas</h3>
+                <h3>Tren Harga Minggu Ini</h3>
                 <div style="height: 250px; position: relative;">
                     <canvas id="chartKomoditas"></canvas>
                 </div>
@@ -144,14 +146,15 @@
     <!-- TAB 2: ANALISA KONSUMSI (BAR CHART) -->
     <div id="tabAnalisa" class="tab-content">
         <div class="card" style="max-width: 800px; margin: 0 auto;">
-            <h3>Analisa Penggunaan Pupuk (Bulan Ini)</h3>
+            <h3>Analisa Penggunaan Pupuk</h3>
+            <p style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">Data pemakaian pupuk berdasarkan input lahan dan jadwal kegiatan.</p>
             <div style="height: 300px; position: relative;">
                 <canvas id="chartKonsumsi"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- TAB 3: SMART FARM (PETA & LOG) -->
+    <!-- TAB 3: SMART FARM (LOG ALERTS) -->
     <div id="tabSmartFarm" class="tab-content">
         <div class="dashboard-grid">
             <div class="card">
@@ -162,17 +165,17 @@
                         <span style="color: red; font-weight: bold; background: #ffebee; padding: 2px 8px; border-radius: 4px;">Serius</span>
                     </li>
                     <li>
-                        <span>🐛 <strong>3 Jan:</strong> Kutu Daun</span>
+                        <span>🦠 <strong>3 Jan:</strong> Kutu Daun</span>
                         <span style="color: orange; font-weight: bold; background: #fff3e0; padding: 2px 8px; border-radius: 4px;">Ringan</span>
                     </li>
                     <li>
-                        <span>🐛 <strong>5 Jan:</strong> Kutu Daun</span>
+                        <span>🦠 <strong>5 Jan:</strong> Kutu Daun</span>
                         <span style="color: orange; font-weight: bold; background: #fff3e0; padding: 2px 8px; border-radius: 4px;">Ringan</span>
                     </li>
                 </ul>
             </div>
             <div class="card">
-                <h3>💧 Jadwal Irigasi Cerdas</h3>
+                <h3>☀️ Cuaca & Irigasi</h3>
                 <div style="background: #E8F5E9; padding: 20px; border-radius: 10px; text-align: center; border: 1px dashed var(--primary);">
                     <div style="font-size: 2.5rem;">☀️</div>
                     <p style="margin: 10px 0;"><strong>Status Cuaca:</strong> Panas Terik (32°C)</p>
@@ -188,7 +191,122 @@
     </div>
 
     <script>
-        // --- A. FUNGSI TAB ---
+        // --- 1. KONFIGURASI SUPABASE ---
+        const SUPABASE_URL = 'https://xyzcompany.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let marketData = [];
+
+        // --- 2. LOAD DATA ---
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Cek Login (Opsional)
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                // Jika ingin paksa login:
+                // window.location.href = 'login.html'; 
+                console.log("User belum login, tapi data monitoring publik.");
+            }
+
+            // Load Harga Pasar
+            const { data, error } = await supabase
+                .from('market_prices')
+                .select('*')
+                .order('current_price', { ascending: false });
+
+            if (data) {
+                marketData = data;
+                renderCharts();
+            } else {
+                console.error("Gagal load data:", error);
+            }
+        });
+
+        // --- 3. RENDER CHARTS ---
+        function renderCharts() {
+            // Siapkan Data untuk Chart.js
+            const labels = marketData.map(d => d.commodity_name);
+            const prices = marketData.map(d => d.current_price);
+
+            // A. CHART 1: PIE CHART (Distribusi Harga)
+            // Pie Chart bagus untuk melihat proporsi harga komoditas terhadap total nilai pasar
+            const ctxPadi = document.getElementById('chartHargaPadi');
+            new Chart(ctxPadi, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Harga (Rp)',
+                        data: prices,
+                        backgroundColor: [
+                            '#2E7D32', // Hijau
+                            '#FFA000', // Oranye
+                            '#43A047', 
+                            '#66BB6A', 
+                            '#81C784', 
+                            '#A5D6A7', 
+                            '#C8E6C9'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10 } }
+                    }
+                }
+            });
+
+            // B. CHART 2: BAR CHART (Perbandingan Langsung)
+            const ctxKomoditas = document.getElementById('chartKomoditas');
+            new Chart(ctxKomoditas, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Harga Saat Ini (Rp/Kg)',
+                        data: prices,
+                        backgroundColor: 'rgba(46, 125, 50, 0.7)',
+                        borderColor: 'rgba(46, 125, 50, 1)',
+                        borderWidth: 1,
+                        borderRadius: 5
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { callback: function(value) { return 'Rp ' + value/1000 + 'rb'; } } }
+                    }
+                }
+            });
+
+            // C. CHART 3: ANALISA KONSUMSI (Simulasi Data Sementara)
+            // Untuk chart ini, karena belum ada tabel 'pupuk_usage', kita pakai dummy data
+            const ctxKonsumsi = document.getElementById('chartKonsumsi');
+            new Chart(ctxKonsumsi, {
+                type: 'bar',
+                data: {
+                    labels: ['Pupuk Urea', 'Pupuk NPK', 'Pupuk Organik'],
+                    datasets: [{
+                        label: 'Penggunaan (Kg)',
+                        data: [500, 300, 100],
+                        backgroundColor: ['#FFC107', '#FF9800', '#4CAF50'],
+                        borderRadius: 5
+                    }]
+                },
+                options: {
+                    indexAxis: 'y', // Horizontal
+                    scales: { x: { beginAtZero: true } },
+                    responsive: true, 
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // --- 4. FUNGSI TAB UI ---
         function openTab(evt, tabName) {
             var i, tabcontent, tabs;
             tabcontent = document.getElementsByClassName("tab-content");
@@ -208,97 +326,6 @@
             evt.currentTarget.className += " active";
         }
 
-        // --- B. CHART: KONTRIBUSI HARGA (PIE CHART) ---
-        // Perubahan: Type diubah dari 'line' menjadi 'pie'
-        const ctxPadi = document.getElementById('chartHargaPadi');
-        new Chart(ctxPadi, {
-            type: 'pie', // <--- DIUBAH DI SINI
-            data: {
-                labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
-                datasets: [{
-                    label: 'Harga Padi (Rp)',
-                    data: [6200, 6300, 6250, 6400, 6500, 6350, 6400],
-                    backgroundColor: [
-                        '#2E7D32', // Hijau Utama
-                        '#43A047', // Hijau Muda
-                        '#66BB6A', 
-                        '#81C784', 
-                        '#A5D6A7', 
-                        '#C8E6C9', 
-                        '#E8F5E9'  // Hampir putih
-                    ],
-                    borderColor: '#ffffff',
-                    borderWidth: 2
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            boxWidth: 12,
-                            padding: 10
-                        }
-                    }
-                }
-            }
-        });
-
-        // --- C. CHART: KOMODITAS (Bar Chart) ---
-        const ctxKomoditas = document.getElementById('chartKomoditas');
-        new Chart(ctxKomoditas, {
-            type: 'bar',
-            data: {
-                labels: ['Padi', 'Jagung', 'Kopi', 'Cabai'],
-                datasets: [{
-                    label: 'Rata-rata Harga (Rp/Kg)',
-                    data: [6400, 4100, 55000, 18000],
-                    backgroundColor: [
-                        'rgba(46, 125, 50, 0.8)',
-                        'rgba(255, 193, 7, 0.8)',
-                        'rgba(139, 69, 19, 0.8)',
-                        'rgba(205, 92, 92, 0.8)'
-                    ],
-                    borderRadius: 5
-                }]
-            },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false,
-                scales: {
-                    y: { beginAtZero: true }
-                }
-            }
-        });
-
-        // --- D. CHART: KONSUMSI PUPUK (Bar Chart Horizontal) ---
-        const ctxKonsumsi = document.getElementById('chartKonsumsi');
-        new Chart(ctxKonsumsi, {
-            type: 'bar', // Anda bisa ubah ini jadi 'doughnut' jika ingin lingkaran lubang tengah
-            data: {
-                labels: ['Pupuk Urea', 'Pupuk NPK', 'Pupuk Organik'],
-                datasets: [{
-                    label: 'Penggunaan (Kg)',
-                    data: [500, 300, 100],
-                    backgroundColor: [
-                        '#FFC107', 
-                        '#FF9800', 
-                        '#4CAF50'
-                    ],
-                    borderRadius: 5
-                }]
-            },
-            options: {
-                indexAxis: 'y', // Membuat bar chart jadi horizontal (biar lebih variatif)
-                scales: { 
-                    x: { beginAtZero: true } 
-                },
-                responsive: true, 
-                maintainAspectRatio: false
-            }
-        });
     </script>
 </body>
 </html>
