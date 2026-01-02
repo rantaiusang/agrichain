@@ -53,7 +53,7 @@
             margin-bottom: 2rem;
         }
 
-        .form-group { margin-bottom:1.2rem; text-align: left; }
+        .form-group { margin-bottom:1.2rem; text-align: left; position: relative; }
         label { display: block; margin-bottom:0.5rem; font-size:0.9rem; font-weight:600; color: var(--text-dark); }
 
         .form-input, .form-select {
@@ -69,8 +69,25 @@
         .form-input:focus, .form-select:focus {
             border-color: var(--primary-green);
             outline: none;
-            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.1);
+            box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
         }
+
+        /* Styling Tambahan untuk Input Konfirmasi */
+        .input-wrapper { position: relative; }
+        
+        /* Ikon Centang & Silang */
+        .pass-icon {
+            position: absolute;
+            right: 15px; /* Posisi di kanan dalam input */
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            pointer-events: none; /* Agar klik ikon tidak mempengaruhi input */
+            display: none; /* Default tersembunyi */
+            font-weight: bold;
+        }
+        .icon-success { color: var(--primary-green); }
+        .icon-error { color: var(--error); }
 
         .info-box {
             background-color: #E3F2FD;
@@ -191,7 +208,7 @@
 
         <form id="registerForm">
             
-            <!-- 1. PILIHAN PERAN (OPSION ADMIN DIHAPUS) -->
+            <!-- 1. PILIHAN PERAN (OPSI ADMIN DIHAPUS) -->
             <div class="form-group">
                 <label for="role">Saya mendaftar sebagai:</label>
                 <select id="role" class="form-select" required>
@@ -222,16 +239,25 @@
                 <input type="password" id="password" class="form-input" placeholder="Buat kata sandi" required minlength="6">
             </div>
 
-            <!-- 5. KONFIRMASI PASSWORD -->
+            <!-- 5. KONFIRMASI PASSWORD (INDIKATOR TAMBAHAN) -->
             <div class="form-group">
                 <label for="confirmPassword">Ulangi Kata Sandi</label>
-                <input type="password" id="confirmPassword" class="form-input" placeholder="Ketik ulang kata sandi" required>
+                <!-- WRAPPER AGAR IKON BISA DIPASANG DI DALAM INPUT -->
+                <div class="input-wrapper">
+                    <input type="password" id="confirmPassword" class="form-input" placeholder="Ketik ulang kata sandi" required>
+                    
+                    <!-- IKON SUKSES (CENTANG) -->
+                    <span id="passMatchIcon" class="pass-icon icon-success">✓</span>
+                    <!-- IKON GAGAL (SILANG) -->
+                    <span id="passMismatchIcon" class="pass-icon icon-error">✗</span>
+                </div>
+                
                 <div id="passError" class="error-msg">Kata sandi tidak cocok!</div>
             </div>
 
             <!-- 6. INFO WALLET -->
             <div class="info-box" style="background-color: #E8F5E9; color: #2E7D32;">
-                🛡️ <strong>Aman & Mudah:</strong> Dompet Blockchain (Wallet) akan dibuat otomatis oleh sistem nanti. Anda tidak perlu mengingat kode rumit saat ini.
+                🛡️ <strong>Aman & Mudah:</strong> Dompet Blockchain (Wallet) akan dibuat otomatis oleh sistem nanti. Anda tidak perlu mengingat kode rahasia saat ini.
             </div>
 
             <button type="submit" id="btnSubmit" class="btn-register">
@@ -253,7 +279,7 @@
         </div>
     </div>
 
-    <!-- SCRIPT UTAMA (LOGIKA REGISTER + SUPABASE - EMAIL ONLY) -->
+    <!-- SCRIPT UTAMA (LOGIKA REGISTER + SUPABASE + CEK PASSWORD) -->
     <script>
         // --- KONFIGURASI SUPABASE (ANON KEY) ---
         const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
@@ -264,11 +290,17 @@
         // --- DOM ELEMENTS ---
         const form = document.getElementById('registerForm');
         const roleSelect = document.getElementById('role');
-        const emailInput = document.getElementById('email'); // Mengambil ID email
+        const emailInput = document.getElementById('email');
         const btnSubmit = document.getElementById('btnSubmit');
         const spinner = document.getElementById('spinner');
         const btnText = document.getElementById('btnText');
         const passError = document.getElementById('passError');
+
+        // --- ELEMENTS UNTUK CEK PASSWORD (REALTIME) ---
+        const passInput = document.getElementById('password');
+        const confirmInput = document.getElementById('confirmPassword');
+        const matchIcon = document.getElementById('passMatchIcon'); // Tanda ✓
+        const mismatchIcon = document.getElementById('passMismatchIcon'); // Tanda ✗
 
         // --- FUNGSI MODAL ---
         function showModal(type, title, desc, redirectUrl) {
@@ -305,6 +337,38 @@
             }
         }
 
+        // --- EVENT LISTENER: CEK PASSWORD SAAT KETIK ---
+        confirmInput.addEventListener('input', function() {
+            const p1 = passInput.value;
+            const p2 = this.value; // Nilai kotak konfirmasi
+
+            // Reset Error Text
+            passError.style.display = 'none';
+
+            if (p2 === p1 && p2 !== "") {
+                // PASSWORD SAMA
+                // 1. Tampilkan Centang, Sembunyikan Silang
+                matchIcon.style.display = 'block';
+                mismatchIcon.style.display = 'none';
+                // 2. Ubah Border jadi Hijau
+                confirmInput.style.borderColor = 'var(--primary-green)';
+            } else {
+                // PASSWORD BEDA ATAU BELUM DIISI
+                if (p2 !== "") {
+                    // 1. Tampilkan Silang, Sembunyikan Centang
+                    mismatchIcon.style.display = 'block';
+                    matchIcon.style.display = 'none';
+                    // 2. Ubah Border jadi Merah
+                    confirmInput.style.borderColor = 'var(--error)';
+                } else {
+                    // Jika kosong, reset semua ikon
+                    matchIcon.style.display = 'none';
+                    mismatchIcon.style.display = 'none';
+                    confirmInput.style.borderColor = '#ddd';
+                }
+            }
+        });
+
         // --- EVENT LISTENER SAAT LOAD ---
         document.addEventListener("DOMContentLoaded", () => {
             roleSelect.value = "PETANI";
@@ -316,7 +380,7 @@
             e.preventDefault();
 
             const fullname = document.getElementById('fullname').value;
-            const email = document.getElementById('email').value; // Mengambil value email
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const role = document.getElementById('role').value;
@@ -338,9 +402,9 @@
 
             try {
                 // EMAIL ONLY: LANGSUNG PAKAI EMAIL TANPA KONFIRMASI
-                console.log("Mendaftarkan:", email);
+                console.log("Mencoba mendaftarkan:", email);
 
-                // LANGKAH 1: Buat Akun Autentikasi Supabase
+                // LANGKAH 1: Buat Akun Otentikasi Supabase
                 const { data: authData, error: authError } = await supabase.auth.signUp({
                     email: email, // Langsung pakai email
                     password: password,
@@ -357,7 +421,7 @@
                     throw authError;
                 }
 
-                console.log("✅ Auth Berhasil. ID User:", authData.user.id);
+                console.log("Auth Berhasil. ID User:", authData.user.id);
 
                 // LANGKAH 2: Simpan Data Detail ke 'profiles'
                 if (authData.user && authData.user.id) {
@@ -376,9 +440,7 @@
 
                     if (profileError) {
                         console.error("Gagal insert profile:", profileError);
-                        // Jika gagal insert profile tapi auth berhasil, user tetap bisa login
-                        // tapi error ditampilkan
-                        throw new Error("Akun dibuat, tapi data profil gagal disimpan. Silakan cek tabel database.");
+                        throw new Error("Gagal menyimpan data profil. Periksa tabel database.");
                     }
                 }
 
