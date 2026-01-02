@@ -406,9 +406,9 @@
         <div id="toast" class="toast">Pesan notifikasi</div>
     </div>
 
-    <!-- LOGIC SCRIPT -->
+    <!-- LOGIC SCRIPT (DIPERBARUI) -->
     <script>
-        // --- 1. KONFIGURASI SUPABASE (SUDAH DIISI) ---
+        // --- 1. KONFIGURASI SUPABASE ---
         const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -421,9 +421,7 @@
             currentUnit: 'unit' 
         };
 
-        // --- 3. MODULES ---
-
-        // UTILS
+        // --- 3. UTILS ---
         const Utils = {
             formatRupiah: (number) => {
                 return new Intl.NumberFormat('id-ID', {
@@ -433,26 +431,20 @@
                     maximumFractionDigits: 0
                 }).format(number);
             },
-
             showToast: (msg, type = 'normal') => {
                 const toast = document.getElementById('toast');
                 toast.textContent = msg;
                 toast.className = 'toast show';
-                
                 if (type === 'error') toast.classList.add('error');
                 else if (type === 'success') toast.classList.add('success');
-
                 setTimeout(() => { toast.classList.remove('show'); }, 3500);
             },
-
             setLoading: (isLoading) => {
                 const btn = document.getElementById('btnSubmit');
                 const spinner = document.getElementById('spinner');
                 const text = document.getElementById('btnText');
-                
                 AppState.isSubmitting = isLoading;
                 btn.disabled = isLoading;
-                
                 if (isLoading) {
                     spinner.style.display = 'inline-block';
                     text.textContent = 'Memproses...';
@@ -466,11 +458,11 @@
             }
         };
 
-        // MARKET DATA
+        // --- 4. MARKET DATA (LOGIKA PERBAIKAN) ---
         const MarketModule = {
             init: async () => {
                 try {
-                    // Mengambil data dari tabel 'harga_pasar' (sesuai database)
+                    // Coba ambil data dari Supabase
                     const { data, error } = await supabase
                         .from('harga_pasar') 
                         .select('commodity_name, current_price, unit') 
@@ -478,16 +470,18 @@
 
                     if (error) throw error;
 
+                    // Jika data ada dan isinya > 0
                     if (data && data.length > 0) {
                         MarketModule.populateSelect(data);
                     } else {
-                        document.getElementById('cropType').innerHTML = 
-                            `<option disabled selected>Belum ada data harga</option>`;
+                        // Jika tabel KOSONG
+                        console.warn("Database kosong.");
+                        MarketModule.loadEmptyData();
                     }
                 } catch (err) {
-                    console.error("Gagal load harga:", err);
-                    Utils.showToast("Gagal memuat data harga pasar", "error");
-                    // Gunakan Dummy Data
+                    console.error("Gagal koneksi Supabase:", err);
+                    // Jika ERROR (koneksi gagal / tabel salah nama) -> PAKAI DUMMY
+                    Utils.showToast("Gagal koneksi DB. Gunakan Mode Demo.", "error");
                     MarketModule.loadDummyData();
                 }
             },
@@ -501,31 +495,44 @@
                     
                     AppState.prices[key] = {
                         price: item.current_price,
-                        unit: item.unit || 'unit'
+                        unit: item.unit || 'Kg'
                     };
 
                     const opt = document.createElement('option');
                     opt.value = key;
-                    opt.dataset.unit = item.unit || 'unit'; 
+                    opt.dataset.unit = item.unit || 'Kg'; 
                     opt.dataset.price = item.current_price;
                     
-                    const unitText = (item.unit || 'unit').toUpperCase();
+                    const unitText = (item.unit || 'Kg').toUpperCase();
                     opt.textContent = `${item.commodity_name} (${Utils.formatRupiah(item.current_price)}/${unitText})`;
                     
                     select.appendChild(opt);
                 });
+                
+                // Reset selection
+                select.value = "";
             },
 
+            // Fungsi jika tabel benar-benar kosong
+            loadEmptyData: () => {
+                const select = document.getElementById('cropType');
+                select.innerHTML = '<option disabled selected>Tabel Harga Kosong</option>';
+                Utils.showToast("Tabel harga_pasar masih kosong!", "error");
+            },
+
+            // Fungsi jika terjadi Error / Gagal koneksi
             loadDummyData: () => {
                 const data = [
                     { commodity_name: 'Padi Gabah', current_price: 5000, unit: 'Kg' },
                     { commodity_name: 'Jagung Pipil', current_price: 4000, unit: 'Kg' },
                     { commodity_name: 'Kelapa', current_price: 2500, unit: 'Pcs' }, 
-                    { commodity_name: 'Padi Beras', current_price: 12000, unit: 'Karung' } 
+                    { commodity_name: 'Padi Beras', current_price: 12000, unit: 'Karung' },
+                    { commodity_name: 'Kentang', current_price: 12000, unit: 'Kg' } 
                 ];
+                
                 MarketModule.populateSelect(data);
+                
                 const select = document.getElementById('cropType');
-                // Tambahkan indikator mode demo di awal dropdown
                 const demoOpt = document.createElement('option');
                 demoOpt.disabled = true;
                 demoOpt.selected = true;
@@ -534,7 +541,7 @@
             }
         };
 
-        // FORM HANDLER
+        // --- 5. FORM HANDLER ---
         const HarvestModule = {
             updateEstimate: () => {
                 const cropSelect = document.getElementById('cropType');
@@ -630,9 +637,9 @@
                         status: 'pending'
                     };
 
-                    // --- PERBAIKAN UTAMA: NAMA TABEL DIGANTI JADI 'panen' ---
+                    // Pastikan nama tabel 'panen' ada di Supabase
                     const { error } = await supabase
-                        .from('panen') // <--- Sesuai nama tabel di Database
+                        .from('panen') 
                         .insert([payload]);
 
                     if (error) throw error;
@@ -654,24 +661,25 @@
             }
         };
 
-        // --- INITIALIZATION ---
+        // --- 6. INITIALIZATION ---
         document.addEventListener("DOMContentLoaded", async () => {
+            // Cek Login
             const { data: { session } } = await supabase.auth.getSession();
-            
             if (session) {
                 AppState.currentUser = session.user;
             } else {
                 AppState.currentUser = null;
             }
 
+            // Muat Data Pasar
             await MarketModule.init();
             
+            // Setup Event Listeners
             document.getElementById('quantity').addEventListener('input', HarvestModule.updateEstimate);
             document.getElementById('cropType').addEventListener('change', HarvestModule.updateEstimate);
             
             HarvestModule.toggleSubmit();
         });
-
     </script>
 </body>
 </html>
