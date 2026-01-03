@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hitung Keuntungan - AgriChain</title>
+    
+    <!-- Library Blockchain (Opsional) -->
+    <script src="https://unpkg.com/@web3modal/web3modal"></script>
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+
+    <style>
+        :root {
+            --primary: #2E7D32;
+            --primary-dark: #1B5E20;
+            --light-green: #E8F5E9;
+            --text-dark: #333;
+            --text-grey: #666;
+            --white: #ffffff;
+            --danger: #D32F2F;
+            --shadow: 0 2px 8px rgba(0,0,0,0.05);
+            --radius: 12px;
+        }
+
+        body {
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #F5F7FA;
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--white);
+            padding: 25px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+        }
+
+        h2 { margin-top: 0; color: var(--primary); }
+        p.subtitle { color: var(--text-grey); margin-bottom: 25px; font-size: 1.1rem; }
+        
+        /* --- RINGKASAN (SUMMARY) --- */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .summary-item {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border-top: 4px solid #ddd;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+
+        .summary-item.sales { border-color: var(--primary); }
+        .summary-item.cost { border-color: var(--danger); }
+        .summary-item.profit { border-color: var(--text-dark); background: var(--light-green); }
+
+        .summary-label {
+            font-size: 0.85rem;
+            color: var(--text-grey);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .summary-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin: 0;
+        }
+
+        .summary-item.profit .summary-value { color: var(--primary); }
+        .summary-item.profit .summary-value.negative { color: var(--danger); }
+        
+        /* --- TABEL --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: #fafafa;
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 0.9rem;
+        }
+        
+        /* Warna Header Tabel */
+        th.header-sales { background: var(--light-green); color: var(--primary); }
+        th.header-cost { background: #FFEBEE; color: var(--danger); }
+
+        .btn-calc {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1.1rem;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(46, 125, 50, 0.2);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-calc:hover { 
+            background: var(--primary-dark); 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(46, 125, 50, 0.3);
+        }
+        
+        /* --- LOADING --- */
+        .spinner {
+            display: inline-block;
+            width: 20px; height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 30px;
+            color: var(--text-grey);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .back-link:hover {
+            background: #f9f9f9;
+            color: var(--text-dark);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="card">
+            <h2>📊 Hitung Laba Rugi</h2>
+            <p class="subtitle">Kalkulasi keuangan pertanian Anda (Simulasi).</p>
+            
+            <!-- TOMBOL HITUNG -->
+            <button class="btn-calc" onclick="hitungLabaRugi()">
+                <span class="spinner" id="spinner"></span>
+                <span id="btnText">Hitung Laba Rugi Sekarang</span>
+            </button>
+        </div>
+
+        <!-- HASIL RINGKASAN -->
+        <div class="card" style="display: none;" id="resultCard">
+            <h3 style="margin: 0 0 20px 0; color: #333; border-bottom: 1px solid #eee; padding-bottom: 10px;">Ringkasan Keuangan</h3>
+            <div class="summary-grid">
+                <div class="summary-item sales">
+                    <div class="summary-label">Total Penjualan</div>
+                    <div class="summary-value" id="totalPenjualan">Rp 0</div>
+                </div>
+                <div class="summary-item cost">
+                    <div class="summary-label">Total Biaya</div>
+                    <div class="summary-value" id="totalBiaya">Rp 0</div>
+                </div>
+                <div class="summary-item profit">
+                    <div class="summary-label">Laba / Rugi</div>
+                    <div class="summary-value" id="labaRugi">Rp 0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DETAIL TRANSAKSI -->
+        <div class="card" style="display: none;" id="detailCard">
+            <h3 style="margin: 0; color: #333;">Rincian Transaksi</h3>
+            <table>
+                <thead>
+                    <tr class="header-sales">
+                        <th colspan="2" style="text-align: center; color: var(--primary);">PENDAPATAN (PENJUALAN)</th>
+                    </tr>
+                </thead>
+                <tbody id="tabelDetail">
+                    <!-- JS akan mengisi ini -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- TOMBOL KEMBALI -->
+        <a href="dashboard-petani.html" class="back-link">← Kembali ke Dashboard</a>
+    </div>
+
+    <!-- SCRIPT UTAMA -->
+    <script type="module">
+        // --- DATA DUMMY (SIMULASI) ---
+        // Data ini akan digunakan untuk menghitung laba rugi di sisi frontend
+        // Di aplikasi nyata, data ini diambil dari tabel 'panen' (pendapatan) dan tabel 'biaya' (pengeluaran)
+        
+        const dataPenjualan = [
+            { id: 1, produk: "Padi Cianjur IR64", harga: 6500, jumlah: 500 }, // 500kg @ 6500
+            { id: 2, produk: "Jagung Manis Kualitas Super", harga: 4500, jumlah: 1000 }, // 1Ton @ 4500
+            { id: 3, produk: "Bibit Pupuk NPK 16-16-16", harga: 150000, jumlah: 5 }, // 5 Sak @ 150rb
+            { id: 4, produk: "Jasa Perontokan Hasil Panen", harga: 250000, jumlah: 1 }
+        ];
+
+        const dataBiaya = [
+            { id: 1, keterangan: "Sewa Lahan / Pajak Desa", jumlah: 1500000 },
+            { id: 2, keterangan: "Pembelian Benih Padi Unggul", jumlah: 500000 },
+            { id: 3, keterangan: "Pembelian Pupuk & Obat Hama", jumlah: 800000 },
+            { id: 4, keterangan: "Upah Buruh Tani (2 Orang)", jumlah: 600000 }
+        ];
+
+        // --- FUNGSI UTAMA ---
+
+        function hitungLabaRugi() {
+            // 1. Hitung Total Pendapatan
+            let totalPenjualan = 0;
+            let detailPenjualanHtml = '';
+
+            dataPenjualan.forEach(item => {
+                const subtotal = item.harga * item.jumlah;
+                totalPenjualan += subtotal;
+                
+                // Tambahkan ke tabel detail (Row Hijau)
+                detailPenjualanHtml += `
+                    <tr>
+                        <td>${item.produk} <small>(Rp ${item.harga.toLocaleString('id-ID')} x ${item.jumlah})</small></td>
+                        <td style="color: var(--primary); font-weight: bold; text-align: right;">+ Rp ${subtotal.toLocaleString('id-ID')}</td>
+                    </tr>
+                `;
+            });
+
+            // 2. Hitung Total Biaya
+            let totalBiaya = 0;
+            let detailBiayaHtml = '';
+
+            dataBiaya.forEach(item => {
+                totalBiaya += item.jumlah;
+                // Tambahkan ke tabel detail (Row Merah/Pink)
+                detailBiayaHtml += `
+                    <tr style="background: #FFF5F5;">
+                        <td>${item.keterangan}</td>
+                        <td style="color: var(--danger); font-weight: bold; text-align: right;">- Rp ${item.jumlah.toLocaleString('id-ID')}</td>
+                    </tr>
+                `;
+            });
+
+            // 3. Hitung Laba Rugi Bersih
+            const labaRugi = totalPenjualan - totalBiaya;
+
+            // 4. Update UI (Tampilan)
+            
+            // Tampilkan Kartu Hasil
+            document.getElementById('resultCard').style.display = 'block';
+            document.getElementById('detailCard').style.display = 'block';
+
+            // Format Uang (Intl NumberFormat)
+            const formatRupiah = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(num);
+
+            // Masukkan ke Ringkasan
+            document.getElementById('totalPenjualan').textContent = formatRupiah(totalPenjualan);
+            document.getElementById('totalBiaya').textContent = formatRupiah(totalBiaya);
+            
+            const elemLaba = document.getElementById('labaRugi');
+            elemLaba.textContent = formatRupiah(labaRugi);
+            
+            // Warna Indikator & Label
+            const cardProfit = document.querySelector('.summary-item.profit');
+            if (labaRugi >= 0) {
+                elemLaba.classList.remove('negative'); // Hijau (default)
+                cardProfit.style.background = 'var(--light-green)';
+            } else {
+                elemLaba.classList.add('negative'); // Merah
+                cardProfit.style.background = '#FFEBEE';
+            }
+
+            // Masukkan ke Tabel Detail
+            const detailBody = document.getElementById('tabelDetail');
+            
+            // Header Tabel Penjualan
+            const penjualanHeader = `
+                <tr class="header-sales">
+                    <th colspan="2" style="text-align: center; color: var(--primary);">PENDAPATAN (PENJUALAN)</th>
+                </tr>
+            `;
+            
+            // Header Tabel Biaya
+            const biayaHeader = `
+                <tr class="header-cost">
+                    <th colspan="2" style="text-align: center; color: var(--danger);">BIAYA (PENGELUARAN)</th>
+                </tr>
+            `;
+
+            // Gabung Semua (Penjualan + Biaya)
+            detailBody.innerHTML = penjualanHeader + detailPenjualanHtml + biayaHeader + detailBiayaHtml;
+        }
+    </script>
+</body>
+</html>
