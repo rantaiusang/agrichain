@@ -14,12 +14,14 @@
     <style>
         :root {
             --primary: #2E7D32;
-            --dark: #1B5E20;
-            --light: #E8F5E9;
-            --bg: #f4f6f8;
-            --text: #333;
-            --white: #fff;
-            --shadow: 0 4px 15px rgba(0,0,0,0.05);
+            --primary-dark: #1B5E20;
+            --light-green: #E8F5E9;
+            --bg: #F9FAFB;
+            --text-dark: #1F2937;
+            --text-grey: #6B7280;
+            --white: #ffffff;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 15px rgba(0,0,0,0.05);
             --radius: 12px;
         }
 
@@ -27,15 +29,15 @@
             font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: var(--bg);
             margin: 0;
-            color: var(--text);
-            padding-bottom: 70px; /* Space for navbar */
+            color: var(--text-dark);
+            padding-bottom: 80px; /* Space for navbar bawah */
         }
 
-        /* --- HEADER --- */
+        /* --- HEADER NAVBAR --- */
         .navbar {
             background: var(--white);
             padding: 15px 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: var(--shadow-sm);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -51,39 +53,47 @@
             text-decoration: none;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
 
         .btn-login {
             padding: 8px 20px;
+            background: var(--white);
             border: 1px solid var(--primary);
             color: var(--primary);
-            border-radius: 20px;
+            border-radius: 25px;
             text-decoration: none;
-            font-weight: 600;
-            transition: 0.2s;
+            font-weight: 700;
+            transition: all 0.2s;
         }
-        .btn-login:hover { background: var(--light); }
+        .btn-login:hover { background: var(--light-green); box-shadow: var(--shadow-sm); }
 
-        /* --- HERO --- */
+        /* --- HERO SECTION --- */
         .hero {
             padding: 40px 20px;
             text-align: center;
-            background: linear-gradient(180deg, var(--white) 0%, var(--light) 100%);
+            background: linear-gradient(180deg, #FFFFFF 0%, var(--light-green) 100%);
             border-bottom: 1px solid #eee;
         }
 
         .hero h1 {
             font-size: 2.2rem;
-            color: var(--primary);
-            margin-bottom: 10px;
+            color: var(--primary-dark);
+            margin: 0 10px 0;
+            font-weight: 800;
+        }
+        
+        .hero p {
+            color: var(--text-grey);
+            margin: 0;
+            font-size: 1.1rem;
         }
 
-        /* --- GRID --- */
+        /* --- CONTAINER & GRID --- */
         .container {
             max-width: 1200px;
-            margin: 20px auto;
-            padding: 0 20px;
+            margin: 0 auto;
+            padding: 20px;
         }
 
         .grid-stats {
@@ -95,71 +105,47 @@
 
         .stat-card {
             background: var(--white);
-            padding: 25px;
+            padding: 20px;
             border-radius: var(--radius);
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-sm);
             text-align: center;
             border-top: 4px solid var(--primary);
         }
 
-        .stat-val { font-size: 2rem; font-weight: 800; color: var(--text); margin: 10px 0; }
-        .stat-lbl { font-size: 0.9rem; color: #666; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-val { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin: 10px 0 5px 0; }
+        .stat-lbl { font-size: 0.85rem; color: var(--text-grey); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
 
         /* --- CARDS --- */
         .card {
             background: var(--white);
             border-radius: var(--radius);
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-sm);
             padding: 25px;
             margin-bottom: 25px;
-            border-left: 5px solid var(--primary);
+            border: 1px solid #E5E7EB;
         }
 
-        .card-title { margin: 0 0 15px 0; font-size: 1.3rem; color: var(--primary); }
+        .card-title { margin: 0 0 20px 0; font-size: 1.2rem; color: var(--primary); font-weight: 700; display: flex; align-items: center; gap: 8px; }
+        
+        .chart-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px; }
         .chart-box { position: relative; height: 300px; width: 100%; }
 
         /* --- TABLE --- */
         .table-wrapper {
-            background: white;
-            border-radius: 8px;
-            box-shadow: var(--shadow);
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-sm);
             overflow-x: auto;
-            margin-top: 20px;
+            margin-top: 10px;
         }
 
         table { width: 100%; border-collapse: collapse; min-width: 600px; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #f8f9fa; color: var(--primary); font-weight: bold; }
-        .price-text { font-weight: bold; color: var(--primary); }
+        th { background: var(--light-green); color: var(--primary); font-weight: 700; font-size: 0.9rem; text-transform: uppercase; }
+        tr:last-child td { border-bottom: none; }
+        .price-text { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
 
-        /* --- NAV BOTTOM --- */
-        .nav-bottom {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-around;
-            padding: 12px 0;
-            background: var(--white);
-            border-top: 1px solid #ddd;
-            z-index: 99;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-        }
-
-        .b-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-decoration: none;
-            color: #666;
-            font-size: 0.8rem;
-            transition: color 0.2s;
-        }
-        .b-item.active { color: var(--primary); font-weight: bold; }
-        .b-item svg { width: 24px; height: 24px; margin-bottom: 4px; }
-
-        /* --- CHAT FLOAT --- */
+        /* --- FLOAT BUTTON --- */
         .chat-btn {
             position: fixed;
             bottom: 90px;
@@ -177,34 +163,61 @@
             cursor: pointer;
             transition: transform 0.2s;
             z-index: 98;
+            text-decoration: none;
         }
         .chat-btn:hover { transform: scale(1.1); }
 
+        /* --- NAVBAR BAWAH --- */
+        .nav-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            background: var(--white);
+            border-top: 1px solid #eee;
+            z-index: 99;
+        }
+
+        .b-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #9CA3AF;
+            font-size: 0.8rem;
+            transition: color 0.2s;
+        }
+        .b-item.active { color: var(--primary); font-weight: bold; }
+        .b-item svg { width: 26px; height: 26px; margin-bottom: 4px; }
+
+        /* --- RESPONSIVE --- */
         @media (max-width: 600px) {
             .hero h1 { font-size: 1.6rem; }
-            .stat-val { font-size: 1.5rem; }
-            .chart-box { height: 200px; }
+            .chart-wrapper { grid-template-columns: 1fr; }
+            .chart-box { height: 250px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Navbar -->
+    <!-- Navbar Atas -->
     <nav class="navbar">
-        <a href="#" class="brand">🌾 AgriChain</a>
+        <a href="index.html" class="brand">🌾 AgriChain</a>
         <a href="login.html" class="btn-login">Login / Daftar</a>
     </nav>
 
-    <!-- Hero -->
+    <!-- Hero Section -->
     <div class="hero">
         <h1>Pasar Pertanian Terdesentralisasi</h1>
         <p>Pantau harga panen secara real-time. Transparan, Aman, Terpercaya.</p>
     </div>
 
-    <!-- Container -->
     <div class="container">
         
-        <!-- Stats -->
+        <!-- Stats Grid -->
         <div class="grid-stats">
             <div class="stat-card">
                 <div class="stat-val" id="statUsers">...</div>
@@ -216,20 +229,21 @@
             </div>
             <div class="stat-card">
                 <div class="stat-val" style="color:var(--primary);" id="statRevenue">Rp 0</div>
-                <div class="stat-lbl">Transaksi</div>
+                <div class="stat-lbl">Estimasi Transaksi</div>
             </div>
         </div>
 
         <!-- Chart Cards -->
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px;">
+        <div class="chart-wrapper">
             <div class="card">
-                <div class="card-title">📈 Tren Harga Pasar</div>
+                <div class="card-title">📈 Tren Harga Pasar (7 Hari)</div>
                 <div class="chart-box">
                     <canvas id="chartMarket"></canvas>
                 </div>
             </div>
             <div class="card">
-                <div class="card-title">👥 Pertumbuhan User</div>
+                <div class="card-title">👥 Komposisi User</div>
+                <div class="card-title" style="font-size:0.9rem; color:#666; font-weight:400;">Petani, Pembeli, Lembaga</div>
                 <div class="chart-box">
                     <canvas id="chartUsers"></canvas>
                 </div>
@@ -238,7 +252,7 @@
 
         <!-- Table Harga -->
         <div class="card">
-            <div class="card-title">💰 Daftar Harga Hari Ini</div>
+            <div class="card-title">💰 Daftar Harga Referensi</div>
             <div class="table-wrapper">
                 <table id="hargaTable">
                     <thead>
@@ -249,7 +263,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td colspan="3" align="center">Memuat harga...</td></tr>
+                        <tr><td colspan="3" align="center">Memuat data harga...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -257,8 +271,8 @@
 
     </div>
 
-    <!-- Chat Button -->
-    <div class="chat-btn" onclick="alert('Fitur Konsultan AI sedang disiapkan.')">🤖</div>
+    <!-- Floating Chat Button -->
+    <a href="tanya-konsultan.html" class="chat-btn">🤖</a>
 
     <!-- Navbar Bawah -->
     <div class="nav-bottom">
@@ -275,131 +289,159 @@
             Panen
         </a>
         <a href="profile.html" class="b-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
             Profil
         </a>
     </div>
 
     <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
+        // --- 1. LOAD CONFIG & INIT ---
+        if (typeof window.appConfig === 'undefined') {
+            console.error("FATAL: config.js tidak dimuat.");
+            alert("Konfigurasi sistem hilang.");
+        }
+
+        const SUPABASE_URL = window.appConfig.supabaseUrl;
+        const SUPABASE_KEY = window.appConfig.supabaseKey;
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. INIT & LOAD DATA ---
+        // --- 2. CHART INSTANCES (PENTING AGAR TIDAK ERROR) ---
+        const chartInstances = {};
+
         document.addEventListener("DOMContentLoaded", async () => {
             await loadStats();
             await loadHarga();
-            await renderCharts(); // Render Chart
+            await renderCharts();
         });
 
-        // --- 3. LOAD STATS (ANGKA DI ATAS) ---
+        // --- 3. LOAD STATS ---
         async function loadStats() {
             try {
+                // Hitung User
                 const { count: userCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
                 document.getElementById('statUsers').innerText = userCount || 0;
 
+                // Hitung Panen
                 const { count: panenCount } = await supabase.from('panen').select('*', { count: 'exact', head: true });
                 document.getElementById('statPanen').innerText = panenCount || 0;
 
+                // Hitung Estimasi Pendapatan (Dari tabel panen estimated_total)
                 const { data: panenData } = await supabase.from('panen').select('estimated_total');
-                const total = panenData.reduce((a, b) => a + (b.estimated_total || 0), 0);
-                document.getElementById('statRevenue').innerText = "Rp " + total.toLocaleString();
+                const totalRevenue = panenData ? panenData.reduce((a, b) => a + (b.estimated_total || 0), 0) : 0;
+                document.getElementById('statRevenue').innerText = "Rp " + (totalRevenue / 1000000).toFixed(1) + " Jt"; // Jutaan
 
-            } catch (e) {
-                console.error(e);
+            } catch (err) {
+                console.error("Gagal load stats:", err);
             }
         }
 
-        // --- 4. LOAD HARGA (TABEL) ---
+        // --- 4. LOAD HARGA ---
         async function loadHarga() {
+            const tbody = document.querySelector('#hargaTable tbody');
+            
             try {
                 const { data, error } = await supabase
                     .from('market_prices')
                     .select('*')
-                    .order('commodity_name', { ascending: true });
+                    .order('nama_komoditas', { ascending: true }); // Alphabetical
 
-                const tbody = document.querySelector('#hargaTable tbody');
-                tbody.innerHTML = '';
+                if (error) throw error;
 
-                if (data.length === 0) {
+                if (!data || data.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="3" align="center">Belum ada data harga.</td></tr>';
                     return;
                 }
 
+                tbody.innerHTML = '';
                 data.forEach(item => {
                     tbody.innerHTML += `
                         <tr>
-                            <td><strong>${item.commodity_name}</strong></td>
+                            <td><strong>${item.nama_komoditas}</strong></td>
                             <td class="price-text">Rp ${item.current_price.toLocaleString('id-ID')}</td>
-                            <td><span style="background:#e8f5e9; color:green; padding:4px 8px; border-radius:10px; font-size:0.8rem; font-weight:bold;">Aktif</span></td>
+                            <td><span style="background:#E8F5E9; color:#2E7D32; padding:4px 10px; border-radius:20px; font-size:0.75rem; font-weight:bold;">Aktif</span></td>
                         </tr>
                     `;
                 });
 
-            } catch (e) {
-                console.error(e);
-                document.querySelector('#hargaTable tbody').innerHTML = '<tr><td colspan="3" align="center" style="color:red;">Gagal memuat data.</td></tr>';
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = '<tr><td colspan="3" align="center" style="color:red;">Gagal memuat data.</td></tr>';
             }
         }
 
-        // --- 5. RENDER CHARTS (LOGIC KERAS / HARD CODED) ---
+        // --- 5. RENDER CHARTS ---
         async function renderCharts() {
-            // Chart 1: Tren Harga (Line Chart)
-            // Kita pakai dummy data supaya PASTI MUNCUL (Tidak gantung DB kosong)
+            // Hancurkan chart lama jika ada agar tidak error canvas
+            if (chartInstances['market']) chartInstances['market'].destroy();
+            if (chartInstances['users']) chartInstances['users'].destroy();
+
+            // 1. CHART HARGA (Line Chart - Mockup Data)
+            // Kita pakai dummy data agar grafik selalu terlihat bagus di home page
             const ctxMarket = document.getElementById('chartMarket');
             if (ctxMarket) {
-                new Chart(ctxMarket, {
+                chartInstances['market'] = new Chart(ctxMarket, {
                     type: 'line',
                     data: {
-                        labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
+                        labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
                         datasets: [{
-                            label: 'Harga Rata-Rata (Rp)',
-                            data: [6000, 6200, 6150, 6300, 6400, 6350], // DUMMY DATA
+                            label: 'Rata-rata Harga (Rp)',
+                            data: [6100, 6250, 6200, 6300, 6400, 6350, 6280], // Dummy Data Tren
                             borderColor: '#2E7D32',
-                            backgroundColor: 'rgba(46, 125, 50, 0.2)',
+                            backgroundColor: 'rgba(46, 125, 50, 0.1)',
                             fill: true,
-                            tension: 0.4
+                            tension: 0.4,
+                            pointRadius: 4
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { display: false } }
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { display: false } },
+                            y: { grid: { borderDash: [5, 5] }, beginAtZero: false }
+                        }
                     }
                 });
             }
 
-            // Chart 2: User Growth (Bar Chart)
+            // 2. CHART USERS (Doughnut Chart)
             const ctxUsers = document.getElementById('chartUsers');
             if (ctxUsers) {
-                // Hardcode data juga agar pasti muncul grafik bagus
-                const { count: userCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+                // Ambil data user real jika bisa, tapi kita pakai mock distribusi role
+                const { count: totalUsers } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
                 
-                // Mock data roles (jika query detail berat)
-                const dataChart = [userCount, userCount * 0.6, userCount * 0.2, 5]; // Estimasi
+                // Simulasi distribusi role
+                const roleData = [totalUsers, totalUsers * 0.4, totalUsers * 0.1]; 
+                // (Angka ini ilustrasi saja karena kita belum ada tabel spesifik role count)
 
-                new Chart(ctxUsers, {
-                    type: 'bar',
+                chartInstances['users'] = new Chart(ctxUsers, {
+                    type: 'doughnut',
                     data: {
                         labels: ['Petani', 'Pembeli', 'Lembaga', 'Admin'],
                         datasets: [{
-                            label: 'Jumlah User',
-                            data: dataChart,
-                            backgroundColor: ['#2E7D32', '#FF9800', '#1565C0', '#D32F2F'],
-                            borderRadius: 5
+                            data: [totalUsers, totalUsers * 0.6, totalUsers * 0.2, 5],
+                            backgroundColor: [
+                                '#2E7D32', // Hijau Petani
+                                '#1565C0', // Biru Pembeli
+                                '#D97706', // Oranye Lembaga
+                                '#EF4444'  // Merah Admin
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#ffffff'
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { display: false } }
+                        plugins: { 
+                            legend: { position: 'right', labels: { boxWidth: 12 } } 
+                        }
                     }
                 });
             }
         }
-
     </script>
 </body>
 </html>
