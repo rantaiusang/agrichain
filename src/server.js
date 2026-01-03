@@ -1,95 +1,47 @@
-// --- API REQUEST RESET PASSWORD ---
+const express = require('express');
+const cors = require('cors');
+// JANGAN pakai require('dotenv').config() jika di Vercel
+// Vercel otomatis menyuntikkan .env ke process.env
 
-// 1. API: User Request Reset (Lupa Password)
-app.post('/api/request-reset', async (req, res) => {
-    const { phone } = req.body;
+const app = express();
+const PORT = process.env.PORT || 5000;
 
-    if (!phone) {
-        return res.status(400).json({ success: false, message: "Nomor HP wajib diisi." });
-    }
+// Import Routes
+const authRouter = require('./routes/auth');
+const resetRouter = require('./routes/request-reset');
 
-    try {
-        // Cek apakah nomor HP ada di database
-        const { data: user, error } = await supabase
-            .from('agrichain_users')
-            .select('*')
-            .eq('phone_number', phone)
-            .single();
+// --- MIDDLEWARE ---
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-        if (error || !user) {
-            // TIPS KEAMANAN: Jangan beritahu user bahwa nomor HP TIDAK ada.
-            // Bilang saja "Pesan terkirim" agar hacker tidak menebak akun.
-            // Tapi untuk demo, kita bilang "Nomor HP tidak ditemukan".
-            return res.status(404).json({ success: false, message: "Nomor HP tidak ditemukan di sistem." });
-        }
+// --- SUPABASE CLIENT ---
+const { createClient } = require('@supabase/supabase-js');
 
-        // 2. Generate Token Unik (Berlaku 1 Jam)
-        const resetToken = Math.random().toString(36).substr(2, 8).toUpperCase();
-        
-        // 3. Simpan Token ke tabel user (Opsional, lebih aman)
-        // Pastikan tabel `agrichain_users` ada kolom `reset_token` (text).
-        await supabase
-            .from('agrichain_users')
-            .update({ reset_token: resetToken })
-            .eq('id', user.id);
+// Menggunakan process.env (Vercel akan menggantinya dengan data dari Settings)
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
 
-        // 4. Buat Link Reset (URL Reset Password)
-        const resetLink = `http://localhost:5500/frontend/src/reset-password.html?token=${resetToken}`;
-        
-        // 5. Format Pesan WhatsApp
-        const waMessage = `Halo ${user.full_name},\n\nAnda meminta reset kata sandi.\nToken Anda: *${resetToken}*\n\nAtau klik link ini:\n${resetLink}`;
+if (!supabaseUrl || !supabaseKey) {
+    console.error("FATAL: Environment Variables SUPABASE_URL atau SUPABASE_KEY tidak ditemukan!");
+}
 
-        // 6. Simpan Link/Token ke Array Sementara (Untuk Bot API WA - Simulasi)
-        // Di produksi nyata, Anda akan mengirim pesan ini ke WhatsApp API Bot.
-        // Untuk demo saat ini, kita print ke console backend.
-        console.log("--- PESAN WHATSAPP ---");
-        console.log("Target:", phone);
-        console.log("Pesan:", waMessage);
-        console.log("Link Reset:", resetLink);
-        
-        res.status(200).json({ 
-            success: true, 
-            message: "Pesan instruksi reset telah dikirim ke WhatsApp Anda." 
-        });
+const supabase = createClient(supabaseUrl, supabaseKey);
+app.set('supabase', supabase);
 
-    } catch (err) {
-        console.error("Error request reset:", err);
-        res.status(500).json({ success: false, message: "Terjadi kesalahan server." });
-    }
+// --- ROUTING ---
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'OK', message: 'AgriChain Backend running on Vercel' });
 });
 
-// 2. API: Reset Password (Saat klik link token di email/wa)
-app.post('/api/reset-password', async (req, res) => {
-    const { token, newPassword } = req.body;
+app.use('/api/auth', authRouter);
+app.use('/api', resetRouter); // Routes reset password
 
-    if (!token || !newPassword) {
-        return res.status(400).json({ success: false, message: "Token dan Password baru wajib diisi." });
-    }
+app.use((req, res) => {
+    res.status(404).json({ success: false, message: 'Endpoint tidak ditemukan' });
+});
 
-    try {
-        // Cari user berdasarkan Token Reset
-        const { data: user, error } = await supabase
-            .from('agrichain_users')
-            .select('*')
-            .eq('reset_token', token) // Cari yang token-nya sama
-            .single();
-
-        if (error || !user) {
-            return res.status(400).json({ success: false, message: "Token Reset tidak valid atau sudah kadaluarsa." });
-        }
-
-        // Update Password Baru
-        const { error: updateError } = await supabase
-            .from('agrichain_users')
-            .update({ password: newPassword, reset_token: null }) // Kosongkan token setelah dipakai
-            .eq('id', user.id);
-
-        if (updateError) throw updateError;
-
-        res.status(200).json({ success: true, message: "Password berhasil diubah! Silakan login." });
-
-    } catch (err) {
-        console.error("Error reset password:", err);
-        res.status(500).json({ success: false, message: "Gagal mereset password." });
-    }
+// --- START SERVER ---
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
 });
