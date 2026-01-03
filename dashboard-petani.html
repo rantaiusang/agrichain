@@ -4,8 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard Petani - AgriChain</title>
+    
+    <!-- Library Supabase & Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
     <style>
         :root {
             --primary: #2E7D32;
@@ -56,11 +59,12 @@
             margin: -50px auto 20px; /* Naik ke atas header */
             position: relative;
             z-index: 10;
+            padding: 0 20px; /* Agar responsif di mobile kecil */
         }
 
         .stat-card {
             background: var(--white);
-            width: 140px;
+            flex: 1; /* Biar flexible */
             padding: 15px;
             border-radius: var(--radius);
             box-shadow: var(--shadow-float);
@@ -86,7 +90,7 @@
         .view-all { color: var(--primary); text-decoration: none; font-size: 0.85rem; font-weight: 600; }
 
         /* --- CHART CARD --- */
-        .card { background: var(--white); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); margin-bottom: 20px; border: 1px solid #E5E7EB; }
+        .card { background: var(--white); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); margin-bottom: 20px; border:1px solid #E5E7EB; }
         
         .chart-box { height: 200px; position: relative; width: 100%; }
 
@@ -149,6 +153,7 @@
             gap: 10px;
             box-shadow: 0 10px 20px rgba(46, 125, 50, 0.4);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
             position: relative;
             overflow: hidden;
         }
@@ -177,11 +182,11 @@
         .nav-bottom {
             position: fixed;
             bottom: 0; left: 0; width: 100%;
-            background: white;
-            border-top: 1px solid #E5E7EB;
             display: flex;
             justify-content: space-around;
-            padding: 12px 0;
+            padding: 10px 0;
+            background: var(--white);
+            border-top: 1px solid #ddd;
             z-index: 99;
         }
 
@@ -196,10 +201,9 @@
             transition: color 0.2s;
         }
         .b-item.active { color: var(--primary); }
-        .b-item svg { width: 26px; height: 26px; }
+        .b-item svg { width: 24px; height: 24px; }
 
         /* Loading */
-        .skeleton { background: #f0f0f0; border-radius: 4px; color: transparent; }
         .loading-text { text-align: center; padding: 20px; color: #999; font-size: 0.9rem; }
     </style>
 </head>
@@ -265,7 +269,7 @@
     <!-- NAVBAR BOTTOM -->
     <nav class="nav-bottom">
         <a href="index.html" class="b-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2z"></path></svg>
             <span>Beranda</span>
         </a>
         <a href="belanja.html" class="b-item">
@@ -284,9 +288,14 @@
 
     <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. CONFIG ---
-        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
+        // --- 1. LOAD CONFIG & INIT ---
+        if (typeof window.appConfig === 'undefined') {
+            console.error("FATAL: config.js tidak dimuat.");
+            alert("Konfigurasi sistem hilang.");
+        }
+
+        const SUPABASE_URL = window.appConfig.supabaseUrl;
+        const SUPABASE_KEY = window.appConfig.supabaseKey;
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentUser = null;
@@ -297,8 +306,8 @@
             // Cek Session (Wajib)
             const { data: { session }, error } = await supabase.auth.getSession();
             if (error || !session) {
-                alert("Anda belum login. Redirecting...");
-                window.location.href = '../login.html';
+                alert("Anda belum login. Mengarahkan ke halaman login...");
+                window.location.href = 'login.html';
                 return;
             }
             currentUser = session.user;
@@ -307,7 +316,7 @@
             const { data: profile } = await supabase.from('profiles').select('full_name, role').eq('id', currentUser.id).single();
             if (!profile || profile.role !== 'PETANI') {
                 alert("Akses Ditolak: Halaman ini khusus Petani.");
-                window.location.href = '../index.html';
+                window.location.href = 'index.html';
                 return;
             }
 
@@ -344,59 +353,64 @@
                 if (data.length === 0) {
                     listEl.innerHTML = `
                         <div style="text-align: center; padding: 40px; color: #999;">
-                            <div style="font-size:2rem; margin-bottom:10px;">📭</div>
-                            Belum ada data panen.<br>Mulai jual hasil panen Anda sekarang!
+                            <div style="font-size:3rem; margin-bottom:10px;">📭</div>
+                            Belum ada panen.<br>Mulai jual hasil panen Anda sekarang!
                         </div>
                     `;
                     // Render Chart Kosong
                     renderChart([]);
-                    return;
+                } else {
+                    renderList(data);
+                    renderChart(data);
                 }
 
-                // Loop Render List dengan Staggered Animation
-                data.forEach((item, index) => {
-                    const date = new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-                    
-                    let badgeClass = 'badge-pending';
-                    let badgeText = 'Menunggu';
-                    if(item.status === 'approved') { badgeClass = 'badge-approved'; badgeText = 'Disetujui'; }
-                    if(item.status === 'sold') { badgeClass = 'badge-sold'; badgeText = 'Terjual'; }
-
-                    const el = document.createElement('div');
-                    el.className = 'list-item';
-                    // Staggered Animation Delay: Item pertama 0.1s, kedua 0.2s, dst.
-                    el.style.animationDelay = `${index * 0.1}s`;
-
-                    el.innerHTML = `
-                        <div class="item-left">
-                            <div class="item-icon">🌾</div>
-                            <div>
-                                <div class="item-title">${item.nama_komoditas}</div>
-                                <div class="item-meta">${item.quantity} ${item.unit} • ${date}</div>
-                            </div>
-                        </div>
-                        <div class="item-right">
-                            <div class="item-price">Rp ${item.estimated_total.toLocaleString()}</div>
-                            <span class="badge ${badgeClass}">${badgeText}</span>
-                        </div>
-                    `;
-                    listEl.appendChild(el);
-                });
-
-                // Render Chart
-                renderChart(data);
-
             } catch (err) {
-                console.error(err);
-                listEl.innerHTML = '<div style="text-align:center; color:red;">Gagal memuat data.</div>';
+                console.error("Gagal load data:", err);
+                listEl.innerHTML = '<div class="loading-text" style="color:red;">Gagal memuat data panen.</div>';
             }
         }
 
-        // --- 4. RENDER CHART ---
+        // --- 4. RENDER LIST ---
+        function renderList(data) {
+            const listEl = document.getElementById('harvestList');
+            listEl.innerHTML = '';
+
+            data.forEach((item, index) => {
+                const date = new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+                
+                let badgeClass = 'badge-pending';
+                let badgeText = 'Menunggu';
+                if(item.status === 'approved') { badgeClass = 'badge-approved'; badgeText = 'Disetujui'; }
+                if(item.status === 'sold') { badgeClass = 'badge-sold'; badgeText = 'Terjual'; }
+
+                const el = document.createElement('div');
+                el.className = 'list-item';
+                // Staggered Animation Delay
+                el.style.animationDelay = `${index * 0.1}s`;
+
+                el.innerHTML = `
+                    <div class="item-left">
+                        <div class="item-icon">🌾</div>
+                        <div>
+                            <div class="item-title">${item.nama_komoditas}</div>
+                            <div class="item-meta">${item.quantity} ${item.unit} • ${date}</div>
+                        </div>
+                    </div>
+                    <div class="item-right">
+                        <div class="item-price">Rp ${item.estimated_total.toLocaleString()}</div>
+                        <span class="badge ${badgeClass}">${badgeText}</span>
+                    </div>
+                `;
+                listEl.appendChild(el);
+            });
+        }
+
+        // --- 5. RENDER CHART ---
         function renderChart(data) {
-            const ctx = document.getElementById('salesChart');
+            const ctx = document.getElementById('salesChart').getContext('2d');
             if (!ctx) return;
 
+            // Hancurkan chart lama jika ada (penting untuk refresh)
             if (chartInstance) chartInstance.destroy();
 
             const labels = data.map(d => d.nama_komoditas.substring(0,10) + '..');
@@ -426,7 +440,6 @@
                 }
             });
         }
-
     </script>
 </body>
 </html>
