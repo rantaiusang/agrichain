@@ -342,13 +342,21 @@
         </div>
     </div>
 
-    <!-- SCRIPT UTAMA (AI OPTIMIZED) -->
+    <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        // GANTI URL DAN KEY INI DENGAN MILIK ANDA
-        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
-        // PENTING: Key ini harus 'public/anon', JANGAN gunakan 'service_role' di HTML!
-        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X'; 
+        // --- 1. LOAD CONFIG ---
+        // Kita perlu memuat script config.js terlebih dahulu secara dinamis
+        // jika belum dimuat di head (untuk berjaga-jaga).
+        // Namun best practice adalah menaruhnya di <head>.
+        // Kita asumsikan window.appConfig sudah ada jika user mengikuti instruksi src/config.js sebelumnya.
+        
+        if (typeof window.appConfig === 'undefined') {
+            console.error("FATAL: config.js tidak dimuat. Pastikan <script src='src/config.js'> ada di HTML.");
+            alert("Gagal memuat konfigurasi sistem. Pastikan file config.js ada.");
+        }
+
+        const SUPABASE_URL = window.appConfig.supabaseUrl;
+        const SUPABASE_KEY = window.appConfig.supabaseKey;
 
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -369,7 +377,7 @@
         const mismatchIcon = document.getElementById('passMismatchIcon');
 
         // --- 3. FUNGSI MODAL ---
-        function showModal(type, title, desc, btnText = null, action = null) {
+        function showModal(type, title, desc, btnTextVal = null, action = null) {
             const modal = document.getElementById('statusModal');
             const icon = document.getElementById('modalIcon');
             const titleEl = document.getElementById('modalTitle');
@@ -384,7 +392,7 @@
             icon.style.animation = null; 
 
             if (type === 'success') {
-                icon.textContent = '🎉'; // Icon Emoji lebih modern
+                icon.textContent = '🎉';
                 titleEl.textContent = title;
                 titleEl.style.color = 'var(--primary-green)';
                 descEl.textContent = desc;
@@ -395,8 +403,8 @@
                 titleEl.style.color = 'var(--error)';
                 descEl.textContent = desc;
                 btnModal.style.display = 'inline-block';
-                btnModal.textContent = btnText || 'Tutup';
-                btnModal.className = 'btn-modal close'; // Style tombol close
+                btnModal.textContent = btnTextVal || 'Tutup';
+                btnModal.className = 'btn-modal close';
                 
                 // Hapus event listener lama jika ada
                 const newBtn = btnModal.cloneNode(true);
@@ -414,7 +422,6 @@
             const p1 = passInput.value;
             const p2 = confirmInput.value;
 
-            // Reset jika kosong
             if (p2.length === 0) {
                 matchIcon.style.display = 'none';
                 mismatchIcon.style.display = 'none';
@@ -423,7 +430,6 @@
                 return false;
             }
 
-            // Cek Kecocokan
             if (p1 === p2) {
                 matchIcon.style.display = 'block';
                 mismatchIcon.style.display = 'none';
@@ -439,7 +445,6 @@
             }
         }
 
-        // Pasang Listener agar mengecek saat mengetik
         passInput.addEventListener('input', checkPasswordMatch);
         confirmInput.addEventListener('input', checkPasswordMatch);
 
@@ -453,7 +458,6 @@
             const confirmPassword = confirmInput.value;
             const role = roleSelect.value;
 
-            // Validasi Akhir
             if (password !== confirmPassword) {
                 showModal('error', 'Password Salah', 'Pastikan kata sandi dan konfirmasi sama.', 'Koreksi');
                 return;
@@ -466,12 +470,9 @@
             spinner.style.display = 'inline-block';
 
             try {
-                // Kita mengirim data ke Supabase Auth.
-                // Metadata (role, fullname) akan tertangkap oleh Trigger SQL
-                // untuk otomatis disimpan ke tabel 'profiles'.
-                
                 console.log(`[System] Mencoba mendaftarkan: ${email} sebagai ${role}`);
 
+                // Registrasi ke Supabase Auth dengan Metadata
                 const { data, error } = await supabase.auth.signUp({
                     email: email,
                     password: password,
@@ -479,7 +480,6 @@
                         data: {
                             full_name: fullname,
                             role: role,
-                            // Data default lainnya
                             phone: '-',
                             desa: '-',
                             luas_lahan: 0
@@ -499,7 +499,6 @@
                     null
                 );
 
-                // Redirect halus
                 setTimeout(() => {
                     window.location.href = 'login.html';
                 }, 2500);
@@ -510,7 +509,7 @@
                 let title = 'Pendaftaran Gagal';
                 let desc = err.message;
 
-                // Deteksi Error Spesifik untuk User Friendly Message
+                // Deteksi Error Spesifik
                 if (desc.toLowerCase().includes('already registered') || desc.toLowerCase().includes('user already registered')) {
                     title = 'Email Sudah Terdaftar';
                     desc = 'Alamat email ini sudah memiliki akun. Silakan Login langsung.';
@@ -529,10 +528,10 @@
             }
         });
 
-        // Init Default Values
+        // Init
         document.addEventListener("DOMContentLoaded", () => {
             roleSelect.value = "PETANI";
-            checkPasswordMatch(); // Cek awal
+            checkPasswordMatch();
         });
     </script>
 </body>
