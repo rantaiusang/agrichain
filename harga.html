@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Harga Pasar - AgriChain</title>
     
     <!-- Library Supabase -->
@@ -11,22 +11,21 @@
     <style>
         :root {
             --primary: #2E7D32;
+            --primary-dark: #1B5E20;
             --light-green: #E8F5E9;
-            --dark-green: #1B5E20;
-            --danger: #DC2626;
-            --bg: #F9FAFB;
+            --text-dark: #333;
+            --text-grey: #666;
             --white: #ffffff;
-            --text: #374151;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             --radius: 12px;
         }
 
         body {
             font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
+            background-color: #F9FAFB;
+            color: var(--text-dark);
             margin: 0;
-            padding-bottom: 80px;
+            padding-bottom: 80px; /* Space for navbar bawah */
         }
 
         /* --- CONTAINER & HEADER --- */
@@ -40,15 +39,15 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             padding: 10px 0;
         }
 
-        h2 { margin: 0; color: var(--dark-green); font-size: 1.8rem; }
+        h2 { margin: 0; color: var(--primary); font-size: 1.8rem; }
         
         .btn-back {
             text-decoration: none;
-            color: var(--text);
+            color: var(--text-dark);
             font-weight: 600;
             display: flex;
             align-items: center;
@@ -59,7 +58,7 @@
         }
         .btn-back:hover {
             background-color: var(--light-green);
-            color: var(--dark-green);
+            color: var(--primary);
         }
 
         /* --- REKOMENDASI CARD (Animated) --- */
@@ -69,9 +68,9 @@
             border-radius: var(--radius);
             padding: 20px;
             margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.2);
+            box-shadow: var(--shadow);
             /* Fade Up Animation */
-            animation: fadeUp 0.8s ease-out;
+            animation: fadeUp 0.6s ease-out;
         }
 
         @keyframes fadeUp {
@@ -88,12 +87,12 @@
             text-transform: uppercase;
             margin-bottom: 8px;
         }
-        .rec-buy { background: #D1FAE5; color: #059669; }
+        .rec-buy { background: #D1FAE5; color: #059669; } /* Hijau Muda */
         .rec-sell { background: #FEE2E2; color: #DC2626; }
         .rec-hold { background: #F3F4F6; color: #4B5563; }
 
-        .rec-title { font-size: 1.1rem; font-weight: 700; margin: 0; }
-        .rec-desc { font-size: 0.9rem; color: #4B5563; margin-top: 5px; }
+        .rec-title { font-size: 1.1rem; font-weight: 700; margin: 0; color: #1F2937; }
+        .rec-desc { font-size: 0.9rem; color: #4B5563; margin-top: 5px; line-height: 1.5; }
 
         /* --- MAIN CARD & TABLE --- */
         .card {
@@ -102,6 +101,7 @@
             box-shadow: var(--shadow);
             padding: 25px;
             border: 1px solid #E5E7EB;
+            margin-bottom: 20px;
         }
 
         .card-title {
@@ -174,7 +174,7 @@
             gap: 15px;
         }
         
-        .chart-label { flex: 1; font-weight: 600; font-size: 0.9rem; }
+        .chart-label { flex: 1; font-weight: 600; font-size: 0.9rem; color: var(--text-dark); }
         
         .chart-bar-container {
             flex: 2;
@@ -182,11 +182,13 @@
             border-radius: 10px;
             height: 12px;
             overflow: hidden;
+            position: relative;
         }
 
         .chart-bar {
             height: 100%;
             border-radius: 10px;
+            background: var(--primary); /* Warna Hijau AgriChain */
             /* Smooth Animation Bezier Curve */
             transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1); 
             width: 0%; /* Mulai dari 0 */
@@ -196,6 +198,8 @@
             font-weight: 700;
             color: var(--primary);
             font-size: 0.9rem;
+            min-width: 80px;
+            text-align: right;
         }
 
         /* --- NAVBAR BOTTOM --- */
@@ -232,7 +236,7 @@
         </div>
 
         <!-- Kartu Analisis AI -->
-        <div class="rec-card" id="recCard" style="display:none;">
+        <div class="rec-card" id="recCard" style="display: none;">
             <span class="rec-badge" id="recBadge">ANALISIS</span>
             <div class="rec-title" id="recTitle">Menganalisa...</div>
             <p class="rec-desc" id="recDesc">Menghubungkan algoritma prediksi cuaca...</p>
@@ -292,9 +296,14 @@
 
     <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. CONFIG ---
-        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
+        // --- 1. LOAD CONFIG & INIT ---
+        if (typeof window.appConfig === 'undefined') {
+            console.error("FATAL: config.js tidak dimuat.");
+            alert("Konfigurasi sistem hilang.");
+        }
+
+        const SUPABASE_URL = window.appConfig.supabaseUrl;
+        const SUPABASE_KEY = window.appConfig.supabaseKey;
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. HELPER FORMATTER ---
@@ -324,13 +333,14 @@
 
                 if (error) throw error;
 
+                // Cek apakah data ada
                 if (data && data.length > 0) {
                     renderTable(data);
                     renderChart(data);
                     analyzeTrend(data);
                 } else {
                     // Fallback jika kosong
-                    document.getElementById('priceBody').innerHTML = '<tr><td colspan="3" align="center">Belum ada data harga.</td></tr>';
+                    document.getElementById('priceBody').innerHTML = '<tr><td colspan="3" align="center">Belum ada data harga pasar.</td></tr>';
                 }
 
             } catch (err) {
@@ -345,8 +355,7 @@
             tbody.innerHTML = ''; // Reset
 
             data.forEach((item, index) => {
-                // Hitung Rata-rata (Simulasi: ambil rata-rata harga hari ini / 3 atau logika sederhana)
-                // Karena tabel kita hanya ada 'current_price', kita bandingkan dengan rata-rata array ini
+                // Hitung Rata-rata (Simulasi: bandingkan dengan rata-rata array ini)
                 const allPrices = data.map(d => d.current_price);
                 const avg = allPrices.reduce((a, b) => a + b, 0) / allPrices.length;
 
@@ -366,7 +375,7 @@
 
                 row.innerHTML = `
                     <td>
-                        <div style="font-weight: bold; color: #333;">${item.nama_komoditas}</div>
+                        <div style="font-weight: bold; color: var(--text-dark);">${item.nama_komoditas}</div>
                         <div style="font-size: 0.8rem; color: #666;">Satuan: ${item.unit || 'Kg'}</div>
                     </td>
                     <td class="price-text">${Format.rupiah(item.current_price)}</td>
@@ -393,9 +402,9 @@
                 el.innerHTML = `
                     <div class="chart-label">${item.nama_komoditas}</div>
                     <div class="chart-bar-container">
-                        <div class="chart-bar" style="background: var(--primary);"></div>
-                    <div class="chart-price" style="margin-left: 10px;">${Format.rupiah(item.current_price)}</div>
+                        <div class="chart-bar"></div>
                     </div>
+                    <div class="chart-price">${Format.rupiah(item.current_price)}</div>
                 `;
                 container.appendChild(el);
 
@@ -440,7 +449,6 @@
                 }
             }, 1000); // Delay biar user baca loading dulu
         }
-
     </script>
 </body>
 </html>
