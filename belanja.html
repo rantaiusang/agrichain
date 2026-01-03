@@ -19,6 +19,7 @@
             --white: #ffffff;
             --radius: 12px;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --border: #eee;
         }
 
         body {
@@ -112,10 +113,10 @@
 
         .card {
             background: var(--white);
-            border: 1px solid #eee;
+            border: 1px solid var(--border);
             border-radius: var(--radius);
             overflow: hidden;
-            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
             display: flex;
             flex-direction: column;
         }
@@ -123,7 +124,6 @@
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-            border-color: var(--primary-green);
         }
 
         .card-img-wrapper {
@@ -165,7 +165,7 @@
         .card-meta {
             font-size: 0.9rem;
             color: #555;
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -195,8 +195,10 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-
-        .btn-buy:hover { background-color: var(--dark-green); }
+        .btn-buy:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
 
         .status-badge {
             display: inline-block;
@@ -254,7 +256,7 @@
     <nav class="navbar">
         <a href="index.html" class="nav-brand">🌾 AgriChain</a>
         <div>
-            <a href="dashboard-petani.html" style="padding: 8px 16px; border: 1px solid var(--primary-green); color: var(--primary-green); border-radius: 20px; text-decoration: none; font-weight: bold;">Petani Panel</a>
+            <a href="profile.html" style="padding: 8px 16px; border: 1px solid var(--primary-green); color: var(--primary-green); border-radius: 20px; text-decoration: none; font-weight: bold;">Profil Saya</a>
         </div>
     </nav>
 
@@ -299,9 +301,14 @@
     </div>
 
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
+        // --- 1. LOAD CONFIG & INIT ---
+        if (typeof window.appConfig === 'undefined') {
+            console.error("FATAL: config.js tidak dimuat.");
+            alert("Konfigurasi sistem hilang.");
+        }
+
+        const SUPABASE_URL = window.appConfig.supabaseUrl;
+        const SUPABASE_KEY = window.appConfig.supabaseKey;
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. DOM ELEMENTS ---
@@ -315,19 +322,23 @@
         // --- 3. INIT ---
         document.addEventListener("DOMContentLoaded", async () => {
             const { data: { session } } = await supabase.auth.getSession();
-            if(!session) { alert("Silakan login untuk berbelanja."); window.location.href = 'login.html'; return; }
-            currentUser = session.user.id;
+            
+            // Opsional: Paksa login jika ingin belanja. 
+            // Untuk demo, kita biarkan view saja, tapi jika mau transaksi, wajib login.
+            if(!session) { 
+                console.log("Guest Mode"); 
+            } else {
+                currentUser = session.user.id;
+            }
+            
             await loadPanenData();
         });
 
-        // --- 4. LOAD DATA (LOGIC MATCH DATABASE) ---
+        // --- 4. LOAD DATA (LOGIC JOIN TABEL) ---
         async function loadPanenData() {
             try {
-                // PERBAIKAN: Ambil data dari tabel 'panen'
-                // Kolom mapping: panen.nama_komoditas (commodity_name), panen.kualitas (quality)
-                // JOIN: profiles (ambil full_name petani)
-                // JOIN: market_prices (ambil harga referensi current_price)
-                
+                // Join table 'panen' dengan 'profiles' untuk ambil nama petani
+                // Asumsi Foreign Key di tabel 'panen' adalah 'farmer_id' yang mengarah ke 'profiles.id'
                 const { data, error } = await supabase
                     .from('panen')
                     .select(`
@@ -340,8 +351,7 @@
                         kualitas,
                         status,
                         created_at,
-                        profiles!public ( full_name ),
-                        market_prices ( current_price )
+                        profiles ( full_name )
                     `)
                     .order('created_at', { ascending: false });
 
@@ -350,12 +360,12 @@
                 // Mapping data agar mudah dibaca di UI
                 allProducts = data.map(item => ({
                     id: item.id,
-                    name: item.nama_komoditas,
-                    seller: item.profiles ? item.profiles.full_name : 'Petani',
+                    name: item.nama_komoditas || 'Tanaman',
+                    seller: item.profiles ? item.profiles.full_name : 'Petani Terdaftar',
                     quantity: item.quantity,
                     unit: item.unit,
-                    price: item.harga_per_unit || (item.current_price || 0), // Fallback price
-                    total: item.estimated_total,
+                    price: item.harga_per_unit || 0, 
+                    total: item.estimated_total || 0,
                     quality: item.kualitas || 'Standard',
                     status: item.status || 'pending',
                     created_at: item.created_at
@@ -365,7 +375,7 @@
 
             } catch (err) {
                 console.error("Gagal load panen:", err);
-                grid.innerHTML = '<div class="status-msg" style="color:red;">Gagal memuat data. Cek struktur tabel panen.</div>';
+                grid.innerHTML = '<div class="status-msg" style="color:red;">Gagal memuat data. Cek koneksi database.</div>';
             }
         }
 
@@ -384,22 +394,21 @@
                 
                 // Logic Badge Status
                 let badgeHTML = '<span class="status-badge badge-pending">Menunggu</span>';
-                if(item.status === 'approved') badgeHTML = '<span class="status-badge badge-approved">Tersedia</span>';
-                if(item.status === 'sold') badgeHTML = '<span class="status-badge badge-sold">Terjual</span>';
+                let isSold = false;
 
-                // Logic Tampilan (Hanya tampilkan yang approved/sold untuk pembeli)
-                // Jika status 'pending', card tetap muncul tapi tidak bisa dibeli (opsional)
-                let isDisabled = false;
-                if (item.status === 'pending') {
-                    isDisabled = true;
-                    // Anda bisa memilih untuk tidak merender item pending sama sekali:
-                    // if(item.status === 'pending') return; 
+                if(item.status === 'approved') {
+                    badgeHTML = '<span class="status-badge badge-approved">Tersedia</span>';
+                } else if(item.status === 'sold') {
+                    badgeHTML = '<span class="status-badge badge-sold">Terjual</span>';
+                    isSold = true;
                 }
 
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.style.opacity = isDisabled ? '0.6' : '1'; // Sedikit redup jika pending
                 
+                // Opacity rendah jika terjual atau pending
+                if (item.status === 'pending') card.style.opacity = '0.7';
+
                 card.innerHTML = `
                     <div class="card-img-wrapper">
                         <img src="${imgUrl}" alt="${item.name}" class="card-img">
@@ -417,12 +426,13 @@
                         </div>
                         <div style="margin-top:10px; text-align:center;">${badgeHTML}</div>
                         
-                        ${!isDisabled ? `
-                            <button class="btn-buy" onclick="handleBuy('${item.id}', '${item.name}')">
-                                Beli Sekarang
+                        <div class="card-actions">
+                            <button class="btn-buy" 
+                                onclick="handleBuy('${item.id}', '${item.name}')" 
+                                ${isSold ? 'disabled' : ''}>
+                                ${isSold ? 'Stok Habis' : 'Beli Sekarang'}
                             </button>
-                        ` : ''}
-                        
+                        </div>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -449,14 +459,18 @@
 
         // --- 7. LOGIC BELI ---
         window.handleBuy = function(id, name) {
-            const confirmBuy = confirm(`Apakah Anda ingin membeli ${name}?`);
+            if(!currentUser) {
+                alert("Silakan login terlebih dahulu untuk membeli.");
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const confirmBuy = confirm(`Apakah Anda yakin ingin membeli ${name}?`);
             if(confirmBuy) {
-                alert("Fitur pembayaran akan terhubung ke sistem order. (Simulasi)");
-                // Di sini Anda bisa insert ke tabel 'orders'
-                // await supabase.from('orders').insert(...)
+                alert("Pesanan sedang diproses! (Simulasi)");
+                // TODO: Insert ke tabel 'orders'
             }
         };
-
     </script>
 </body>
 </html>
