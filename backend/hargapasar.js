@@ -1,55 +1,68 @@
 // --- backend/hargaPasar.js ---
 const { supabase } = require('./supabase.js');
 
-// Nama tabel harga pasar
-const TABLE_NAME = 'agrichain_harga_pasar';
+// 1. KONFIGURASI TABEL
+// Pastikan nama tabel ini ada di Supabase Anda
+const TABLE_NAME = 'market_prices';
 
 /**
- * 1️⃣ Ambil harga pasar semua produk
+ * 2. FUNGSI AMBIL SEMUA HARGA (READ)
+ * @returns {Array} List harga pasar terbaru
  */
 async function ambilHargaPasar() {
     try {
         const { data, error } = await supabase
             .from(TABLE_NAME)
             .select('*')
-            .order('updated_at', { ascending: false }); // Terbaru di atas
+            .order('created_at', { ascending: false }); // Terbaru di atas
 
         if (error) {
             console.error("Gagal mengambil harga pasar:", error);
             throw error;
         }
 
-        return data; // Array harga pasar
+        return data;
+
     } catch (error) {
         console.error("Error ambilHargaPasar:", error);
-        return [];
+        return []; // Return array kosong agar frontend tidak error
     }
 }
 
 /**
- * 2️⃣ Tambah harga pasar (opsional, admin)
+ * 3. FUNGSI TAMBAH HARGA (CREATE - Admin Only)
+ * @param {string} namaKomoditas - Contoh: Padi Cianjur
+ * @param {number} currentPrice - Harga dalam angka (contoh: 6500)
+ * @param {string} unit - Contoh: Kg, Ton
+ * @returns {Object} Data harga yang baru ditambahkan
  */
-async function tambahHargaPasar(namaProduk, harga, satuan) {
+async function tambahHargaPasar(namaKomoditas, currentPrice, unit) {
     try {
+        // Validasi Input Sederhana
+        if (!namaKomoditas || !currentPrice) {
+            throw new Error("Nama Komoditas dan Harga wajib diisi.");
+        }
+
         const newData = {
-            nama_produk: namaProduk,
-            harga: parseFloat(harga),
-            satuan: satuan || 'kg',
+            nama_komoditas: namaKomoditas.toString(), // String
+            current_price: parseFloat(currentPrice),    // Number
+            unit: unit ? unit.toString() : 'Kg',        // String default Kg
             updated_at: new Date().toISOString()
         };
 
         const { data, error } = await supabase
             .from(TABLE_NAME)
             .insert([newData])
-            .select();
+            .select(); // Mengambil data yang baru dimasukkan agar bisa direturn
 
         if (error) {
             console.error("Gagal menambahkan harga pasar:", error);
             throw error;
         }
 
-        console.log("Harga pasar berhasil ditambahkan:", data[0]);
+        console.log("Harga pasar baru ditambahkan:", data[0]);
         return data[0];
+
     } catch (error) {
         console.error("Error tambahHargaPasar:", error);
         throw error;
@@ -57,13 +70,23 @@ async function tambahHargaPasar(namaProduk, harga, satuan) {
 }
 
 /**
- * 3️⃣ Update harga pasar (opsional, admin)
+ * 4. FUNGSI UPDATE HARGA (UPDATE - Admin Only)
+ * @param {number} id - ID record harga
+ * @param {number} newPrice - Harga baru
+ * @returns {Object} Data harga yang sudah diupdate
  */
-async function editHargaPasar(id, harga) {
+async function editHargaPasar(id, newPrice) {
     try {
+        if (!id || !newPrice) {
+            throw new Error("ID dan Harga Baru wajib diisi.");
+        }
+
         const { data, error } = await supabase
             .from(TABLE_NAME)
-            .update({ harga: parseFloat(harga), updated_at: new Date().toISOString() })
+            .update({ 
+                current_price: parseFloat(newPrice),
+                updated_at: new Date().toISOString() 
+            })
             .eq('id', id)
             .select();
 
@@ -74,6 +97,7 @@ async function editHargaPasar(id, harga) {
 
         console.log("Harga pasar berhasil diupdate:", data[0]);
         return data[0];
+
     } catch (error) {
         console.error("Error editHargaPasar:", error);
         throw error;
@@ -81,22 +105,29 @@ async function editHargaPasar(id, harga) {
 }
 
 /**
- * 4️⃣ Hapus harga pasar (opsional, admin)
+ * 5. FUNGSI HAPUS HARGA (DELETE - Admin Only)
+ * @param {number} id - ID record harga
+ * @returns {Object} Status sukses
  */
 async function hapusHargaPasar(id) {
     try {
-        const { data, error } = await supabase
+        if (!id) {
+            throw new Error("ID Harga wajib diisi.");
+        }
+
+        const { error } = await supabase
             .from(TABLE_NAME)
             .delete()
             .eq('id', id);
 
         if (error) {
-            console.error("Gagal hapus harga pasar:", error);
+            console.error("Gagal menghapus harga pasar:", error);
             throw error;
         }
 
         console.log("Harga pasar berhasil dihapus ID:", id);
-        return { success: true };
+        return { success: true, message: "Data harga berhasil dihapus." };
+
     } catch (error) {
         console.error("Error hapusHargaPasar:", error);
         throw error;
