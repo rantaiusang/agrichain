@@ -91,10 +91,15 @@
             margin-top: 1.5rem;
             transition: all 0.2s;
             box-shadow: 0 4px 6px rgba(46, 125, 50, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .btn-login:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
-        .btn-loading { background-color: #81C784; cursor: not-allowed; transform: none; }
+        .btn-login:active { transform: translateY(0); }
+        
+        .btn-loading { background-color: #81C784 !important; cursor: not-allowed; transform: none !important; }
 
         .error-msg {
             color: var(--error-red);
@@ -221,7 +226,7 @@
                 <span id="btnText">MASUK SEKARANG</span>
             </button>
             
-            <!-- PESAN ERROR DIPISAH -->
+            <!-- PESAN ERROR -->
             <div id="errorMsg" class="error-msg"></div>
         </form>
 
@@ -244,11 +249,19 @@
         <a href="index.html" class="link-home">← Kembali ke Beranda</a>
     </div>
 
-    <!-- SCRIPT UTAMA (AI OPTIMIZED) -->
+    <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. CONFIG ---
-        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
-        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
+        // --- 1. CONFIG & INIT SUPABASE ---
+        // ⚠️ PENTING: JANGAN hardcode URL dan Key di sini untuk produksi.
+        // Gunakan variabel ini jika Anda develop secara lokal tanpa bundler.
+        // Untuk Vercel/Vite, sebaiknya inject via build process atau window object.
+        
+        const SUPABASE_URL = typeof window.appConfig !== 'undefined' ? window.appConfig.supabaseUrl : 'https://nkcctncsjmcfsiguowms.supabase.co'; // Fallback temporer
+        const SUPABASE_KEY = typeof window.appConfig !== 'undefined' ? window.appConfig.supabaseKey : 'KEY_ANDA_DISINI'; // ⚠️ GANTI atau inject dari luar
+
+        if (SUPABASE_KEY.includes('KEY_ANDA_DISINI')) {
+            console.error("SECURITY WARNING: Harap masukkan Supabase Key yang valid di script ini atau gunakan environment variables.");
+        }
 
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -284,8 +297,11 @@
 
         walletBtn.addEventListener('click', async function(e) {
             e.preventDefault();
-            if (!provider) { alert("Library Wallet gagal dimuat. Cek koneksi internet."); return; }
-            if (provider.connected) return; // Sudah connect
+            if (!provider) { 
+                alert("Library Wallet gagal dimuat. Cek koneksi internet."); 
+                return; 
+            }
+            if (provider.connected) return; 
 
             console.log("[Wallet] Memulai koneksi...");
             const originalBtnText = walletBtn.innerHTML;
@@ -309,15 +325,13 @@
             } catch (error) {
                 console.error("[Wallet] Error:", error);
                 walletBtn.innerHTML = originalBtnText;
-                // Jangan alert berlebihan, biarkan user coba lagi
             }
         });
 
-        // --- 4. LOGIN LOGIC (CLEAN & ROBUST) ---
+        // --- 4. LOGIN LOGIC (PERBAIKAN UTAMA) ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            // Bersihkan input
             const email = identifierInput.value.trim();
             const password = passInput.value.trim();
 
@@ -326,15 +340,12 @@
                 return;
             }
 
-            // UI Loading
-            btnSubmit.classList.add('btn-loading');
-            btnSubmit.disabled = true;
-            btnText.textContent = 'MEMVERIFIKASI...';
-            spinner.style.display = 'inline-block';
+            // UI Loading State
+            setLoading(true);
             errorMsg.style.display = 'none';
 
             try {
-                // LANGKAH 1: AUTHENTICATION (Supabase Auth)
+                // 1. Coba Login ke Auth
                 const { data, error: authError } = await supabase.auth.signInWithPassword({
                     email: email,
                     password: password
@@ -342,10 +353,7 @@
 
                 if (authError) throw authError;
 
-                console.log("[Auth] Login Berhasil. ID:", data.user.id);
-
-                // LANGKAH 2: GET USER ROLE (Query Database)
-                // Karena kita menggunakan Trigger SQL, profil dijamin ada (kecuali dihapus manual).
+                // 2. Ambil Role dari tabel 'profiles' (Pastikan trigger SQL sudah berjalan)
                 const { data: profile, error: profileError } = await supabase
                     .from('profiles')
                     .select('role, full_name')
@@ -353,62 +361,73 @@
                     .single();
 
                 if (profileError) {
-                    console.error("[DB] Gagal ambil profil:", profileError);
-                    throw new Error("Data profil Anda tidak ditemukan. Hubungi Admin atau Daftar ulang.");
+                    console.error("Gagal ambil profil:", profileError);
+                    throw new Error("Gagal memuat data profil. Akun mungkin belum terdaftar dengan benar.");
                 }
 
                 if (!profile) {
-                    throw new Error("Akun Anda terdaftar tetapi profil kosong. Hubungi Administrator.");
+                    throw new Error("Data profil tidak ditemukan. Silakan logout dan daftar ulang.");
                 }
 
-                console.log("[Auth] Role user:", profile.role);
+                // 3. Simpan data sesi sederhana (opsional)
+                localStorage.setItem('agrichain_user', JSON.stringify({
+                    id: data.user.id,
+                    email: data.user.email,
+                    role: profile.role,
+                    name: profile.full_name
+                }));
 
-                // LANGKAH 3: REDIRECT BERDASARKAN ROLE
-                // Simpan data user sederhana ke localStorage jika diperlukan
-                localStorage.setItem('agrichain_role', profile.role);
-                localStorage.setItem('agrichain_name', profile.full_name);
-
-                if (profile.role === 'ADMIN') {
-                    window.location.href = 'dashboard-admin.html';
-                } else if (profile.role === 'PETANI') {
-                    window.location.href = 'dashboard-petani.html'; // Asumsi ada halaman ini
-                } else {
-                    // Default ke index untuk PEMBELI / LEMBAGA
-                    window.location.href = 'index.html';
-                }
+                // 4. Redirect Berdasarkan Role
+                console.log("Login Berhasil. Role:", profile.role);
+                
+                // Beri sedikit jeda agar user melihat loading selesai
+                setTimeout(() => {
+                    if (profile.role === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else if (profile.role === 'petani') {
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                }, 1000);
 
             } catch (err) {
-                console.error("[System] Error Login:", err);
+                console.error("Login Error:", err);
+                let msg = "Terjadi kesalahan.";
                 
-                let msg = "Terjadi kesalahan tidak terduga.";
-                
-                // Deteksi pesan error dari Supabase
                 if (err.message.includes('Invalid login credentials')) {
-                    msg = "Email atau Kata Sandi salah.";
+                    msg = "Email atau password salah.";
                 } else if (err.message.includes('Email not confirmed')) {
-                    msg = "Akun belum dikonfirmasi. Silakan cek email Anda.";
-                } else if (err.message.includes('Data profil Anda tidak ditemukan')) {
-                    msg = err.message; // Pesan custom kita
+                    msg = "Email belum dikonfirmasi. Cek inbox Anda.";
                 } else {
-                    msg = err.message; // Tampilkan pesan asli untuk debugging
+                    msg = err.message;
                 }
-
+                
                 showError(msg);
+                setLoading(false);
+            }
+        });
 
-            } finally {
-                // Reset UI Button
+        // Helper: Set Loading UI
+        function setLoading(isLoading) {
+            if (isLoading) {
+                btnSubmit.classList.add('btn-loading');
+                btnSubmit.disabled = true;
+                btnText.textContent = 'MEMPROSES...';
+                spinner.style.display = 'inline-block';
+            } else {
                 btnSubmit.classList.remove('btn-loading');
                 btnSubmit.disabled = false;
                 btnText.textContent = 'MASUK SEKARANG';
                 spinner.style.display = 'none';
             }
-        });
+        }
 
-        // Helper: Tampilkan Error
+        // Helper: Show Error
         function showError(message) {
             errorMsg.textContent = message;
             errorMsg.style.display = 'block';
-            // Animasi getar kecil
+            // Animasi getar
             errorMsg.animate([
                 { transform: 'translateX(-5px)' },
                 { transform: 'translateX(5px)' },
