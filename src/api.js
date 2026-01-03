@@ -1,18 +1,22 @@
 --- src/api.js ---
 import { createClient } from 'https://unpkg.com/@supabase/supabase-js@2'
 
-// ---------------------------------------------------------
-// 1. KONFIGURASI CLIENT
-// ---------------------------------------------------------
-// PASTIKAN di file .env Anda bernama VITE_SUPABASE_ANON_KEY
+// 1. Ambil URL dan Key dari Environment Variables (Vercel/Vite)
+// Vercel akan menyuntikkan nilai ini ke dalam import.meta.env saat build/runtime
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+// 2. Validasi sederhana untuk mencegah error saat startup jika env belum terload
 if (!SUPABASE_URL || !SUPABASE_KEY) {
-    console.error("Error: Variabel lingkungan VITE_SUPABASE_URL atau VITE_SUPABASE_ANON_KEY tidak ditemukan.")
+    console.error(
+        "FATAL: Environment Variables (VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY) belum terdeteksi." +
+        "Jika di Local: Buat file .env. Jika di Vercel: Cek Settings > Env Variables dan lakukan Redeploy."
+    )
 }
 
 export const supa = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+// ... (Sisanya kode getProducts, registerUser, loginUser tetap sama seperti sebelumnya) ...
 
 // ---------------------------------------------------------
 // 2. FUNGSI PRODUK (Sudah Ada, Sedikit Dirapikan)
