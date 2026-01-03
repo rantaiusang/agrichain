@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard Pembeli - AgriChain</title>
+    
+    <!-- Library Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        :root { 
+            --primary: #1976D2; 
+            --primary-dark: #0D47A1; 
+            --bg: #f4f6f8; 
+            --text: #333; 
+            --white: #fff;
+            --border: #eee;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            padding-bottom: 80px; 
+        }
+
+        /* Navbar */
+        .nav { 
+            display: flex; justify-content: space-between; padding: 15px 20px; 
+            background: var(--white); box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+            align-items: center; position: sticky; top: 0; z-index: 100; 
+        }
+        
+        .brand { 
+            font-size: 1.3rem; font-weight: 800; color: var(--primary); 
+            text-decoration: none; display: flex; align-items: center; gap: 8px; 
+        }
+        
+        .container { max-width: 800px; margin: 20px auto; padding: 0 20px; }
+        
+        /* Stats */
+        .stats { display: flex; gap: 15px; margin-bottom: 30px; }
+        .stat-card { 
+            flex: 1; background: var(--white); padding: 20px; border-radius: 8px; 
+            text-align: center; border-top: 4px solid var(--primary); 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+        }
+        .stat-val { font-size: 1.5rem; font-weight: bold; color: var(--text); margin: 10px 0; }
+        .stat-lbl { font-size: 0.85rem; color: #666; }
+
+        /* Order List */
+        .order-list { display: flex; flex-direction: column; gap: 15px; }
+
+        .order-item { 
+            background: var(--white); padding: 20px; border-radius: 8px; 
+            margin-bottom: 0; /* Menggunakan gap parent */
+            border-left: 4px solid #ddd; transition: 0.2s; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
+        }
+        .order-item:hover { transform: translateX(5px); border-left-color: var(--primary); }
+
+        .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .order-title { font-weight: bold; font-size: 1.1rem; }
+        
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: bold; }
+        .badge-pending { background: #FFF3E0; color: #F57C00; }
+        .badge-success { background: #E8F5E9; color: #2E7D32; }
+        .badge-shipped { background: #E3F2FD; color: #1565C0; }
+        .badge-cancelled { background: #FFEBEE; color: #C62828; }
+        
+        .order-meta { font-size: 0.9rem; color: #555; display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
+        .order-meta span { display: flex; align-items: center; gap: 5px; }
+
+        .btn-chat { 
+            padding: 8px 15px; background: var(--primary); color: white; border: none; 
+            border-radius: 6px; cursor: pointer; font-weight: 600; 
+            display: inline-flex; align-items: center; gap: 5px; text-decoration: none;
+        }
+        .btn-chat:hover { background: var(--primary-dark); }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center; padding: 40px; color: #999; background: var(--white);
+            border-radius: 8px; border: 1px dashed #ddd;
+        }
+
+        /* Bottom Nav */
+        .nav-bottom { 
+            position: fixed; bottom: 0; left: 0; width: 100%; 
+            display: flex; justify-content: space-around; padding: 10px 0; 
+            background: var(--white); border-top: 1px solid #ddd; z-index: 99; 
+        }
+        
+        .b-item { 
+            display: flex; flex-direction: column; align-items: center; 
+            text-decoration: none; color: #666; font-size: 0.8rem; 
+        }
+        .b-item.active { color: var(--primary); }
+        .b-item svg { width: 24px; height: 24px; margin-bottom: 4px; }
+    </style>
+</head>
+<body>
+    
+    <!-- Navbar -->
+    <nav class="nav">
+        <a href="index.html" class="brand">🛒 AgriChain</a>
+        <div>
+            <a href="profile.html" style="padding: 8px 16px; border: 1px solid var(--primary); color: var(--primary); border-radius: 20px; text-decoration: none; font-weight: bold;">👤 Profil</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h2 style="color:var(--primary); margin-bottom: 20px;">📦 Pesanan Saya</h2>
+        
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-val" id="activeOrder">...</div>
+                <div class="stat-lbl">Pesanan Aktif</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val" id="completedOrder">...</div>
+                <div class="stat-lbl">Selesai</div>
+            </div>
+        </div>
+
+        <!-- List Order -->
+        <div id="orderList" class="order-list">
+            <div class="empty-state">Memuat riwayat pesanan...</div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="nav-bottom">
+        <a href="index.html" class="b-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2z"></path></svg>
+            Beranda
+        </a>
+        <a href="belanja.html" class="b-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><path d="M1 1h4l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            Belanja
+        </a>
+        <a href="dashboard-pembeli.html" class="b-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 11V7a4 4 0 0 0-8 0v4M5 9H7m0 0v3h4V3M9 5h4m0 0v5H9z"></path></svg>
+            Pesanan
+        </a>
+        <a href="profile.html" class="b-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
+            Profil
+        </a>
+    </div>
+
+    <!-- SCRIPT UTAMA -->
+    <script>
+        // --- 1. LOAD CONFIG & INIT ---
+        if (typeof window.appConfig === 'undefined') {
+            console.error("FATAL: config.js tidak dimuat.");
+            alert("Konfigurasi sistem hilang.");
+        }
+
+        const SUPABASE_URL = window.appConfig.supabaseUrl;
+        const SUPABASE_KEY = window.appConfig.supabaseKey;
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- 2. DOM ELEMENTS ---
+        const listContainer = document.getElementById('orderList');
+        const activeCountEl = document.getElementById('activeOrder');
+        const completedCountEl = document.getElementById('completedOrder');
+
+        // --- 3. INIT & AUTH ---
+        document.addEventListener("DOMContentLoaded", async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            if(!session) { 
+                location.href='login.html'; 
+                return; 
+            }
+            
+            // Cek Role (Hanya Pembeli yang boleh akses dashboard ini)
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('role')
+                .eq('id', session.user.id)
+                .single();
+
+            if (!profile || profile.role !== 'PEMBELI') {
+                alert("Akses Ditolak: Halaman ini khusus Pembeli.");
+                location.href='index.html';
+                return;
+            }
+
+            // Load Data
+            loadOrders(session.user.id);
+        });
+
+        // --- 4. LOAD ORDERS ---
+        async function loadOrders(userId) {
+            try {
+                // Query: Ambil data orders, join dengan tabel panen untuk nama barang, 
+                // dan join profiles untuk nama petani.
+                const { data: orders, error } = await supabase
+                    .from('orders')
+                    .select(`
+                        *,
+                        panen ( nama_komoditas, quantity, unit, profiles ( full_name ) )
+                    `)
+                    .eq('buyer_id', userId)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                // Render UI
+                if (!orders || orders.length === 0) {
+                    listContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div style="font-size:3rem; margin-bottom:10px;">📦</div>
+                            <h3>Belum Ada Pesanan</h3>
+                            <p>Anda belum melakukan transaksi apapun.</p>
+                            <a href="belanja.html" class="btn-chat" style="margin-top:15px;">Mulai Belanja</a>
+                        </div>
+                    `;
+                    activeCountEl.innerText = 0;
+                    completedCountEl.innerText = 0;
+                } else {
+                    renderOrders(orders);
+                }
+
+            } catch (err) {
+                console.error("Gagal load orders:", err);
+                listContainer.innerHTML = `<div class="empty-state" style="color:red;">Gagal memuat data pesanan.</div>`;
+            }
+        }
+
+        // --- 5. RENDER UI ---
+        function renderOrders(orders) {
+            listContainer.innerHTML = '';
+            let activeCount = 0;
+            let completedCount = 0;
+
+            orders.forEach(o => {
+                // Tentukan Badge Status
+                let badgeClass = 'badge-pending';
+                let badgeText = 'Menunggu';
+                
+                if (o.status === 'approved') {
+                    badgeClass = 'badge-success';
+                    badgeText = 'Disetujui';
+                } else if (o.status === 'shipped') {
+                    badgeClass = 'badge-shipped';
+                    badgeText = 'Dikirim';
+                } else if (o.status === 'completed') {
+                    badgeClass = 'badge-success'; // Reuse green style
+                    badgeText = 'Selesai';
+                } else if (o.status === 'cancelled') {
+                    badgeClass = 'badge-cancelled';
+                    badgeText = 'Batal';
+                }
+
+                // Hitung Statistik
+                if (o.status === 'pending' || o.status === 'approved' || o.status === 'shipped') {
+                    activeCount++;
+                } else {
+                    completedCount++;
+                }
+
+                // Ambil Data dengan Aman (Fallback jika null)
+                const panen = o.panen || {};
+                const komoditas = panen.nama_komoditas || 'Produk Tidak Diketahui';
+                const petani = panen.profiles ? panen.profiles.full_name : 'Petani';
+                const qty = panen.quantity || 0;
+                const unit = panen.unit || 'Unit';
+                const date = new Date(o.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+                const item = document.createElement('div');
+                item.className = 'order-item';
+                item.innerHTML = `
+                    <div class="order-header">
+                        <span class="order-title">${komoditas}</span>
+                        <span class="badge ${badgeClass}">${badgeText}</span>
+                    </div>
+                    <div class="order-meta">
+                        <span>📦 ${qty} ${unit}</span>
+                        <span>👤 ${petani}</span>
+                    </div>
+                    <div class="order-meta">
+                        <span>📅 ${date}</span>
+                        <span>💰 <b>Rp ${parseInt(o.total_price).toLocaleString('id-ID')}</b></span>
+                    </div>
+                    <div style="text-align:right;">
+                        <button class="btn-chat" onclick="alert('Membuka chat dengan ${petani}...')">💬 Chat Petani</button>
+                    </div>
+                `;
+                listContainer.appendChild(item);
+            });
+
+            // Update Stats Angka
+            activeCountEl.innerText = activeCount;
+            completedCountEl.innerText = completedCount;
+        }
+
+    </script>
+</body>
+</html>
