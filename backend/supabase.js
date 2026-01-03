@@ -1,7 +1,8 @@
-// --- frontend/backend/supabase.js ---
-import { createClient } from 'https://unpkg.com/@supabase/supabase-js@2'
+// backend/supabase.js
+import { createClient } from '@supabase/supabase-js'
 
-const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'
-const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X'  // Publishable Key
+// Baca dari environment variables Vercel
+const SUPABASE_URL = process.env.SUPABASE_URL
+const SUPABASE_KEY = process.env.SUPABASE_KEY  // Service Role Key (rahasia)
 
-export const supa = createClient(SUPABASE_URL, SUPABASE_KEY)
+export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
