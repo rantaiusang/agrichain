@@ -44,6 +44,7 @@
             top: 0;
             z-index: 100;
             overflow-y: auto;
+            transition: width 0.3s ease;
         }
 
         .brand {
@@ -55,7 +56,6 @@
             align-items: center;
             gap: 10px;
             white-space: nowrap;
-            overflow: hidden;
         }
 
         .nav-item {
@@ -70,7 +70,6 @@
             color: rgba(255,255,255,0.7);
             text-decoration: none;
             white-space: nowrap;
-            overflow: hidden;
         }
 
         .nav-item:hover, .nav-item.active {
@@ -83,6 +82,7 @@
             margin-left: 250px;
             flex: 1;
             padding: 30px;
+            transition: margin-left 0.3s ease;
         }
 
         /* --- HEADER & SEARCH --- */
@@ -201,12 +201,18 @@
             width: 90%;
             max-width: 500px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: left; // Reset text align
+        }
+        
+        .modal-header {
             text-align: center;
-            position: relative;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
         }
 
-        .form-group { margin-bottom: 20px; text-align: left; }
-        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; text-align: left; font-size: 0.9rem; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-dark); }
         
         .input-field {
             width: 100%;
@@ -217,22 +223,23 @@
             font-size: 1rem;
             background: #fafafa;
         }
+        .input-field:disabled { background: #eee; color: #888; cursor: not-allowed; }
 
         .modal-actions {
             display: flex;
             justify-content: space-between;
             margin-top: 30px;
+            gap: 15px;
         }
         
         .btn-cancel {
-            background: #f44336;
-            color: white;
-            border: none;
+            background: white;
+            color: #666;
+            border: 1px solid #ccc;
             padding: 10px 20px;
             border-radius: 6px;
             cursor: pointer;
             flex: 1;
-            margin-right: 10px;
         }
 
         .btn-save {
@@ -244,12 +251,12 @@
             cursor: pointer;
             flex: 1;
         }
-        .btn-save:hover { background: #151a30; }
+        .btn-save:hover { background: var(--primary-light); }
 
         /* --- RESPONSIVE --- */
         @media (max-width: 768px) {
-            .sidebar { width: 0; padding: 0; overflow: hidden; }
-            .sidebar.open { width: 250px; padding: 20px; }
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
             .main-content { margin-left: 0; padding: 15px; }
             .search-box { max-width: 100%; }
             .content-header { flex-direction: column; align-items: stretch; }
@@ -260,18 +267,17 @@
 
     <!-- Sidebar -->
     <nav class="sidebar" id="sidebar">
-        <div class="brand">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
-            <span>AgriAdmin</span>
-        </div>
+        <div class="brand">🏛️ AgriAdmin</div>
         
-        <div class="nav-item" onclick="window.location.href='admin-system-full.html'">📊 Master Control</div>
-        <div class="nav-item active">👥 User Management</div>
-        <div class="nav-item" onclick="window.location.href='dashboard-admin.html'">🌾 Market Data</div>
-        <div class="nav-item" onclick="window.location.href='index.html'">🌐 Lihat Website</div>
+        <!-- Navigasi -->
+        <a href="admin-master.html" class="nav-item">📊 Master Control</a>
+        <a href="dashboard-admin.html" class="nav-item">🌾 Kelola Komoditas</a>
+        <a href="admin-users.html" class="nav-item active">👥 Users</a>
+        <div class="nav-item" onclick="alert('Fitur Blockchain segera hadir')">⛓️ Blockchain</div>
+        <a href="index.html" class="nav-item">🌐 Lihat Website</a>
         
-        <div id="btn-logout" class="nav-item" style="margin-top: auto; color: #ff8a80; border: 1px solid #ff8a80; cursor: pointer;">
-             🚪 Keluar
+        <div id="btnLogout" class="nav-item" style="margin-top: auto; color: #ff8a80; border: 1px solid #ff8a80; border-radius: 6px;">
+            🚪 Keluar
         </div>
     </nav>
 
@@ -303,7 +309,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td colspan="6" style="text-align:center; color:#999;">Memuat data pengguna...</td></tr>
+                    <tr><td colspan="5" style="text-align:center; color:#999;">Memuat data pengguna...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -313,14 +319,12 @@
     <!-- Modal Edit -->
     <div id="editModal" class="modal-overlay">
         <div class="modal-box">
-            <h3 style="color:var(--primary-dark); margin-top:0; margin-bottom: 20px;">Edit Pengguna</h3>
+            <div class="modal-header">
+                <h3 style="color:var(--primary-dark); margin:0;">Edit Pengguna</h3>
+            </div>
             
             <form id="editUserForm">
-                <!-- ID User untuk database (hidden) -->
                 <input type="hidden" id="editProfileId"> 
-
-                <!-- ID Auth User (hidden) - Walaupun email tidak kita ubah, kita butuh ID ini untuk referensi -->
-                <input type="hidden" id="editAuthId">
 
                 <div class="form-group">
                     <label>Nama Lengkap</label>
@@ -329,8 +333,8 @@
 
                 <div class="form-group">
                     <label>Email (Login ID)</label>
-                    <input type="email" id="editEmail" class="input-field" disabled style="background:#e0e0e0; cursor:not-allowed;">
-                    <small style="color:#999; display:block; margin-top:4px;">Email tidak dapat diubah demi keamanan akun user.</small>
+                    <input type="email" id="editEmail" class="input-field" disabled>
+                    <small style="color:#999; display:block; margin-top:4px;">Email tidak dapat diubah demi keamanan.</small>
                 </div>
 
                 <div class="form-group">
@@ -340,13 +344,13 @@
 
                 <div class="form-group">
                     <label>Role (Aman)</label>
-                    <select id="editRole" class="input-field" disabled style="background:#e0e0e0;">
+                    <select id="editRole" class="input-field" disabled>
                         <option value="PETANI">Petani</option>
                         <option value="PEMBELI">Pembeli</option>
                         <option value="LEMBAGA">Lembaga</option>
                         <option value="ADMIN">Admin</option>
                     </select>
-                    <small style="color:#999; display:block; margin-top:4px;">Role hanya dapat diubah oleh Super Admin di Database.</small>
+                    <small style="color:#999; display:block; margin-top:4px;">Role dikunci untuk keamanan.</small>
                 </div>
                 
                 <div class="modal-actions">
@@ -358,9 +362,14 @@
     </div>
 
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
+        // --- 1. LOAD CONFIG ---
+        if (typeof window.appConfig === 'undefined') {
+            console.error("FATAL: config.js tidak dimuat.");
+            alert("Konfigurasi sistem hilang.");
+        }
+
+        const SUPABASE_URL = window.appConfig.supabaseUrl;
+        const SUPABASE_KEY = window.appConfig.supabaseKey;
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentAdminId = null;
@@ -372,17 +381,16 @@
 
         // --- 3. INIT & SECURITY ---
         document.addEventListener("DOMContentLoaded", async () => {
-            // Cek Mobile
+            // Mobile check
             if(window.innerWidth <= 768) {
                 document.querySelector('.content-header').style.flexDirection = 'column';
                 document.querySelector('.content-header').style.alignItems = 'stretch';
             }
 
             // Cek Session
-            const { data: { session }, error } = await supabase.auth.getSession();
+            const { data: { session } } = await supabase.auth.getSession();
 
-            if (error || !session) {
-                alert("Akses Ditolak");
+            if (!session) {
                 window.location.href = 'login.html';
                 return;
             }
@@ -395,7 +403,7 @@
                 .single();
 
             if (!profile || profile.role !== 'ADMIN') {
-                alert("Akses Ditolak: Anda bukan Admin.");
+                alert("Akses Ditolak: Halaman ini khusus Administrator.");
                 window.location.href = 'index.html';
                 return;
             }
@@ -407,17 +415,12 @@
         // --- 4. LOAD USERS ---
         async function loadUsers() {
             try {
-                // Join table profiles dengan auth.users untuk ambil email
+                // Kita hanya ambil dari tabel profiles. 
+                // Untuk keamanan di frontend, email Auth Users tidak di-join langsung 
+                // karena butuh Service Role Key.
                 const { data, error } = await supabase
                     .from('profiles')
-                    .select(`
-                        id,
-                        full_name,
-                        phone,
-                        role,
-                        created_at,
-                        auth_users ( email, id as auth_id )
-                    `)
+                    .select('*')
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
@@ -426,7 +429,7 @@
 
             } catch (err) {
                 console.error(err);
-                tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Gagal memuat data.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:red;">Gagal memuat data.</td></tr>';
             }
         }
 
@@ -435,31 +438,28 @@
             tableBody.innerHTML = '';
 
             if (users.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada pengguna terdaftar.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Belum ada pengguna terdaftar.</td></tr>';
                 return;
             }
 
             users.forEach(user => {
-                // Format Tanggal
                 const dateStr = new Date(user.created_at).toLocaleDateString('id-ID');
                 
-                // Warna Badge
                 let badgeClass = 'badge-PETANI';
                 if(user.role === 'ADMIN') badgeClass = 'badge-ADMIN';
                 else if(user.role === 'PEMBELI') badgeClass = 'badge-PEMBELI';
                 else if(user.role === 'LEMBAGA') badgeClass = 'badge-LEMBAGA';
 
-                // Tombol Edit (Admin tidak bisa edit diri sendiri)
                 const isSelf = (user.id === currentAdminId);
                 const editBtn = isSelf 
                     ? '<span style="color:#ccc; font-size:0.8rem;">Anda Sendiri</span>' 
-                    : `<button class="btn-edit" onclick="openEditModal('${user.id}', '${user.auth_id}', '${user.full_name}', '${user.email}', '${user.phone}')">Edit</button>`;
+                    : `<button class="btn-edit" onclick="openEditModal('${user.id}', '${user.full_name}', '${user.email}', '${user.phone}')">Edit</button>`;
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td><strong>${user.full_name}</strong></td>
                     <td style="color:#666;">
-                        ${user.email} <br>
+                        ${user.email || 'Hidden'} <br>
                         <small style="color:#888;">HP: ${user.phone || '-'}</small>
                     </td>
                     <td><span class="badge ${badgeClass}">${user.role}</span></td>
@@ -475,23 +475,16 @@
             const query = document.getElementById('searchInput').value.toLowerCase();
             
             if(!query) {
-                loadUsers(); // Jika kosong, load semua
+                loadUsers();
                 return;
             }
 
             try {
-                // Cari di kolom full_name atau phone yang mirip query (case insensitive)
+                // Menggunakan operator ILIKE untuk pencarian case-insensitive
                 const { data, error } = await supabase
                     .from('profiles')
-                    .select(`
-                        id,
-                        full_name,
-                        phone,
-                        role,
-                        created_at,
-                        auth_users ( email, id as auth_id )
-                    `)
-                    .or(`full_name.ilike.%${query}%`, `phone.ilike.%${query}%`)
+                    .select('*')
+                    .or(`full_name.ilike.%${query}%,phone.ilike.%${query}%`)
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
@@ -502,12 +495,11 @@
             }
         }
 
-        // --- 7. OPEN MODAL & POPULATE DATA ---
-        window.openEditModal = function(profileId, authId, name, email, phone) {
+        // --- 7. OPEN MODAL ---
+        window.openEditModal = function(profileId, name, email, phone) {
             document.getElementById('editProfileId').value = profileId;
-            document.getElementById('editAuthId').value = authId;
             document.getElementById('editName').value = name;
-            document.getElementById('editEmail').value = email;
+            document.getElementById('editEmail').value = email; // Email diambil dari profiles (jika disimpan di sana)
             document.getElementById('editPhone').value = phone;
             
             modal.style.display = 'flex';
@@ -517,12 +509,11 @@
             modal.style.display = 'none';
         }
 
-        // Tutup modal jika klik luar
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeEditModal();
         });
 
-        // --- 8. SIMPAN PERUBAHAN (UPDATE DATABASE) ---
+        // --- 8. SIMPAN PERUBAHAN ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -533,12 +524,10 @@
             const originalText = btnSubmit.textContent;
 
             try {
-                // UI Loading
                 btnSubmit.disabled = true;
                 btnSubmit.textContent = 'Menyimpan...';
 
-                // 1. Update Data Profil (Profiles Table)
-                const { error: profileError } = await supabase
+                const { error } = await supabase
                     .from('profiles')
                     .update({
                         full_name: newName,
@@ -546,34 +535,29 @@
                     })
                     .eq('id', profileId);
 
-                if (profileError) throw profileError;
+                if (error) throw error;
 
-                // CATATAN KECIL:
-                // Kita TIDAK mengupdate email di table auth.users secara manual di frontend
-                // karena membutuhkan session dari user yang di-edit (yang tidak kita miliki).
-                // Strategi keamanan: Email tetap aman.
-                
                 alert('Data pengguna berhasil diperbarui!');
                 closeEditModal();
-                loadUsers(); // Refresh tabel agar data baru muncul
+                loadUsers();
 
             } catch (err) {
                 console.error(err);
-                alert('Gagal menyimpan data: ' + err.message);
+                alert('Gagal menyimpan: ' + err.message);
             } finally {
-                btnSubmit.textContent = originalText;
                 btnSubmit.disabled = false;
+                btnSubmit.textContent = originalText;
             }
         });
 
         // --- 9. LOGOUT ---
-        document.getElementById('btn-logout').addEventListener('click', async () => {
+        document.getElementById('btnLogout').addEventListener('click', async () => {
             if(confirm("Keluar dari Admin Panel?")) {
                 await supabase.auth.signOut();
+                localStorage.clear();
                 window.location.href = 'login.html';
             }
         });
-
     </script>
 </body>
 </html>
