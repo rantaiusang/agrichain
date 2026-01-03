@@ -292,9 +292,15 @@
 
     <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. KONFIGURASI SUPABASE (SAMA DENGAN REGISTER & LOGIN) ---
-        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co'; 
-        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X'; 
+        // --- 1. LOAD CONFIG & INIT SUPABASE ---
+        // Kita menggunakan window.appConfig agar aman untuk GitHub/Vercel
+        if (typeof window.appConfig === 'undefined') {
+            console.error("FATAL: config.js tidak dimuat.");
+            alert("Konfigurasi sistem hilang. Silakan refresh halaman atau hubungi admin.");
+        }
+
+        const SUPABASE_URL = window.appConfig.supabaseUrl;
+        const SUPABASE_KEY = window.appConfig.supabaseKey;
 
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -345,7 +351,7 @@
             const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
             if (sessionError || !session) {
-                console.warn("Sesi tidak ditemukan");
+                console.warn("Sesi tidak ditemukan, redirect ke login");
                 window.location.href = 'login.html';
                 return;
             }
@@ -364,6 +370,7 @@
                 if (profileError) throw profileError;
 
                 // Isi Data ke Form dan Header
+                // Gunakan fallback string kosong agar input tidak mengisi "undefined"
                 const nama = profile.full_name || "Petani AgriChain";
                 const role = profile.role || "PETANI";
                 
@@ -387,8 +394,8 @@
 
             } catch (err) {
                 console.error("Error Load Profil:", err);
-                alert("Gagal memuat data profil: " + err.message);
-                // Opsional: tetap tampilkan form kosong atau redirect
+                showToast("Gagal memuat data profil", "error");
+                // Tetap tampilkan form agar user bisa mencoba lagi, atau kosong
                 mainContent.style.display = 'block';
                 initialLoader.style.display = 'none';
             }
@@ -398,7 +405,6 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            // Validasi Sederhana
             if(!namaInput.value.trim()) {
                 showToast("Nama tidak boleh kosong", "error");
                 return;
@@ -412,7 +418,7 @@
 
             try {
                 const { data: { session } } = await supabase.auth.getSession();
-                if (!session) throw new Error("Sesi habis");
+                if (!session) throw new Error("Sesi habis, silakan login ulang.");
 
                 const userId = session.user.id;
 
@@ -451,10 +457,13 @@
             const confirmLogout = confirm("Apakah Anda yakin ingin keluar akun?");
             
             if (confirmLogout) {
-                await supabase.auth.signOut();
-                // Hapus cache lokal jika ada
-                localStorage.clear();
-                window.location.href = 'login.html';
+                try {
+                    await supabase.auth.signOut();
+                    localStorage.clear(); // Hapus semua data lokal
+                    window.location.href = 'login.html';
+                } catch (err) {
+                    console.error("Error logout:", err);
+                }
             }
         });
 
