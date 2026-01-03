@@ -13,6 +13,7 @@
         :root { 
             --primary: #2E7D32; 
             --primary-dark: #1B5E20; 
+            --light-green: #E8F5E9;
             --bg-light: #F4F6F8; 
             --white: #ffffff; 
             --text-dark: #1B1B1B; 
@@ -27,27 +28,35 @@
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: var(--bg-light); 
             color: var(--text-dark); 
-            padding: 20px; 
             margin: 0;
+            padding-bottom: 80px; /* Space navbar bawah */
+            padding: 20px;
         }
+
+        /* --- CONTAINER --- */
+        .container { max-width: 1200px; margin: 0 auto; }
 
         /* --- HEADER --- */
         .header-section {
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
-            margin-bottom: 30px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #E5E7EB;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         h1 { color: var(--primary); margin: 0; font-size: 1.8rem; }
-        .btn-back { color: var(--text-grey); text-decoration: none; font-weight: 600; font-size: 1rem; }
-        .btn-back:hover { color: var(--primary); }
+        .btn-back { color: var(--text-grey); text-decoration: none; font-weight: 600; padding: 8px 16px; background: white; border-radius: 20px; transition: var(--transition); box-shadow: var(--shadow-sm); display: inline-flex; align-items: center; gap: 5px; }
+        .btn-back:hover { color: var(--primary); background: var(--light-green); transform: translateY(-1px); }
 
         /* --- TABS NAVIGASI --- */
         .tabs { display: flex; gap: 15px; border-bottom: 2px solid #ddd; padding-bottom: 10px; margin-bottom: 30px; overflow-x: auto; }
         .tab { 
             padding: 10px 20px; 
-            border-radius: 20px; 
+            border-radius: 25px; 
             cursor: pointer; 
             font-weight: 600; 
             color: var(--text-grey); 
@@ -56,33 +65,26 @@
             transition: var(--transition);
             white-space: nowrap;
         }
-        .tab:hover { background: #e8f5e9; color: var(--primary); }
+        .tab:hover { background: var(--light-green); color: var(--primary); }
         .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        /* --- CONTENT CARDS --- */
+        /* --- CONTENT TABS --- */
         .tab-content { display: none; animation: fadeIn 0.4s ease; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .card-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); 
-            gap: 25px; 
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px; }
 
         .card { 
             background: var(--white); 
             padding: 25px; 
             border-radius: var(--radius); 
             box-shadow: var(--shadow-sm); 
-            border-top: 5px solid var(--primary);
+            border: 1px solid #E5E7EB;
             transition: var(--transition);
         }
-
         .card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
-        .card-title { margin: 0 0 15px 0; color: var(--primary-dark); font-size: 1.2rem; }
+        .card-title { margin: 0 0 15px 0; color: var(--primary-dark); font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
 
         .canvas-container { position: relative; height: 300px; width: 100%; }
 
@@ -106,117 +108,133 @@
         /* --- STATUS CARD --- */
         .status-card {
             background: var(--white);
-            padding: 20px;
+            padding: 15px;
             border-radius: 8px;
             text-align: center;
-            border: 1px dashed var(--primary);
+            border: 1px solid #ddd;
             margin-bottom: 20px;
+            color: var(--text-grey);
+            font-weight: 600;
         }
 
         /* --- RESPONSIVE --- */
         @media (max-width: 600px) {
             .card-grid { grid-template-columns: 1fr; }
-            .tabs { flex-wrap: nowrap; overflow-x: scroll; }
+            .header-section { flex-direction: column; gap: 10px; text-align: center; }
             .card-title { font-size: 1rem; }
         }
     </style>
 </head>
 <body>
-
-    <div class="header-section">
-        <h1>📊 Monitoring Real-Time</h1>
-        <a href="index.html" class="btn-back">← Kembali ke Beranda</a>
-    </div>
-
-    <!-- Navigasi Tab -->
-    <nav class="tabs">
-        <div class="tab active" id="tabMarket" onclick="switchTab('tabMarket')">📈 Pasar</div>
-        <div class="tab" id="tabAnalisa" onclick="switchTab('tabAnalisa')">📉 Analisa</div>
-        <div class="tab" id="tabSmart" onclick="switchTab('tabSmart')">🌾 Smart Farm</div>
-    </nav>
-
-    <!-- CONTENT 1: PASAR -->
-    <div id="tabMarket" class="tab-content active">
-        
-        <!-- Peringatan Status Data -->
-        <div class="status-card" id="marketStatus">
-            Memuat data pasar... 
+    <div class="container">
+        <!-- Header -->
+        <div class="header-section">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <a href="index.html" class="btn-back">← Kembali</a>
+                <h1>📊 Monitoring Real-Time</h1>
+            </div>
+            <!-- Status Indicator -->
+            <div class="status-card" id="systemStatus">Memuat status sistem...</div>
         </div>
 
-        <div class="card-grid">
-            <!-- Grafik Harga -->
-            <div class="card">
-                <h3 class="card-title">💰 Tren Harga Padi (Mingguan)</h3>
-                <div class="canvas-container">
-                    <canvas id="chartHarga"></canvas>
-                </div>
-            </div>
+        <!-- Tab Navigation -->
+        <nav class="tabs">
+            <div class="tab active" id="tabMarket" onclick="switchTab('tabMarket')">📈 Pasar</div>
+            <div class="tab" id="tabAnalisa" onclick="switchTab('tabAnalisa')">📉 Analisa</div>
+            <div class="tab" id="tabSmart" onclick="switchTab('tabSmart')">🤖 Smart Farm</div>
+        </nav>
 
-            <!-- Grafik Perbandingan -->
-            <div class="card">
-                <h3 class="card-title">📊 Perbandingan Komoditas (Top 5)</h3>
-                <div class="canvas-container">
-                    <canvas id="chartKomoditas"></canvas>
+        <!-- CONTENT 1: PASAR -->
+        <div id="tabMarket" class="tab-content active">
+            <div class="card-grid">
+                <!-- Grafik Harga -->
+                <div class="card">
+                    <h3 class="card-title">💰 Tren Harga Komoditas</h3>
+                    <div class="canvas-container">
+                        <canvas id="chartHarga"></canvas>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- CONTENT 2: ANALISA -->
-    <div id="tabAnalisa" class="tab-content">
-        <div class="card-grid">
-            <div class="card">
-                <h3 class="card-title">⚗️ Analisa Penggunaan Pupuk</h3>
-                <p style="color:#666; font-size:0.9rem;">Estimasi kebutuhan berdasarkan musim.</p>
-                <div class="canvas-container">
-                    <canvas id="chartKonsumsi"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- CONTENT 3: SMART FARM -->
-    <div id="tabSmart" class="tab-content">
-        <div class="card-grid">
-            <div class="card">
-                <h3 class="card-title">🐛 Log Serangan Hama</h3>
-                <ul class="log-list" id="hamaList">
-                    <li style="text-align:center; color:#999;">Memuat log sistem...</li>
-                </ul>
-            </div>
-            <div class="card">
-                <h3 class="card-title">☀️ Status Cuaca & Irigasi</h3>
-                <div class="canvas-container" style="display:flex; align-items:center; justify-content:center; background:#E8F5E9; border-radius:8px;">
-                    <div style="text-align:center;">
-                        <div style="font-size:3rem;">☀️</div>
-                        <p style="margin:5px 0 0 0;"><strong>Panas Terik</strong></p>
-                        <p style="margin:0; font-size:0.8rem; color:#666;">32°C</p>
-                        <button onclick="alert('Sistem IoT menyesuaikan aliran air otomatis.')" style="margin-top:10px; padding:8px 20px; background:var(--primary); color:white; border:none; border-radius:6px; cursor:pointer;">Jalankan Irigasi</button>
+                <!-- Grafik Perbandingan -->
+                <div class="card">
+                    <h3 class="card-title">🥗 Perbandingan Harga (Top 5)</h3>
+                    <div class="canvas-container">
+                        <canvas id="chartKomoditas"></canvas>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- CONTENT 2: ANALISA -->
+        <div id="tabAnalisa" class="tab-content">
+            <div class="card-grid">
+                <div class="card">
+                    <h3 class="card-title">🌱 Analisa Konsumsi Pupuk</h3>
+                    <p style="color:#666; font-size:0.9rem; margin-bottom:15px;">Estimasi kebutuhan berdasarkan musim tanam.</p>
+                    <div class="canvas-container">
+                        <canvas id="chartKonsumsi"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENT 3: SMART FARM -->
+        <div id="tabSmart" class="tab-content">
+            <div class="card-grid">
+                <!-- Log Hama -->
+                <div class="card">
+                    <h3 class="card-title">🐛 Log Serangan Hama</h3>
+                    <ul class="log-list" id="hamaList">
+                        <li style="text-align:center; color:#999;">Memuat log sistem...</li>
+                    </ul>
+                </div>
+
+                <!-- Status Cuaca/Irigasi -->
+                <div class="card">
+                    <h3 class="card-title">☀️ Status Cuaca & Irigasi</h3>
+                    <div class="canvas-container" style="display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, #FFE0B2, #FFCC80); border-radius: 8px; color: #E65100;">
+                        <div style="text-align:center;">
+                            <div style="font-size:3rem;">☀️</div>
+                            <p style="margin:5px 0 0 0;"><strong>Panas Terik</strong></p>
+                            <p style="margin:0; font-size:0.8rem;">Suhu Tanah: 32°C</p>
+                        </div>
+                        <div style="text-align: center; margin-top: 20px;">
+                            <button onclick="alert('Mengaktifkan pompa irigasi Area A...')" style="padding:8px 20px; background: white; border: 1px solid #FFCC80; color: #E65100; border-radius: 20px; cursor: pointer; font-weight: 600; transition: 0.2s;">Jalankan Irigasi</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. KONFIGURASI SUPABASE (FIXED) ---
-        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
+        // --- 1. LOAD CONFIG & INIT ---
+        if (typeof window.appConfig === 'undefined') {
+            console.error("FATAL: config.js tidak dimuat.");
+            alert("Konfigurasi sistem hilang.");
+        }
+
+        const SUPABASE_URL = window.appConfig.supabaseUrl;
+        const SUPABASE_KEY = window.appConfig.supabaseKey;
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let chartInstances = {};
         let allPrices = [];
 
-        // --- 2. LOAD DATA SAAT BUKA ---
+        // --- 2. DOM ELEMENTS ---
+        const statusDiv = document.getElementById('systemStatus');
+
+        // --- 3. INIT ---
         document.addEventListener("DOMContentLoaded", async () => {
             await loadMarketData();
         });
 
-        // --- 3. LOAD DATA MARKET (LOGIC FALLOUT) ---
+        // --- 4. LOAD DATA MARKET ---
         async function loadMarketData() {
-            const statusDiv = document.getElementById('marketStatus');
-            statusDiv.textContent = "Memuat data...";
+            statusDiv.textContent = "Memuat data pasar...";
+            statusDiv.style.color = "#666";
             
             try {
                 const { data, error } = await supabase
@@ -226,42 +244,48 @@
 
                 if (error) throw error;
 
-                allPrices = data;
-
-                if (data.length === 0) {
-                    statusDiv.innerHTML = `<span style="color:orange;">⚠️ Belum ada data di tabel market_prices. Menampilkan data demo.</span>`;
-                renderCharts([]); // Kirim array kosong agar render fallback
-                renderHamaLogs();
-                return;
-                // Jika tidak return, lanjut render data asli
-                statusDiv.innerHTML = `<span style="color:green;">✅ Data Real-Time (${data.length} item)</span>`;
-                renderCharts(data);
-                renderHamaLogs();
+                // Update Status
+                if (data && data.length > 0) {
+                    statusDiv.innerHTML = `✅ Data Real-Time Aktif (${data.length} item)`;
+                    statusDiv.style.color = "#2E7D32";
+                    renderCharts(data);
+                    renderHamaLogs();
+                } else {
+                    statusDiv.textContent = "⚠️ Belum ada data harga (Menampilkan demo)";
+                    statusDiv.style.color = "#F57C00";
+                    // Render Fallback Charts
+                    renderCharts([]); 
+                    renderHamaLogs();
+                }
 
             } catch (err) {
                 console.error(err);
-                statusDiv.innerHTML = `<span style="color:red;">❌ Gagal memuat data.</span>`;
-                renderCharts([]); // Tetap render chart meski gagal (fallback)
+                statusDiv.textContent = "❌ Gagal memuat data.";
+                statusDiv.style.color = "#D32F2F";
+                // Render Fallback Charts (Error mode)
+                renderCharts([]); 
+                renderHamaLogs();
             }
         }
 
-        // --- 4. RENDER CHARTS (DENGAN DATA FALLBACK) ---
+        // --- 5. RENDER CHARTS ---
         function renderCharts(data) {
             // Tentukan Labels & Harga
             let labels = ['Padi', 'Jagung', 'Kopi', 'Cabai', 'Kedelai'];
-            let prices = [6200, 3500, 45000, 15000, 9000]; // Dummy Data (Penting!)
+            let prices = [6200, 3500, 45000, 15000, 9000]; // Data Fallback
 
-            // Jika data ada di database, timpa dummy data
-            if (data.length > 0) {
-                labels = data.map(d => d.commodity_name);
+            // Jika data ada di database, timpa dummy
+            if (data && data.length > 0) {
+                labels = data.map(d => d.nama_komoditas);
                 prices = data.map(d => d.current_price);
             }
 
-            // Hapus Chart lama jika ada (mencegah error Canvas)
+            // Hancurkan chart lama agar tidak error Canvas
             if(chartInstances['harga']) chartInstances['harga'].destroy();
             if(chartInstances['komoditas']) chartInstances['komoditas'].destroy();
+            if(chartInstances['konsumsi']) chartInstances['konsumsi'].destroy();
 
-            // CHART 1: Line Chart (Tren Mingguan - Dummy)
+            // CHART 1: Line Chart (Tren Mingguan - Simulasi)
             const ctxHarga = document.getElementById('chartHarga');
             if (ctxHarga) {
                 chartInstances['harga'] = new Chart(ctxHarga, {
@@ -270,7 +294,7 @@
                         labels: ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'],
                         datasets: [{
                             label: 'Rata-rata Harga (Rp)',
-                            data: [6100, 6250, 6200, 6300, 6400, 6350, 6280], // Data Tren (Hardcoded)
+                            data: [6100, 6250, 6200, 6300, 6400, 6350, 6280], // Data Dummy Tren
                             borderColor: '#2E7D32',
                             backgroundColor: 'rgba(46, 125, 50, 0.1)',
                             fill: true,
@@ -281,7 +305,7 @@
                 });
             }
 
-            // CHART 2: Bar Chart (Perbandingan - Real/Fallback)
+            // CHART 2: Bar Chart (Perbandingan)
             const ctxKomoditas = document.getElementById('chartKomoditas');
             if (ctxKomoditas) {
                 chartInstances['komoditas'] = new Chart(ctxKomoditas, {
@@ -292,23 +316,22 @@
                             label: 'Harga Saat Ini (Rp)',
                             data: prices,
                             backgroundColor: '#2E7D32',
-                            borderRadius: 5
+                            borderRadius: 6,
+                            barThickness: 20
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        scales: { y: { beginAtZero: true } },
+                        scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } },
                         plugins: { legend: { display: false } }
                     }
                 });
             }
 
-            // CHART 3: Analisa Pupuk (Horizontal)
+            // CHART 3: Analisa Pupuk (Horizontal Bar)
             const ctxKonsumsi = document.getElementById('chartKonsumsi');
             if (ctxKonsumsi) {
-                if(chartInstances['konsumsi']) chartInstances['konsumsi'].destroy();
-
                 chartInstances['konsumsi'] = new Chart(ctxKonsumsi, {
                     type: 'bar',
                     data: {
@@ -317,23 +340,24 @@
                             label: 'Pemakaian (Ton)',
                             data: [120, 85, 40],
                             backgroundColor: ['#FFC107', '#FF9800', '#4CAF50'],
-                            borderRadius: 5
+                            borderRadius: 6
                         }]
                     },
                     options: {
                         indexAxis: 'y', // Horizontal
                         responsive: true,
                         maintainAspectRatio: false,
+                        scales: { x: { grid: { display: false } }, y: { grid: { display: false } } },
                         plugins: { legend: { display: false } }
                     }
                 });
             }
         }
 
-        // --- 5. RENDER LOGS HAMA (STATIC) ---
+        // --- 6. RENDER LOGS HAMA ---
         function renderHamaLogs() {
             const list = document.getElementById('hamaList');
-            // Data Hardcoded untuk contoh
+            // Data Hardcoded untuk demo IoT
             const logs = [
                 { nama: 'Ulat Grayak', tanggal: '1 Feb', status: 'Selesai', tingkat: 'Serius' },
                 { nama: 'Kutu Daun', tanggal: '3 Jan', status: 'Pemantauan', tingkat: 'Ringan' },
@@ -349,7 +373,7 @@
                 list.innerHTML += `
                     <div class="log-item">
                         <div>
-                            <strong>🐛 ${log.nama}</strong>
+                            <strong style="color:#333;">🐛 ${log.nama}</strong>
                             <div style="font-size:0.85rem; color:#666;">${log.tanggal} 2023</div>
                         </div>
                         ${badge}
@@ -358,9 +382,9 @@
             });
         }
 
-        // --- 6. FUNGSI TABS ---
+        // --- 7. FUNGSI TABS ---
         window.switchTab = function(tabName) {
-            // Sembunyikan semua tab
+            // Sembunyikan semua content
             const contents = document.querySelectorAll('.tab-content');
             contents.forEach(content => {
                 content.classList.remove('active');
@@ -370,15 +394,12 @@
             const tabs = document.querySelectorAll('.tab');
             tabs.forEach(t => t.classList.remove('active'));
 
-            // Aktifkan tab yang dipilih
+            // Tampilkan content terpilih
             document.getElementById(tabName).classList.add('active');
             
-            // Update tombol
-            if(tabName === 'tabMarket') document.getElementById('tabMarket').classList.add('active');
-            if(tabName === 'tabAnalisa') document.getElementById('tabAnalisa').classList.add('active');
-            if(tabName === 'tabSmart') document.getElementById('tabSmart').classList.add('active');
+            // Aktifkan tombol
+            document.getElementById(tabName).classList.add('active');
         };
-
     </script>
 </body>
 </html>
