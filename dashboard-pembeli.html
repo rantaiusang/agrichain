@@ -10,12 +10,15 @@
 
     <style>
         :root { 
-            --primary: #1976D2; 
-            --primary-dark: #0D47A1; 
-            --bg: #f4f6f8; 
+            /* UBAH WARNA KE HIJAU KONSISTEN */
+            --primary: #2E7D32; 
+            --primary-dark: #1B5E20;
+            --primary-light: #E8F5E9;
+            --bg: #F5F7FA; 
             --text: #333; 
             --white: #fff;
             --border: #eee;
+            --text-grey: #666;
         }
 
         body { 
@@ -47,7 +50,7 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
         }
         .stat-val { font-size: 1.5rem; font-weight: bold; color: var(--text); margin: 10px 0; }
-        .stat-lbl { font-size: 0.85rem; color: #666; }
+        .stat-lbl { font-size: 0.85rem; color: var(--text-grey); }
 
         /* Order List */
         .order-list { display: flex; flex-direction: column; gap: 15px; }
@@ -104,7 +107,7 @@
     
     <!-- Navbar -->
     <nav class="nav">
-        <a href="index.html" class="brand">🛒 AgriChain</a>
+        <a href="index.html" class="brand">🌱 AgriChain</a>
         <div>
             <a href="profile.html" style="padding: 8px 16px; border: 1px solid var(--primary); color: var(--primary); border-radius: 20px; text-decoration: none; font-weight: bold;">👤 Profil</a>
         </div>
