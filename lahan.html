@@ -24,11 +24,11 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: #F9FAFB;
+            background-color: #F5F7FA;
             color: var(--text-main);
             margin: 0;
             padding: 20px;
-            padding-bottom: 80px; /* Space navbar */
+            padding-bottom: 80px; /* Space navbar bawah */
         }
 
         /* --- CONTAINER & HEADER --- */
@@ -41,29 +41,38 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             padding-bottom: 15px;
             border-bottom: 1px solid #E5E7EB;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
+        .header-left { display: flex; align-items: center; gap: 10px; }
         h2 { margin: 0; color: var(--primary); font-size: 1.5rem; }
-        .back-link { color: var(--text-sub); text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 5px; transition: color 0.2s; }
-        .back-link:hover { color: var(--primary); }
+        
+        .back-link { 
+            color: var(--text-sub); text-decoration: none; font-weight: 600; 
+            padding: 8px 16px; background: white; border-radius: 20px; 
+            display: flex; align-items: center; gap: 5px; transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+        .back-link:hover { color: var(--primary); background: var(--primary-light); }
 
         /* --- ACTION BUTTON --- */
         .btn-add {
             background: var(--primary);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 25px;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 2px 5px rgba(46, 125, 50, 0.2);
-            display: flex; align-items: center; gap: 5px;
+            display: flex; align-items: center; gap: 8px;
             transition: var(--transition);
         }
-        .btn-add:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn-add:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3); }
 
         /* --- CARD FORM --- */
         .card {
@@ -82,8 +91,8 @@
         .form-title { margin: 0 0 20px 0; color: var(--primary-dark); font-size: 1.1rem; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 5px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
         
         input, select {
             width: 100%;
@@ -95,10 +104,12 @@
             box-sizing: border-box;
             transition: border-color 0.2s;
         }
-        input:focus, select:focus { border-color: var(--primary); outline: none; }
+        input:focus, select:focus { border-color: var(--primary); outline: none; background: white; }
 
-        .btn-save { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        .btn-cancel { width: 100%; background: #E5E7EB; color: var(--text-main); border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-save { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: var(--transition); }
+        .btn-save:hover { background: var(--primary-dark); }
+        .btn-cancel { width: 100%; background: #F3F4F6; color: #4B5563; border: none; padding: 14px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: var(--transition); }
+        .btn-cancel:hover { background: #E5E7EB; color: #1F2937; }
 
         /* --- TABLE --- */
         .table-container {
@@ -112,7 +123,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 650px; /* Min width so it doesn't crunch too much */
+            min-width: 650px;
         }
 
         th {
@@ -120,7 +131,7 @@
             padding: 15px;
             text-align: left;
             color: var(--text-sub);
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-weight: 700;
@@ -130,56 +141,75 @@
         td {
             padding: 15px;
             border-bottom: 1px solid #F3F4F6;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             vertical-align: middle;
         }
         tr:last-child td { border-bottom: none; }
         
         tr { transition: background 0.2s; animation: fadeIn 0.4s ease forwards; opacity: 0; }
         tr:hover { background: #F0FDF4; }
-
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Badge Styles */
-        .badge-sawah { background: #E0F2FE; color: #0369A1; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
-        .badge-kebun { background: #ECFDF5; color: #047857; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
+        /* --- BADGE --- */
+        .badge-sawah { background: #E0F2FE; color: #0369A1; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
+        .badge-kebun { background: #D1FAE5; color: #059669; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: bold; }
 
-        /* Action Buttons in Table */
-        .action-group { display: flex; gap: 5px; }
-        .btn-edit { padding: 5px 10px; background: #F59E0B; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
-        .btn-delete { padding: 5px 10px; background: #EF4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; font-weight: 600; }
+        /* --- ACTION BUTTONS --- */
+        .action-group { display: flex; gap: 8px; }
+        .btn-edit { padding: 6px 12px; background: #FEF3C7; color: #D97706; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: var(--transition); }
+        .btn-edit:hover { background: #FCD34D; color: white; }
+        
+        .btn-delete { padding: 6px 12px; background: #FEE2E2; color: #DC2626; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 600; transition: var(--transition); }
+        .btn-delete:hover { background: #DC2626; color: white; }
 
-        /* --- TOAST --- */
+        /* --- TOAST NOTIFICATION --- */
         .toast {
-            position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%);
-            background: #333; color: white; padding: 12px 24px; border-radius: 50px;
-            box-shadow: 0 10px 15px rgba(0,0,0,0.2); font-size: 0.9rem;
-            opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 1000;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 0.9rem;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .toast.show { opacity: 1; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
         .toast.success { background: var(--primary); }
-
-        /* --- RESPONSIVE --- */
-        @media (max-width: 600px) {
-            .form-row { grid-template-columns: 1fr; }
-            .page-header { flex-direction: column; gap: 10px; text-align: center; }
-            th, td { font-size: 0.85rem; padding: 10px; }
-        }
 
         /* --- NAVBAR BAWAH --- */
         .nav-bottom {
             position: fixed; bottom: 0; left: 0; width: 100%;
-            background: white; border-top: 1px solid #E5E7EB;
             display: flex; justify-content: space-around; padding: 12px 0;
+            background: white; border-top: 1px solid #E5E7EB;
             z-index: 99;
         }
         .b-item {
             display: flex; flex-direction: column; align-items: center;
-            text-decoration: none; color: #9CA3AF; font-size: 0.75rem;
+            text-decoration: none; color: #9CA3AF; font-size: 0.8rem;
             transition: color 0.2s;
         }
         .b-item.active { color: var(--primary); }
         .b-item svg { width: 24px; height: 24px; margin-bottom: 4px; }
+
+        /* --- EMPTY STATE --- */
+        .empty-msg { text-align: center; padding: 40px; color: #9CA3AF; font-style: italic; }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; }
+            .page-header { flex-direction: column; text-align: center; }
+            th, td { font-size: 0.85rem; padding: 10px; }
+            .action-group { flex-direction: column; }
+        }
     </style>
 </head>
 <body>
@@ -187,7 +217,7 @@
     <div class="container">
         <!-- Header -->
         <div class="page-header">
-            <div style="display:flex; align-items:center; gap:10px;">
+            <div class="header-left">
                 <a href="dashboard-petani.html" class="back-link">← Kembali</a>
                 <h2>🏞️ Lahan Pertanian</h2>
             </div>
@@ -213,8 +243,8 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="lokasi">Lokasi</label>
-                        <input type="text" id="lokasi" placeholder="Cianjur, Warungkondang" required>
+                        <label for="lokasi">Lokasi / Desa</label>
+                        <input type="text" id="lokasi" placeholder="Cth: Cianjur, Warungkondang" required>
                     </div>
                     <div class="form-group">
                         <label for="jenisTanah">Jenis Tanah</label>
@@ -230,7 +260,7 @@
 
                 <div class="form-group">
                     <label for="komoditas">Komoditas Utama</label>
-                    <input type="text" id="komoditas" placeholder="Padi Cianjur, Jagung Manis" required>
+                    <input type="text" id="komoditas" placeholder="Cth: Padi Cianjur, Jagung Manis" required>
                 </div>
 
                 <div class="form-row">
@@ -254,7 +284,7 @@
                     </tr>
                 </thead>
                 <tbody id="listLahan">
-                    <tr><td colspan="7" style="text-align: center; color: #9CA3AF;">Memuat data lahan...</td></tr>
+                    <tr><td colspan="7" style="text-align: center; padding: 30px; color: #999;">Memuat data lahan...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -270,7 +300,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><path d="M1 1h4l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
             Belanja
         </a>
-        <a href="input-panen.html" class="b-item">
+        <a href="dashboard-petani.html" class="b-item">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
             Panen
         </a>
@@ -284,23 +314,38 @@
         </a>
     </div>
 
-    <!-- Toast -->
-    <div id="toast" class="toast">Pesan notifikasi</div>
+    <!-- Toast Notifikasi -->
+    <div id="toast" class="toast">
+        <span>✅</span>
+        <span id="toastMessage">Berhasil disimpan</span>
+    </div>
 
     <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. KONFIGURASI SUPABASE ---
-        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
+        // --- 1. LOAD CONFIG & INIT ---
+        if (typeof window.appConfig === 'undefined') {
+            console.error("FATAL: config.js tidak dimuat.");
+            alert("Konfigurasi sistem hilang.");
+        }
+
+        const SUPABASE_URL = window.appConfig.supabaseUrl;
+        const SUPABASE_KEY = window.appConfig.supabaseKey;
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentUserId = null;
 
-        // --- 2. INIT & LOAD ---
+        // --- 2. DOM ELEMENTS ---
+        const formCard = document.getElementById('formCard');
+        const formTitle = document.getElementById('formTitle');
+        const form = document.getElementById('lahanForm');
+        const listLahan = document.getElementById('listLahan');
+        const btnSubmit = document.getElementById('btnSubmit');
+
+        // --- 3. INIT ---
         document.addEventListener("DOMContentLoaded", async () => {
-            // Cek Login (Wajib)
+            // Cek Login
             const { data: { session } } = await supabase.auth.getSession();
-            if (error || !session) {
+            if (!session) {
                 window.location.href = 'login.html';
                 return;
             }
@@ -309,85 +354,81 @@
             await loadLahan();
         });
 
-        // --- 3. LOAD DATA ---
+        // --- 4. LOAD DATA ---
         async function loadLahan() {
-            const listEl = document.getElementById('listLahan');
-            listEl.innerHTML = ''; // Reset
-
+            listLahan.innerHTML = '<tr><td colspan="7" style="text-align: center;">Memuat data lahan...</td></tr>';
+            
             try {
+                // Menggunakan tabel 'farmlands'
                 const { data, error } = await supabase
-                    .from('farmlands') // Table 'farmlands' (mirip lahan)
+                    .from('farmlands')
                     .select('*')
                     .eq('user_id', currentUserId)
                     .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
-                if (data.length === 0) {
-                    listEl.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#999; padding:30px;">Belum ada data lahan.</td></tr>';
+                if (!data || data.length === 0) {
+                    listLahan.innerHTML = '<tr><td colspan="7" class="empty-msg">Belum ada data lahan.</td></tr>';
                     return;
                 }
 
+                listLahan.innerHTML = '';
                 data.forEach((item, index) => {
-                    const badgeClass = item.soil_type.includes('Sawah') ? 'badge-sawah' : 'badge-kebun';
-                    const badgeText = item.soil_type.replace('Sawah', '').replace('Tadah Hujan', '').trim() || 'Tanaman';
+                    // Tentukan warna badge berdasarkan jenis tanah
+                    const isSawah = item.soil_type && item.soil_type.toLowerCase().includes('sawah');
+                    const badgeClass = isSawah ? 'badge-sawah' : 'badge-kebun';
 
                     const row = document.createElement('tr');
-                    // Staggered Animation (Delay)
-                    row.style.animationDelay = `${index * 0.1}s`;
+                    // Staggered Animation Delay
+                    row.style.animationDelay = `${index * 0.05}s`;
 
                     row.innerHTML = `
                         <td><strong>${item.name}</strong></td>
-                        <td>${item.area_size.toLocaleString()}</td>
+                        <td>${item.area_size.toLocaleString()} m²</td>
                         <td>${item.location}</td>
                         <td>
-                            <span class="${badgeClass}">${badgeText}</span>
-                            <small style="display:block; color:#999;">${item.soil_type}</small>
+                            <span class="${badgeClass}">${item.soil_type}</span>
+                            <div style="font-size:0.8rem; color:#666;">${item.commodity || '-'}</div>
                         </td>
                         <td>${item.commodity || '-'}</td>
                         <td>
                             <div class="action-group">
-                                <button class="btn-edit" onclick="editLahan(${item.id})">✎</button>
-                                <button class="btn-delete" onclick="deleteLahan(${item.id})">🗑</button>
+                                <button class="btn-edit" onclick="editLahan('${item.id}', '${item.name}', '${item.area_size}', '${item.location}', '${item.soil_type}', '${item.commodity}')">✎</button>
+                                <button class="btn-delete" onclick="deleteLahan('${item.id}')">🗑</button>
                             </div>
                         </td>
                     `;
-                    listEl.appendChild(row);
+                    listLahan.appendChild(row);
                 });
 
             } catch (err) {
-                console.error(err);
-                listEl.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Gagal memuat data.</td></tr>';
+                console.error("Gagal load lahan:", err);
+                listLahan.innerHTML = '<tr><td colspan="7" style="text-align:center; color:red;">Gagal memuat data.</td></tr>';
             }
         }
 
-        // --- 4. TOGGLE FORM ---
+        // --- 5. TOGGLE FORM ---
         function toggleForm(isEdit = false) {
-            const card = document.getElementById('formCard');
-            const formTitle = document.getElementById('formTitle');
-            const form = document.getElementById('lahanForm');
-            const btnScroll = document.querySelector('.btn-add');
-
-            if (card.style.display === 'none' || card.style.display === '') {
+            if (formCard.style.display === 'none' || formCard.style.display === '') {
                 // Open
-                card.style.display = 'block';
-                formTitle.textContent = isEdit ? "Edit Data Lahan" : "Tambah Lahan Baru";
+                formCard.style.display = 'block';
+                formTitle.textContent = isEdit ? "Edit Data Lahan" : "Input Lahan Baru";
                 
                 if (!isEdit) {
                     form.reset();
                     document.getElementById('lahanId').value = '';
                 }
 
-                // Smooth scroll to form
-                card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
+                // Scroll smooth
+                formCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
             } else {
                 // Close
-                card.style.display = 'none';
+                formCard.style.display = 'none';
             }
         }
 
-        // --- 5. SAVE & UPDATE ---
+        // --- 6. SAVE & UPDATE ---
         async function handleSave() {
             const id = document.getElementById('lahanId').value;
             const nama = document.getElementById('namaLahan').value;
@@ -397,30 +438,35 @@
             const komoditas = document.getElementById('komoditas').value;
 
             if (!nama || !luas || !lokasi || !jenis) {
-                alert("Mohon lengkapi semua data!");
+                showToast("Mohon lengkapi semua data!", false);
                 return;
             }
 
-            const payload = {
-                user_id: currentUserId,
-                name: nama,
-                area_size: parseInt(luas),
-                location: lokasi,
-                soil_type: jenis,
-                commodity: komoditas
-            };
+            // UI Loading
+            const originalText = btnSubmit.textContent;
+            btnSubmit.textContent = "Menyimpan...";
+            btnSubmit.disabled = true;
 
             try {
+                const payload = {
+                    user_id: currentUserId,
+                    name: nama,
+                    area_size: parseFloat(luas),
+                    location: lokasi,
+                    soil_type: jenis,
+                    commodity: komoditas
+                };
+
                 if (id) {
                     // Update
                     const { error } = await supabase.from('farmlands').update(payload).eq('id', id);
                     if (error) throw error;
-                    showToast("Lahan berhasil diperbarui!");
+                    showToast("Lahan berhasil diperbarui!", true);
                 } else {
                     // Insert
                     const { error } = await supabase.from('farmlands').insert([payload]);
                     if (error) throw error;
-                    showToast("Lahan baru berhasil ditambahkan!");
+                    showToast("Lahan baru berhasil ditambahkan!", true);
                 }
 
                 toggleForm();
@@ -428,42 +474,53 @@
 
             } catch (err) {
                 console.error(err);
-                alert("Gagal menyimpan: " + err.message);
+                showToast("Gagal menyimpan: " + err.message, false);
+            } finally {
+                btnSubmit.textContent = originalText;
+                btnSubmit.disabled = false;
             }
         }
 
-        // --- 6. EDIT ---
-        async function editLahan(id) {
-            const { data, error } = await supabase.from('farmlands').select('*').eq('id', id).single();
-            if (error) return;
-
+        // --- 7. EDIT ---
+        window.editLahan = function(id, nama, luas, lokasi, jenis, komoditas) {
             toggleForm(true);
-            document.getElementById('lahanId').value = data.id;
-            document.getElementById('namaLahan').value = data.name;
-            document.getElementById('luas').value = data.area_size;
-            document.getElementById('lokasi').value = data.location;
-            document.getElementById('jenisTanah').value = data.soil_type;
-            document.getElementById('komoditas').value = data.commodity;
-        }
+            document.getElementById('lahanId').value = id;
+            document.getElementById('namaLahan').value = nama;
+            document.getElementById('luas').value = luas;
+            document.getElementById('lokasi').value = lokasi;
+            document.getElementById('jenisTanah').value = jenis;
+            document.getElementById('komoditas').value = komoditas;
+        };
 
-        // --- 7. DELETE ---
-        async function deleteLahan(id) {
-            if (!confirm("Yakin ingin menghapus lahan ini?")) return;
-            const { error } = await supabase.from('farmlands').delete().eq('id', id);
-            if (!error) {
-                showToast("Lahan dihapus.");
+        // --- 8. DELETE ---
+        window.deleteLahan = async function(id) {
+            if(!confirm("Yakin ingin menghapus data lahan ini?")) return;
+
+            try {
+                const { error } = await supabase.from('farmlands').delete().eq('id', id);
+                if (error) throw error;
+
+                showToast("Lahan berhasil dihapus.", true);
                 loadLahan();
-            } else {
-                alert("Gagal menghapus.");
+
+            } catch (err) {
+                console.error(err);
+                showToast("Gagal menghapus: " + err.message, false);
             }
         }
 
-        // --- TOAST HELPER ---
-        function showToast(msg) {
+        // --- 9. TOAST NOTIFICATION ---
+        function showToast(msg, isSuccess) {
             const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.className = 'toast show success';
-            setTimeout(() => { t.className = 'toast'; }, 3000);
+            const msgEl = document.getElementById('toastMessage');
+            
+            t.className = isSuccess ? 'toast success show' : 'toast show';
+            msgEl.textContent = msg;
+
+            // Hide setelah 3 detik
+            setTimeout(() => {
+                t.classList.remove('show');
+            }, 3000);
         }
 
     </script>
