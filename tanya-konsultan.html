@@ -10,21 +10,23 @@
 
     <style>
         :root {
-            --primary-green: #2E7D32;
+            --primary: #2E7D32;
+            --primary-dark: #1B5E20;
             --light-green: #E8F5E9;
-            --dark-green: #1B5E20;
-            --text-dark: #333;
-            --text-grey: #666;
+            --text-dark: #1F2937;
+            --text-grey: #6B7280;
             --white: #ffffff;
-            --shadow: 0 2px 8px rgba(0,0,0,0.05);
-            --radius: 8px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
         }
 
         body {
             font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f6f8;
+            background-color: #F9FAFB;
+            color: var(--text-dark);
             margin: 0;
             padding: 20px;
+            padding-bottom: 80px; /* Space for navbar */
         }
 
         .container {
@@ -32,53 +34,63 @@
             margin: 0 auto;
         }
 
+        /* --- CARD --- */
         .card {
             background: var(--white);
-            border-radius: 12px;
+            border-radius: var(--radius);
             box-shadow: var(--shadow);
-            padding: 25px;
+            padding: 30px;
             margin-bottom: 20px;
+            border: 1px solid #E5E7EB;
         }
 
-        h2 { color: var(--primary-green); margin-top: 0; text-align: center; font-size: 1.6rem; }
-        h3 { color: var(--text-dark); margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+        h2 { color: var(--primary); margin: 0 0 10px 0; text-align: center; font-size: 1.8rem; }
+        .desc { text-align: center; color: var(--text-grey); margin-bottom: 25px; font-size: 1rem; }
         
+        /* --- FORM --- */
         .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark); }
+        label { display: block; margin-bottom: 10px; font-weight: 700; color: var(--text-dark); font-size: 0.95rem; }
         
         textarea, input, select {
             width: 100%;
             padding: 14px;
-            border: 1px solid #ddd;
+            border: 1px solid #D1D5DB;
             border-radius: 8px;
             font-size: 1rem;
             box-sizing: border-box;
             font-family: inherit;
+            transition: all 0.2s;
+            background: #F9FAFB;
         }
-        textarea:focus, input:focus, select:focus {
-            border-color: var(--primary-green);
-            outline: none;
+        textarea:focus, input:focus, select:focus { 
+            border-color: var(--primary); 
+            outline: none; 
             box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.1);
+            background: var(--white);
         }
 
+        /* --- BUTTON --- */
         .btn-submit {
             width: 100%;
             padding: 16px;
-            background-color: var(--primary-green);
+            background-color: var(--primary);
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: bold;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
+            box-shadow: 0 4px 6px rgba(46, 125, 50, 0.2);
         }
-        .btn-submit:hover { background-color: var(--dark-green); }
-        .btn-loading { background-color: #81C784; cursor: not-allowed; pointer-events: none; }
+        .btn-submit:hover { background-color: var(--primary-dark); transform: translateY(-1px); }
+        .btn-submit:disabled, .btn-submit.loading { 
+            background-color: #9CA3AF; cursor: not-allowed; transform: none; box-shadow: none; 
+        }
         
         .spinner { 
             display: inline-block; width: 20px; height: 20px; 
@@ -89,64 +101,90 @@
 
         /* --- LIST QA --- */
         .qa-item {
-            background: #fafafa;
+            background: #FAFAFA;
             padding: 20px;
-            border-radius: 8px;
+            border-radius: 10px;
             margin-bottom: 15px;
-            border-left: 4px solid var(--primary-green);
-            transition: transform 0.2s;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s;
         }
-        .qa-item:hover { transform: translateX(5px); background: #fff; box-shadow: var(--shadow); }
+        .qa-item:hover { 
+            transform: translateX(5px); 
+            background: var(--white); 
+            box-shadow: var(--shadow);
+        }
 
         .qa-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-        .qa-question { font-weight: bold; color: var(--text-dark); font-size: 1.05rem; }
-        .qa-meta { font-size: 0.8rem; color: var(--text-grey); margin-top: 5px; }
+        .qa-question { font-weight: 700; color: var(--text-dark); font-size: 1.05rem; flex: 1; margin-right: 10px; }
+        
+        .qa-meta { font-size: 0.8rem; color: #9CA3AF; margin-bottom: 10px; display: block; }
         
         .qa-answer { 
             margin-top: 15px; color: var(--text-dark); 
-            padding: 15px; background: #fff; 
-            border-radius: 6px; border: 1px solid #eee; 
-            position: relative;
-            line-height: 1.5;
+            padding: 15px; background: #F3F4F6; 
+            border-radius: 8px; 
+            font-size: 0.95rem;
+            line-height: 1.6;
+            border: 1px solid #E5E7EB;
         }
-        
-        .qa-answer::before {
-            content: "🤖 AI Agronomi:";
-            display: block;
-            font-size: 0.75rem;
-            font-weight: 800;
-            color: var(--primary-green);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .qa-answer strong { color: var(--primary); }
 
+        /* Badge Kategori */
         .badge { 
             display: inline-block; padding: 4px 10px; 
             border-radius: 20px; font-size: 0.75rem; 
-            font-weight: bold; background: var(--light-green); 
-            color: var(--primary-green); margin-left: 10px;
+            font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+            background: var(--light-green); color: var(--primary);
+            white-space: nowrap;
         }
 
-        .nav-link { display: block; text-align: center; margin-top: 20px; color: #666; text-decoration: none; font-weight: bold; }
-        .nav-link:hover { color: var(--primary-green); }
+        .nav-link { display: block; text-align: center; margin-top: 20px; color: var(--text-grey); text-decoration: none; font-weight: 600; }
+        .nav-link:hover { color: var(--primary); }
+
+        /* --- NAVBAR BAWAH --- */
+        .nav-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            background: white;
+            border-top: 1px solid #E5E7EB;
+            z-index: 99;
+        }
+        .b-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #9CA3AF;
+            font-size: 0.8rem;
+            transition: color 0.2s;
+        }
+        .b-item.active { color: var(--primary); }
+        .b-item svg { width: 24px; height: 24px; margin-bottom: 4px; }
 
         /* Loading & Empty */
-        .status-text { text-align: center; color: #999; font-style: italic; padding: 20px; }
+        .status-text { text-align: center; padding: 20px; color: #999; font-style: italic; }
+        .loading-dot { display: inline-block; width: 6px; height: 6px; background: #ccc; border-radius: 50%; animation: pulse 1s infinite; margin: 0 4px; }
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+
     </style>
 </head>
 <body>
 
     <div class="container">
         <div class="card">
-            <h2>❓ Konsultasi Pakar</h2>
-            <p style="text-align: center; color: #666; margin-bottom: 25px;">Tanyakan masalah pertanian Anda, AI kami akan menganalisis.</p>
+            <h2>🤖 AI Pakar Tani</h2>
+            <p class="desc">Konsultasikan masalah pertanian Anda secara gratis dengan bantuan Algoritma Agronomi.</p>
             
             <!-- FORM PERTANYAAN -->
             <form id="formTanya">
                 <div class="form-group">
-                    <label for="pertanyaan">Detail Masalah / Pertanyaan</label>
-                    <textarea id="pertanyaan" rows="4" placeholder="Contoh: Tanaman padi saya berusia 45 HST, daunnya mulai menguning di ujung. Apa penyebabnya dan bagaimana cara mengatasinya?" required></textarea>
+                    <label for="pertanyaan">Deskripsi Masalah</label>
+                    <textarea id="pertanyaan" rows="4" placeholder="Contoh: Tanaman padi saya berusia 45 HST, daun mulai menguning di ujung. Apa penyebabnya dan bagaimana cara mengatasinya?" required></textarea>
                 </div>
 
                 <div class="form-group">
@@ -168,26 +206,46 @@
 
                 <button type="submit" id="btnSubmit" class="btn-submit">
                     <span class="spinner" id="spinner"></span>
-                    <span id="btnText">Kirim ke Konsultan</span>
+                    <span id="btnText">Kirim & Analisis AI</span>
                 </button>
             </form>
         </div>
 
         <!-- LIST RIWAYAT -->
         <div class="card">
-            <h3>Riwayat Diskusi</h3>
+            <h3 style="margin: 0 0 15px 0; color: var(--text-dark); border-bottom: 1px solid #E5E7EB; padding-bottom: 10px;">📋 Diskusi Terkini</h3>
             <div id="qaList">
-                <div class="status-text">Memuat diskusi...</div>
+                <div class="status-text">Memuat diskusi komunitas...</div>
             </div>
         </div>
-
-        <a href="index.html" class="nav-link">← Kembali ke Beranda</a>
     </div>
 
+    <!-- Navbar Bawah -->
+    <div class="nav-bottom">
+        <a href="index.html" class="b-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2z"></path></svg>
+            Beranda
+        </a>
+        <a href="tanya-konsultan.html" class="b-item active">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4 7 7 0 0 1-4.4-7 7 7 0 0 1-4.4-2c.6 0 1.1.1 1.7.2 1.5-.7.3-1.5.4-2.3 3.2-.7.3-1.4.4-2.1.4-1.7 0-3.3-.9-4.5-2.5L2.8 6.8c-1.4.7-2.8 1.5-2.8 2.8s1.4 2.1 2.8 2.8c.7 0 1.4-.4 2.1-1.3.3-.7.6-1.6.6-2.5 0-3.9-1.4-4.5-2.5L11.6 2.8C12.8 2.1 14.4 2.3 16.2 2.3c2.8 0 5-1.7 5-4.2 0-1.9-.9-3.7-2.5-5.4"></path><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Tanya Pakar
+        </a>
+        <a href="profile.html" class="b-item">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            Profil
+        </a>
+    </div>
+
+    <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. KONFIGURASI SUPABASE (FIXED) ---
-        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
+        // --- 1. LOAD CONFIG & INIT ---
+        if (typeof window.appConfig === 'undefined') {
+            console.error("FATAL: config.js tidak dimuat.");
+            alert("Konfigurasi sistem hilang.");
+        }
+
+        const SUPABASE_URL = window.appConfig.supabaseUrl;
+        const SUPABASE_KEY = window.appConfig.supabaseKey;
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentUserId = null;
@@ -199,42 +257,70 @@
         const btnText = document.getElementById('btnText');
         const spinner = document.getElementById('spinner');
 
-        // --- 3. LOGIKA AI SIMULATOR ---
+        // --- 3. LOGIKA AI SIMULATOR (GENERATIVE) ---
         function generateAIAnswer(question, category) {
             const q = question.toLowerCase();
+            let answer = "";
             
-            // Logika Sederhana Keyword Matching
+            // 1. LOGIKA HAMA & PENYAKIT
             if (category === 'Hama & Penyakit') {
                 if (q.includes('kuning') || q.includes('layu') || q.includes('menguning')) {
-                    return "Tanaman daun menguning umumnya disebabkan oleh defisiensi Nitrogen (kekurangan pupuk Urea/ZA) atau serangan hama wereng coklat. Periksa bagian bawah daun, jika ada bercak coklat kemungkinan hama. Solusi: Beri pupuk daun atau semprot insektisida sistemik.";
+                    answer = "Tanaman daun menguning biasanya disebabkan oleh defisiensi Nitrogen (kekurangan pupuk Urea). Solusi: Beri pupuk daun (Urea/ZA) sesuai dosis dan pantau daun muda.";
                 }
-                if (q.includes('ulat') || q.includes('cacing') || q.includes('penggerek')) {
-                    return "Ulat grayak atau penggerek padi aktif malam hari. Solusi: Gunakan insektisida kontak seperti Karate atau Basudin saat sore hari. Lakukan pengamatan rutin.";
+                else if (q.includes('ulat') || q.includes('grayak') || q.includes('penggerek')) {
+                    answer = "Ulat grayak memakan batang padi. Saran: Lakukan pengamatan rutin sore hari. Jika ditemukan, semprot insektisida kontak seperti Karate atau Basudin pada sore hari.";
                 }
-                if (q.includes('busuk') || q.includes('bercak')) {
-                    return "Bercak daun bisa jadi tanda Blast atau Bercak Coklat. Sebaiknya potong daun yang terinfeksi berat dan beri fungisida jika penyebaran meluas.";
+                else if (q.includes('bercak') || q.includes('busuk')) {
+                    answer = "Bercak daun bisa jadi tanda hama tikus (bakteria) atau jamur. Periksa bagian bawah daun. Gunakan fungisida bakterisidi (seperti streptomisin) jika perlu, atau pastikan kebersihan lahan.";
+                }
+                else {
+                    answer = "Kondisi tersebut indikasi serangan hama atau kelainan nutrisi. Saran: Identifikasi hama spesifik terlebih dahulu. Gunakan PHT (Perangkap Hama Terpadu) untuk meminimalisir dampak negatif.";
                 }
             }
-            
-            if (category === 'Pupuk & Nutrisi') {
-                if (q.includes('pupuk') || q.includes('kuning')) {
-                    return "Gunakan pupuk NPK Makro (Mutiara) atau Urea untuk daun menguning. Ingat, jangan beri pupuk saat tanaman sedang berbunga (masa pembuahan) karena akan menyebabkan gabah hampa (steril).";
+            // 2. LOGIKA PUPUK
+            else if (category === 'Pupuk & Nutrisi') {
+                if (q.includes('daun') || q.includes('kuning')) {
+                    answer = "Gunakan pupuk NPK (16-16-16) atau Urea untuk fase vegetatif. Ingat, jangan beri pupuk saat hujan lebat karena akan tercuci (hanyang). Lakukan penyuburan (5/1) untuk efisiensi maksimal.";
                 }
+                else {
+                    answer = "Nutrisi tanaman terdiri dari Makro (NPK) dan Mikro (Kalsium, Magnesium). Lakukan uji tanah untuk mengetahui kekurangan Anda. Jangan lupa tambahkan pupuk organik untuk memperbaiki struktur tanah.";
+                }
+            }
+            // 3. LOGIKA IRIGASI
+            else if (category === 'Irigasi & Air') {
+                answer = "Pastikan ketersediaan air stabil, terutama saat fase generatif (membuluh beras). Sistem irigasi tetes (sprinkler) atau irigasi pipa lebih efisien daripada genangan (kabut sawah) untuk menghemat air dan mencegah busuk coklat.";
+            }
+            // 4. LOGIKA EKONOMI
+            else if (category === 'Harga Pasar') {
+                answer = "Untuk hasil terbaik, simpan gabah di gudang kering (suhu di bawah 14% Kelembaban Nisbi). Jangan jual saat panen raya karena harga pasar biasanya jatuh. Tunggu saat kebutuhan industri tinggi (Bulan-bulan puasa/besok).";
+            }
+            // DEFAULT
+            else {
+                answer = "Analisis awal: Kondisi tanah dipengaruhi kualitas bibit, pemupukan, dan cuaca. Saran umum: Jaga sanitasi lahan dari gulma bersa (teki, alang-alang) agar tanaman tidak bersaing nutrisi.";
             }
 
-            if (category === 'Harga Pasar') {
-                return "Untuk harga pasar, silakan cek menu 'Belanja' atau 'Monitor' di aplikasi. Saran kami: Jual panen saat panen raya besar (glutak) karena harga biasanya lebih stabil daripada panen giling.";
-            }
-
-            return "Analisis awal: Kondisi tersebut bisa dipengaruhi faktor cuaca atau nutrisi tanah. Kami sarankan untuk melakukan pemupukan berimbang NPK dan menjaga kelembaban lahan. Jika kondisi memburuk dalam 3 hari, segera hubungi penyuluh setempat.";
+            return "🤖 [AI Pakar]: " + answer + "\n\n*(Catatan: Ini adalah saran berdasarkan prinsip agronomi umum. Selalu lakukan pengujian lapangan sebelum tindakan intensif).";
         }
 
-        // --- 4. LOAD PERTANYAAN ---
+        // --- 4. INIT ---
+        document.addEventListener("DOMContentLoaded", async () => {
+            // Cek Login
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentUserId = session.user.id;
+            loadQuestions();
+        });
+
+        // --- 5. LOAD PERTANYAAN ---
         async function loadQuestions() {
-            qaList.innerHTML = '<div class="status-text">Memuat riwayat konsultasi...</div>';
+            qaList.innerHTML = '<div class="status-text"><span class="loading-dot"></span> Memuat diskusi komunitas...</div>';
             
             try {
-                // Ambil semua pertanyaan (Forum terbuka agar semua user bisa belajar)
+                // Ambil semua diskusi (Forum terbuka)
                 const { data, error } = await supabase
                     .from('qa_forum')
                     .select('*')
@@ -243,13 +329,14 @@
                 if (error) throw error;
 
                 renderList(data);
+
             } catch (err) {
                 console.error(err);
-                qaList.innerHTML = '<div class="status-text" style="color:red;">Gagal memuat data.</div>';
+                qaList.innerHTML = '<div class="status-text" style="color:red;">Gagal memuat diskusi.</div>';
             }
         }
 
-        // --- 5. RENDER LIST ---
+        // --- 6. RENDER LIST ---
         function renderList(questions) {
             qaList.innerHTML = '';
 
@@ -260,24 +347,25 @@
 
             questions.forEach(item => {
                 const dateObj = new Date(item.created_at);
-                const tglStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long' });
-
+                const tglStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                
                 const el = document.createElement('div');
                 el.className = 'qa-item';
                 el.innerHTML = `
                     <div class="qa-header">
-                        <div class="qa-question">${item.question} <span class="badge">${item.category}</span></div>
-                        <div class="qa-meta">${tglStr}</div>
+                        <div class="qa-question">${item.question}</div>
+                        <span class="badge">${item.category}</span>
                     </div>
+                    <div class="qa-meta">${tglStr}</div>
                     ${item.answer ? `
                         <div class="qa-answer">${item.answer}</div>
-                    ` : '<div style="margin-top:10px; font-size:0.9rem; color:#999; font-style:italic;">AI sedang menganalisis...</div>'}
+                    ` : `<div style="margin-top:10px; font-size:0.85rem; color:#999; font-style:italic;">AI sedang menganalisis...</div>`}
                 `;
                 qaList.appendChild(el);
             });
         }
 
-        // --- 6. HANDLE SUBMIT ---
+        // --- 7. HANDLE SUBMIT FORM ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -285,14 +373,19 @@
             const kategori = document.getElementById('kategori').value;
             const wallet = document.getElementById('wallet').value;
 
-            // UI Loading
-            btnSubmit.classList.add('btn-loading');
+            if (!pertanyaan || !kategori) {
+                alert("Mohon lengkapi data pertanyaan dan kategori.");
+                return;
+            }
+
+            // UI Loading State
+            btnSubmit.classList.add('loading');
             btnSubmit.disabled = true;
             spinner.style.display = 'inline-block';
-            btnText.textContent = 'MENGANALISIS...';
+            btnText.textContent = 'AI sedang berpikir...';
 
             try {
-                // 1. Insert Pertanyaan (Awalnya answer kosong)
+                // 1. Insert Pertanyaan ke Database (Jawaban kosong dulu)
                 const { data: insertData, error: insertError } = await supabase
                     .from('qa_forum')
                     .insert([{
@@ -306,13 +399,13 @@
 
                 if (insertError) throw insertError;
 
-                // 2. Simulasi Proses Berpikir AI (Delay 1.5 detik)
-                await new Promise(r => setTimeout(r, 1500));
+                // 2. Simulasi Proses AI (Delay 2 detik agar terasa "cerdas")
+                await new Promise(r => setTimeout(r, 2000));
 
                 // 3. Generate Jawaban
                 const aiJawaban = generateAIAnswer(pertanyaan, kategori);
 
-                // 4. Update Database dengan Jawaban
+                // 4. Update Database dengan Jawaban AI
                 const { error: updateError } = await supabase
                     .from('qa_forum')
                     .update({ 
@@ -323,35 +416,23 @@
 
                 if (updateError) console.warn("Gagal update jawaban:", updateError);
 
-                // 5. Refresh List
+                // 5. Refresh List & Reset Form
                 loadQuestions();
-
-                // 6. Reset Form & Alert
                 form.reset();
-                alert("Pertanyaan terkirim! Berikut adalah analisis AI:\n\n" + aiJawaban);
+                
+                // 6. Tampilkan Alert Hasil
+                alert("✅ Analisis Selesai!\n\n" + aiJawaban);
 
             } catch (err) {
                 console.error(err);
-                alert("Gagal mengirim pertanyaan: " + err.message);
+                alert("Gagal memproses pertanyaan: " + err.message);
             } finally {
-                btnSubmit.classList.remove('btn-loading');
+                // Reset UI Button
+                btnSubmit.classList.remove('loading');
                 btnSubmit.disabled = false;
                 spinner.style.display = 'none';
-                btnText.textContent = 'Kirim ke Konsultan';
+                btnText.textContent = 'Kirim & Analisis AI';
             }
-        });
-
-        // --- 7. INIT ---
-        document.addEventListener("DOMContentLoaded", async () => {
-            // Cek Login
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                window.location.href = 'login.html';
-                return;
-            }
-            currentUserId = session.user.id;
-
-            loadQuestions();
         });
 
     </script>
