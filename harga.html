@@ -91,7 +91,7 @@
         .rec-sell { background: #FEE2E2; color: #DC2626; }
         .rec-hold { background: #F3F4F6; color: #4B5563; }
 
-        .rec-title { font-size: 1.1rem; font-weight: 700; margin: 0; color: #1F2937; }
+        .rec-title { font-size: 1.1rem; font-weight: 700; margin: 0; color: var(--text-dark); }
         .rec-desc { font-size: 0.9rem; color: #4B5563; margin-top: 5px; line-height: 1.5; }
 
         /* --- MAIN CARD & TABLE --- */
@@ -182,7 +182,6 @@
             border-radius: 10px;
             height: 12px;
             overflow: hidden;
-            position: relative;
         }
 
         .chart-bar {
@@ -204,12 +203,22 @@
 
         /* --- NAVBAR BOTTOM --- */
         .nav-bottom {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            display: flex; justify-content: space-around; padding: 10px 0;
-            background: white; border-top: 1px solid #eee; z-index: 99;
+            position: fixed;
+            bottom: 0; left: 0; width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            background: var(--white);
+            border-top: 1px solid #eee;
+            z-index: 99;
         }
         .b-item {
-            display: flex; flex-direction: column; align-items: center; text-decoration: none; color: #999; font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-decoration: none;
+            color: #999;
+            font-size: 0.8rem;
             transition: color 0.2s;
         }
         .b-item.active { color: var(--primary); }
@@ -220,7 +229,8 @@
             border: 3px solid #E5E7EB;
             border-top: 3px solid var(--primary);
             border-radius: 50%;
-            width: 24px; height: 24px;
+            width: 24px;
+            height: 24px;
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -352,7 +362,7 @@
         // --- 4. RENDER TABLE (Dengan Animasi) ---
         function renderTable(data) {
             const tbody = document.getElementById('priceBody');
-            tbody.innerHTML = ''; // Reset
+            tbody.innerHTML = '';
 
             data.forEach((item, index) => {
                 // Hitung Rata-rata (Simulasi: bandingkan dengan rata-rata array ini)
@@ -369,7 +379,7 @@
                 else if (changePercent < -2) { badgeClass = 'trend-down'; badgeText = 'Turun ' + Format.persen(changePercent); }
 
                 const row = document.createElement('tr');
-                row.className = 'fade-row'; // Kelas untuk animasi
+                row.className = 'fade-row';
                 // Delay staggered agar animasi tidak kejedulan
                 row.style.animationDelay = `${index * 0.1}s`; 
 
