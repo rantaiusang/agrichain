@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dokumen Petani - AgriChain</title>
+    <title>Arsip Dokumen - AgriChain</title>
     
     <!-- Library Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
         :root {
-            --primary-green: #2E7D32;
+            --primary: #2E7D32;
+            --primary-dark: #1B5E20;
             --light-green: #E8F5E9;
-            --dark-green: #1B5E20;
             --text-dark: #333;
             --text-grey: #666;
             --white: #ffffff;
             --shadow: 0 2px 8px rgba(0,0,0,0.05);
-            --radius: 8px;
+            --radius: 12px;
         }
 
         body {
@@ -25,6 +25,7 @@
             background-color: #f4f6f8;
             margin: 0;
             padding: 20px;
+            padding-bottom: 80px; /* Space for bottom nav if needed */
         }
 
         .container {
@@ -34,26 +35,28 @@
 
         .card {
             background: var(--white);
-            border-radius: 12px;
+            border-radius: var(--radius);
             box-shadow: var(--shadow);
             padding: 30px;
             margin-bottom: 20px;
         }
 
-        h2 { color: var(--primary-green); margin-top: 0; margin-bottom: 25px; text-align: center; font-size: 1.6rem; }
+        h2 { color: var(--primary); margin-top: 0; margin-bottom: 10px; font-size: 1.6rem; }
+        p.subtitle { text-align: center; color: var(--text-grey); margin-top: 0; margin-bottom: 25px; }
         
         /* --- UPLOAD AREA --- */
         .upload-area {
-            border: 2px dashed var(--primary-green);
+            border: 2px dashed var(--primary);
             background: var(--light-green);
             padding: 40px 20px;
             text-align: center;
-            border-radius: 12px;
+            border-radius: var(--radius);
             cursor: pointer;
             transition: all 0.3s;
+            margin-bottom: 20px;
         }
-        .upload-area:hover { background: #dcedc8; border-color: var(--dark-green); transform: scale(1.01); }
-        .upload-icon { font-size: 3rem; color: var(--primary-green); margin-bottom: 10px; display: block; }
+        .upload-area:hover { background: #dcedc8; border-color: var(--primary-dark); transform: scale(1.01); }
+        .upload-icon { font-size: 3rem; color: var(--primary); margin-bottom: 10px; display: block; }
         .upload-text { color: var(--text-dark); font-size: 1.1rem; font-weight: 600; }
         .upload-hint { color: var(--text-grey); font-size: 0.9rem; margin-top: 5px; }
         
@@ -65,7 +68,10 @@
             margin-top: 20px;
             padding-top: 20px;
             border-top: 1px solid #eee;
+            animation: fadeIn 0.3s ease;
         }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-dark); font-size: 0.9rem; }
@@ -79,12 +85,12 @@
             box-sizing: border-box;
             font-family: inherit;
         }
-        input:focus, select:focus { border-color: var(--primary-green); outline: none; }
+        input:focus, select:focus { border-color: var(--primary); outline: none; }
 
         .btn-upload {
             width: 100%;
             padding: 14px;
-            background-color: var(--primary-green);
+            background-color: var(--primary);
             color: white;
             border: none;
             border-radius: 8px;
@@ -97,7 +103,7 @@
             gap: 10px;
             transition: background 0.2s;
         }
-        .btn-upload:hover { background-color: var(--dark-green); }
+        .btn-upload:hover { background-color: var(--primary-dark); }
         .btn-upload:disabled { background-color: #ccc; cursor: not-allowed; }
 
         /* --- TABLE --- */
@@ -106,6 +112,7 @@
             background: var(--white);
             border-radius: 8px;
             box-shadow: var(--shadow);
+            margin-top: 20px;
         }
 
         table { width: 100%; border-collapse: collapse; min-width: 600px; }
@@ -118,7 +125,7 @@
 
         th {
             background: var(--light-green);
-            color: var(--primary-green);
+            color: var(--primary);
             font-weight: 700;
             text-transform: uppercase;
             font-size: 0.85rem;
@@ -142,36 +149,6 @@
         .btn-view:hover { background: #BBDEFB; }
         .btn-delete:hover { background: #FFCDD2; }
 
-        /* --- MODAL PREVIEW --- */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 600px;
-            text-align: center;
-            position: relative;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .close-btn {
-            position: absolute;
-            top: 10px; right: 15px;
-            font-size: 2rem;
-            cursor: pointer;
-            color: #999;
-        }
-        .preview-img { max-width: 100%; border-radius: 8px; }
-
         /* --- LOADING --- */
         .spinner {
             display: inline-block; width: 20px; height: 20px; 
@@ -180,7 +157,7 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .nav-link { display: block; text-align: center; margin-top: 20px; color: #666; text-decoration: none; font-weight: bold; }
+        .nav-link { display: block; text-align: center; margin-top: 20px; color: var(--text-grey); text-decoration: none; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -188,7 +165,7 @@
     <div class="container">
         <div class="card">
             <h2>📁 Arsip Dokumen</h2>
-            <p style="text-align: center; color: #666;">Upload sertifikat lahan, foto panen, atau dokumen penting lainnya.</p>
+            <p class="subtitle">Upload sertifikat lahan, foto panen, atau dokumen penting lainnya.</p>
             
             <!-- UPLOAD ZONE -->
             <div class="upload-area" id="dropZone">
@@ -220,19 +197,18 @@
             </div>
 
             <!-- TABLE -->
-            <div class="table-responsive" style="margin-top: 30px;">
+            <div class="table-responsive">
                 <table id="tabelDokumen">
                     <thead>
                         <tr>
-                            <th>Nama File</th>
+                            <th>Nama Dokumen</th>
                             <th>Kategori</th>
-                            <th>Tanggal</th>
-                            <th>Ukuran</th>
+                            <th>Tanggal Upload</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody id="tabelBody">
-                        <tr><td colspan="5" style="text-align: center; color: #999;">Memuat dokumen...</td></tr>
+                        <tr><td colspan="4" style="text-align: center; color: #999;">Memuat dokumen...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -241,24 +217,20 @@
         </div>
     </div>
 
-    <!-- MODAL PREVIEW -->
-    <div id="previewModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closePreview()">&times;</span>
-            <h3 style="margin-top: 0; color: var(--primary-green);">Preview Dokumen</h3>
-            <div id="previewContainer"></div>
-        </div>
-    </div>
-
     <script>
-        // --- 1. KONFIGURASI SUPABASE (FIXED) ---
-        const SUPABASE_URL = 'https://nkcctncsjmcfsiguowms.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X';
+        // --- 1. LOAD CONFIG & INIT ---
+        if (typeof window.appConfig === 'undefined') {
+            console.error("FATAL: config.js tidak dimuat.");
+            alert("Konfigurasi sistem hilang.");
+        }
+
+        const SUPABASE_URL = window.appConfig.supabaseUrl;
+        const SUPABASE_KEY = window.appConfig.supabaseKey;
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const BUCKET_NAME = 'dokumen-petani'; // Harus sama persis dengan nama Bucket di Supabase
+        const BUCKET_NAME = 'dokumen-petani'; // HARUS SAMA PERSIS DI SUPABASE STORAGE
 
-        // --- DOM ELEMENTS ---
+        // DOM ELEMENTS
         const fileInput = document.getElementById('fileInput');
         const dropZone = document.getElementById('dropZone');
         const metadataForm = document.getElementById('metadataForm');
@@ -266,8 +238,6 @@
         const btnText = document.getElementById('btnText');
         const spinner = document.getElementById('spinner');
         const tabelBody = document.getElementById('tabelBody');
-        const previewModal = document.getElementById('previewModal');
-        const previewContainer = document.getElementById('previewContainer');
         
         let currentFile = null;
         let userId = null;
@@ -276,7 +246,7 @@
         document.addEventListener("DOMContentLoaded", async () => {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) {
-                alert("Anda harus login.");
+                alert("Anda harus login untuk mengakses halaman ini.");
                 window.location.href = 'login.html';
                 return;
             }
@@ -289,13 +259,16 @@
 
         fileInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
-                // Batasi ukuran 5MB (Opsional)
                 if(this.files[0].size > 5 * 1024 * 1024) {
                     alert("Ukuran file maksimal 5MB.");
-                    this.value = ''; // Reset
+                    this.value = '';
                     return;
                 }
                 currentFile = this.files[0];
+                // Auto isi nama file di input nama dokumen (opsional, biar user cepat)
+                const defaultName = this.files[0].name.split('.')[0];
+                document.getElementById('namaDokumen').value = defaultName;
+                
                 metadataForm.style.display = 'block';
                 metadataForm.scrollIntoView({ behavior: 'smooth' });
             }
@@ -311,19 +284,22 @@
                 return;
             }
 
-            // UI Loading
             btnUpload.disabled = true;
             btnText.textContent = 'MENGUNGGAH...';
             spinner.style.display = 'inline-block';
 
             try {
                 const fileExt = currentFile.name.split('.').pop();
+                // Nama file unik: ID User_Timestamp_NamaFile.extension
                 const fileName = `${userId}/${Date.now()}_${nama.replace(/\s+/g, '_')}.${fileExt}`;
 
                 // Upload ke Supabase Storage
                 const { data, error } = await supabase.storage
                     .from(BUCKET_NAME)
-                    .upload(fileName, currentFile);
+                    .upload(fileName, currentFile, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
 
                 if (error) throw error;
 
@@ -335,11 +311,11 @@
                 metadataForm.style.display = 'none';
                 currentFile = null;
                 
-                loadDocuments(); // Refresh Tabel
+                loadDocuments();
 
             } catch (err) {
                 console.error(err);
-                alert("Gagal Upload: " + err.message + "\n\nPastikan Anda sudah membuat Bucket bernama 'dokumen-petani' di Supabase Storage.");
+                alert("Gagal Upload: " + err.message + "\n\nPASTIKAN: Anda sudah membuat bucket bernama 'dokumen-petani' di Supabase Storage.");
             } finally {
                 btnUpload.disabled = false;
                 btnText.textContent = 'Upload Dokumen';
@@ -349,7 +325,7 @@
 
         // --- 5. LOAD LIST ---
         async function loadDocuments() {
-            tabelBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">Memuat dokumen...</td></tr>';
+            tabelBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">Memuat dokumen...</td></tr>';
             
             try {
                 const { data, error } = await supabase.storage
@@ -362,7 +338,7 @@
 
             } catch (err) {
                 console.error(err);
-                tabelBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">Gagal memuat dokumen.</td></tr>';
+                tabelBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: red;">Gagal memuat dokumen. Cek nama Bucket Storage.</td></tr>';
             }
         }
 
@@ -371,21 +347,23 @@
             tabelBody.innerHTML = '';
 
             if (files.length === 0) {
-                tabelBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Belum ada dokumen.</td></tr>';
+                tabelBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Belum ada dokumen.</td></tr>';
                 return;
             }
 
             files.forEach(file => {
+                // Generate Public URL
                 const { data: { publicUrl } } = supabase.storage.from(BUCKET_NAME).getPublicUrl(file.name);
-                const sizeKB = (file.metadata.size / 1024).toFixed(1);
                 const date = new Date(file.created_at).toLocaleDateString('id-ID');
+                
+                // Bersihkan nama file untuk tampilan (hapus userId dan timestamp)
+                const cleanName = file.name.split('/').pop().split('.').slice(0, -1).join('.').replace(/^\d+_/, '');
 
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><strong>${file.name.split('_').slice(2).join('_').split('.')[0]}</strong></td>
-                    <td>-</td>
+                    <td><strong>${cleanName}</strong></td>
+                    <td><span style="font-size:0.8rem; background:#eee; padding:2px 6px; border-radius:4px;">Dokumen</span></td>
                     <td>${date}</td>
-                    <td>${sizeKB} KB</td>
                     <td>
                         <a href="${publicUrl}" target="_blank" class="action-btn btn-view">Lihat</a>
                         <a href="#" onclick="deleteFile('${file.name}')" class="action-btn btn-delete">Hapus</a>
@@ -406,12 +384,6 @@
                     alert("Gagal menghapus: " + error.message);
                 }
             }
-        }
-
-        // Preview Helper
-        window.closePreview = function() {
-            previewModal.style.display = 'none';
-            previewContainer.innerHTML = '';
         }
 
     </script>
