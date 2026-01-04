@@ -345,7 +345,7 @@
 
         try {  
             // 1. Coba Login ke Auth  
-            const { data, error: authError } = await supabase.auth.signInWithPassword({  
+            const { data, error: authError } = await supabaseClient.auth.signInWithPassword({  
                 email: email,  
                 password: password  
             });  
@@ -353,7 +353,7 @@
             if (authError) throw authError;  
 
             // 2. Ambil Role dari tabel 'profiles' (Pastikan trigger SQL sudah berjalan)  
-            const { data: profile, error: profileError } = await supabase  
+            const { data: profile, error: profileError } = await supabaseClient  
                 .from('profiles')  
                 .select('role, full_name')  
                 .eq('id', data.user.id)  
