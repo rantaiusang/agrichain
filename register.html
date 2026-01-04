@@ -4,10 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Daftar Akun - AgriChain</title>
-    
-    <!-- Library Supabase v2 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+     <!-- 1️⃣ AMBIL ENV DARI VERCEL -->
+    <script>
+      (async () => {
+        const res = await fetch('/api/config');
+        const cfg = await res.json();
 
+        window.__SUPABASE_URL__ = cfg.supabaseUrl;
+        window.__SUPABASE_KEY__ = cfg.supabaseKey;
+      })();
+    </script>
+
+    <!-- 2️⃣ CONFIG CLIENT (src/config.js) -->
+    <script src="/src/config.js"></script>
+
+    <!-- 3️⃣ BARU LOAD SUPABASE SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --primary-green: #2E7D32;
