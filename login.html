@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Masuk - AgriChain</title>
 
-    <!-- 1. LOAD CONFIG (Pastikan file config.js ada di folder yang sama) -->
+    <!-- 1. LOAD CONFIG (PENTING) -->
     <script src="config.js"></script>
     
     <!-- 2. LOAD LIBRARIES -->
@@ -114,20 +114,9 @@
             align-items: center; 
         }
 
-        .btn-login:hover { 
-            background-color: var(--primary-dark); 
-            transform: translateY(-2px); 
-        }
-        
-        .btn-login:active { 
-            transform: translateY(0); 
-        }
-
-        .btn-loading { 
-            background-color: #81C784 !important; 
-            cursor: not-allowed; 
-            transform: none !important; 
-        }
+        .btn-login:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
+        .btn-login:active { transform: translateY(0); }
+        .btn-loading { background-color: #81C784 !important; cursor: not-allowed; transform: none !important; }
 
         .error-msg { 
             color: var(--error-red); 
@@ -169,11 +158,7 @@
             box-shadow: 0 0 0 2px rgba(0,0,0,0.1); 
             transition: background-color 0.3s ease; 
         }
-        
-        .wallet-status-dot.active { 
-            background-color: #00C851; 
-            box-shadow: 0 0 0 2px #00C851; 
-        }
+        .wallet-status-dot.active { background-color: #00C851; box-shadow: 0 0 0 2px #00C851; }
 
         #wallet-btn { 
             width: 100%; 
@@ -192,18 +177,8 @@
             gap: 8px; 
         }
 
-        #wallet-btn:hover { 
-            background-color: #eff6ff; 
-            border-color: #2196F3; 
-            color: #2196F3; 
-        }
-        
-        #wallet-btn.connected { 
-            background-color: var(--light-green); 
-            border-color: var(--primary-green); 
-            color: var(--primary-green); 
-            cursor: default; 
-        }
+        #wallet-btn:hover { background-color: #eff6ff; border-color: #2196F3; color: #2196F3; }
+        #wallet-btn.connected { background-color: var(--light-green); border-color: var(--primary-green); color: var(--primary-green); cursor: default; }
         
         .extra-links { 
             margin-top: 2rem; 
@@ -222,16 +197,8 @@
             margin-top: 1.5rem; 
         }
         
-        .forgot-link { 
-            color: #666; 
-            text-decoration: none; 
-        }
-        
-        .register-link { 
-            color: var(--primary-green); 
-            font-weight: 700; 
-            text-decoration: none; 
-        }
+        .forgot-link { color: #666; text-decoration: none; }
+        .register-link { color: var(--primary-green); font-weight: 700; text-decoration: none; }
 
         .spinner { 
             display: inline-block; 
@@ -262,40 +229,22 @@
         <div class="subtitle">Masuk untuk kelola panen Anda</div>
 
         <form id="loginForm" autocomplete="off">
-            <div class="form-group">
-                <label for="identifier">Alamat Email</label>
-                <input type="email" id="identifier" class="form-input" placeholder="nama@email.com" required>
-            </div>
+            <div class="form-group"><label for="identifier">Alamat Email</label><input type="email" id="identifier" class="form-input" placeholder="nama@email.com" required></div>
             
-            <div class="form-group">
-                <label for="password">Kata Sandi</label>
-                <input type="password" id="password" class="form-input" placeholder="Masukkan kata sandi" required>
-            </div>
+            <div class="form-group"><label for="password">Kata Sandi</label><input type="password" id="password" class="form-input" placeholder="Masukkan kata sandi" required></div>
 
-            <button type="submit" id="btnSubmit" class="btn-login">
-                <span class="spinner" id="spinner"></span>
-                <span id="btnText">MASUK SEKARANG</span>
-            </button>
+            <button type="submit" id="btnSubmit" class="btn-login"><span class="spinner" id="spinner"></span><span id="btnText">MASUK SEKARANG</span></button>
             
             <div id="errorMsg" class="error-msg"></div>
         </form>
 
         <!-- DOMPET -->
         <div class="wallet-section">
-            <div class="wallet-status-title">
-                <div class="wallet-status-dot" id="walletDot"></div>
-                <span id="walletStatusText">Dompet Terputus</span>
-            </div>
-            <button id="wallet-btn" type="button">
-                <span>🔗</span> Hubungkan Dompet (Web3)
-            </button>
+            <div class="wallet-status-title"><div class="wallet-status-dot" id="walletDot"></div><span id="walletStatusText">Dompet Terputus</span></div>
+            <button id="wallet-btn" type="button"><span>🔗</span> Hubungkan Dompet (Web3)</button>
         </div>
 
-        <div class="extra-links">
-            <a href="forgot-password.html" class="forgot-link">Lupa kata sandi?</a>
-            <a href="register.html" class="register-link">Buat Akun Baru</a>
-        </div>
-
+        <div class="extra-links"><a href="forgot-password.html" class="forgot-link">Lupa kata sandi?</a><a href="register.html" class="register-link">Buat Akun Baru</a></div>
         <a href="index.html" class="link-home">← Kembali ke Beranda</a>
     </div>
 
@@ -304,7 +253,7 @@
         // --- 1. CEK KONEKSI CONFIG ---
         if (typeof window.appConfig === 'undefined') {
             console.error("FATAL: config.js tidak dimuat.");
-            alert("Konfigurasi sistem hilang. Pastikan file config.js ada di folder yang sama.");
+            alert("Konfigurasi sistem hilang.");
         }
 
         // --- 2. INISIALISASI SUPABASE ---
