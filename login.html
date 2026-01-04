@@ -1,6 +1,25 @@
 <!DOCTYPE html>  <html lang="id">  
 <head>  
     <meta charset="UTF-8">  
+ <script>
+(async () => {
+  try {
+    const res = await fetch('/api/config');
+    const cfg = await res.json();
+
+    window.__SUPABASE_URL__ = cfg.supabaseUrl;
+    window.__SUPABASE_KEY__ = cfg.supabaseKey;
+  } catch (e) {
+    alert('Gagal memuat konfigurasi sistem. Pastikan file config.js ada.');
+    console.error(e);
+  }
+})();
+</script>
+
+<script src="/src/config.js"></script>
+
+
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">  
     <title>Masuk - AgriChain</title>  <!-- Library Blockchain (WalletConnect) -->  
 <script src="https://unpkg.com/@walletconnect/web3-provider@1.7.1/dist/index.min.js"></script>  
