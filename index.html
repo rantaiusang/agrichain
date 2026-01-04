@@ -5,10 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>AgriChain - Pasar Pertanian</title>
     
-    <!-- Library Supabase -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- 1. INJECTOR (Mengambil Env dari Vercel / Fallback Local) -->
+    <script>
+        (async () => {
+            try {
+                const res = await fetch('/api/config');
+                const cfg = await res.json();
+                
+                // Menyuntikkan data ke window agar src/config.js bisa baca
+                window.__SUPABASE_URL__ = cfg.supabaseUrl;
+                window.__SUPABASE_KEY__ = cfg.supabaseKey;
+                console.log("✅ Menggunakan Vercel Env (Aman)");
+            } catch (e) {
+                console.warn("⚠️ Gagal ambil Vercel Env, menggunakan fallback local.");
+                // Biarkan kosong agar src/config.js mengambil data hardcoded
+            }
+        })();
+    </script>
+
+    <!-- 2. LOAD CONFIG LOGIC -->
+    <script src="src/config.js"></script>
     
-    <!-- Library Chart.js -->
+    <!-- 3. LIBRARIES -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <style>
@@ -21,7 +40,7 @@
             --text-grey: #6B7280;
             --white: #ffffff;
             --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-md: 0 4px 15px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 15px rgba(0, 0, 0, 0.05);
             --radius: 12px;
         }
 
@@ -33,7 +52,7 @@
             padding-bottom: 80px; /* Space for navbar bawah */
         }
 
-        /* --- HEADER NAVBAR --- */
+        /* Navbar */
         .navbar {
             background: var(--white);
             padding: 15px 20px;
@@ -68,7 +87,7 @@
         }
         .btn-login:hover { background: var(--light-green); box-shadow: var(--shadow-sm); }
 
-        /* --- HERO SECTION --- */
+        /* Hero */
         .hero {
             padding: 40px 20px;
             text-align: center;
@@ -87,9 +106,12 @@
             color: var(--text-grey);
             margin: 0;
             font-size: 1.1rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        /* --- CONTAINER & GRID --- */
+        /* Container & Grid */
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -107,19 +129,19 @@
             background: var(--white);
             padding: 20px;
             border-radius: var(--radius);
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-md);
             text-align: center;
             border-top: 4px solid var(--primary);
         }
 
         .stat-val { font-size: 1.8rem; font-weight: 800; color: var(--text-dark); margin: 10px 0 5px 0; }
-        .stat-lbl { font-size: 0.85rem; color: var(--text-grey); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-lbl { font-size: 0.85rem; color: var(--text-grey); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        /* --- CARDS --- */
+        /* Cards */
         .card {
             background: var(--white);
             border-radius: var(--radius);
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-md);
             padding: 25px;
             margin-bottom: 25px;
             border: 1px solid #E5E7EB;
@@ -130,11 +152,11 @@
         .chart-wrapper { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px; }
         .chart-box { position: relative; height: 300px; width: 100%; }
 
-        /* --- TABLE --- */
+        /* Table */
         .table-wrapper {
             background: var(--white);
             border-radius: var(--radius);
-            box-shadow: var(--shadow-sm);
+            box-shadow: var(--shadow-md);
             overflow-x: auto;
             margin-top: 10px;
         }
@@ -145,7 +167,7 @@
         tr:last-child td { border-bottom: none; }
         .price-text { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
 
-        /* --- FLOAT BUTTON --- */
+        /* Floating Button */
         .chat-btn {
             position: fixed;
             bottom: 90px;
@@ -167,7 +189,7 @@
         }
         .chat-btn:hover { transform: scale(1.1); }
 
-        /* --- NAVBAR BAWAH --- */
+        /* Navbar Bawah */
         .nav-bottom {
             position: fixed;
             bottom: 0;
@@ -177,7 +199,7 @@
             justify-content: space-around;
             padding: 12px 0;
             background: var(--white);
-            border-top: 1px solid #eee;
+            border-top: 1px solid #ddd;
             z-index: 99;
         }
 
@@ -191,9 +213,9 @@
             transition: color 0.2s;
         }
         .b-item.active { color: var(--primary); font-weight: bold; }
-        .b-item svg { width: 26px; height: 26px; margin-bottom: 4px; }
+        .b-item svg { width: 24px; height: 24px; margin-bottom: 4px; }
 
-        /* --- RESPONSIVE --- */
+        /* Responsive */
         @media (max-width: 600px) {
             .hero h1 { font-size: 1.6rem; }
             .chart-wrapper { grid-template-columns: 1fr; }
@@ -228,7 +250,7 @@
                 <div class="stat-lbl">Panen Masuk</div>
             </div>
             <div class="stat-card">
-                <div class="stat-val" style="color:var(--primary);" id="statRevenue">Rp 0</div>
+                <div class="stat-val" id="statRevenue" style="color:var(--primary);">Rp 0</div>
                 <div class="stat-lbl">Estimasi Transaksi</div>
             </div>
         </div>
@@ -289,24 +311,21 @@
             Panen
         </a>
         <a href="profile.html" class="b-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
             Profil
         </a>
     </div>
 
     <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. LOAD CONFIG & INIT ---
-        if (typeof window.appConfig === 'undefined') {
-            console.error("FATAL: config.js tidak dimuat.");
-            alert("Konfigurasi sistem hilang.");
-        }
-
+        // --- 1. INIT SUPABASE ---
+        // Pastikan src/config.js sudah benar (Membaca Vercel Env atau Fallback Local)
+        const { supabase } = window;
         const SUPABASE_URL = window.appConfig.supabaseUrl;
         const SUPABASE_KEY = window.appConfig.supabaseKey;
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. CHART INSTANCES (PENTING AGAR TIDAK ERROR) ---
+        // --- 2. CHART INSTANCES (UNTUK MENCEGAH ERROR) ---
         const chartInstances = {};
 
         document.addEventListener("DOMContentLoaded", async () => {
@@ -319,17 +338,17 @@
         async function loadStats() {
             try {
                 // Hitung User
-                const { count: userCount } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+                const { count: userCount } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true });
                 document.getElementById('statUsers').innerText = userCount || 0;
 
                 // Hitung Panen
-                const { count: panenCount } = await supabase.from('panen').select('*', { count: 'exact', head: true });
+                const { count: panenCount } = await supabaseClient.from('panen').select('*', { count: 'exact', head: true });
                 document.getElementById('statPanen').innerText = panenCount || 0;
 
                 // Hitung Estimasi Pendapatan (Dari tabel panen estimated_total)
-                const { data: panenData } = await supabase.from('panen').select('estimated_total');
+                const { data: panenData } = await supabaseClient.from('panen').select('estimated_total');
                 const totalRevenue = panenData ? panenData.reduce((a, b) => a + (b.estimated_total || 0), 0) : 0;
-                document.getElementById('statRevenue').innerText = "Rp " + (totalRevenue / 1000000).toFixed(1) + " Jt"; // Jutaan
+                document.getElementById('statRevenue').innerText = "Rp " + (totalRevenue / 1000000).toFixed(1) + " Jt";
 
             } catch (err) {
                 console.error("Gagal load stats:", err);
@@ -341,10 +360,10 @@
             const tbody = document.querySelector('#hargaTable tbody');
             
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('market_prices')
                     .select('*')
-                    .order('nama_komoditas', { ascending: true }); // Alphabetical
+                    .order('nama_komoditas', { ascending: true });
 
                 if (error) throw error;
 
@@ -372,12 +391,11 @@
 
         // --- 5. RENDER CHARTS ---
         async function renderCharts() {
-            // Hancurkan chart lama jika ada agar tidak error canvas
+            // Hancurkan chart lama jika ada (penting untuk refresh)
             if (chartInstances['market']) chartInstances['market'].destroy();
             if (chartInstances['users']) chartInstances['users'].destroy();
 
-            // 1. CHART HARGA (Line Chart - Mockup Data)
-            // Kita pakai dummy data agar grafik selalu terlihat bagus di home page
+            // 1. CHART HARGA (Line Chart - Dummy Data Mockup)
             const ctxMarket = document.getElementById('chartMarket');
             if (ctxMarket) {
                 chartInstances['market'] = new Chart(ctxMarket, {
@@ -386,7 +404,7 @@
                         labels: ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'],
                         datasets: [{
                             label: 'Rata-rata Harga (Rp)',
-                            data: [6100, 6250, 6200, 6300, 6400, 6350, 6280], // Dummy Data Tren
+                            data: [6100, 6250, 6200, 6300, 6400, 6350, 6280], // Mock Data Tren
                             borderColor: '#2E7D32',
                             backgroundColor: 'rgba(46, 125, 50, 0.1)',
                             fill: true,
@@ -410,18 +428,19 @@
             const ctxUsers = document.getElementById('chartUsers');
             if (ctxUsers) {
                 // Ambil data user real jika bisa, tapi kita pakai mock distribusi role
-                const { count: totalUsers } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+                const { count: totalUsers } = await supabaseClient.from('profiles').select('*', { count: 'exact', head: true });
                 
-                // Simulasi distribusi role
-                const roleData = [totalUsers, totalUsers * 0.4, totalUsers * 0.1]; 
-                // (Angka ini ilustrasi saja karena kita belum ada tabel spesifik role count)
+                // Simulasi distribusi role (karena belum ada tabel spesifik role count)
+                const petaniCount = Math.floor(totalUsers * 0.6);
+                const pembeliCount = Math.floor(totalUsers * 0.3);
+                const lembagaCount = Math.floor(totalUsers * 0.1);
 
                 chartInstances['users'] = new Chart(ctxUsers, {
                     type: 'doughnut',
                     data: {
                         labels: ['Petani', 'Pembeli', 'Lembaga', 'Admin'],
                         datasets: [{
-                            data: [totalUsers, totalUsers * 0.6, totalUsers * 0.2, 5],
+                            data: [petaniCount, pembeliCount, lembagaCount, 5],
                             backgroundColor: [
                                 '#2E7D32', // Hijau Petani
                                 '#1565C0', // Biru Pembeli
