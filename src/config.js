@@ -1,20 +1,36 @@
 // --- src/config.js ---
 
-// Kita membuat window.appConfig agar semua file HTML bisa membacanya
-// Data ini diambil dari Environment Variables saat di-build di Vercel
-// Jika lokal, ini diabaikan agar file HTML lokal tetap jalan (karena tidak ada process.env di browser)
 const isBrowser = typeof window !== 'undefined';
 
 if (isBrowser) {
-    // BACA DATA DARI HTML SCRIPT INJECTOR (lihat langkah C)
-    window.appConfig = {
-        supabaseUrl: window.__SUPABASE_URL__,
-        supabaseKey: window.__SUPABASE_KEY__
-    };
+    // 1. Coba ambil dari Script Injector (Production/Server Side)
+    // Biasanya di-set oleh script async di head HTML: window.__SUPABASE_URL__ = ...
+    const injectedUrl = window.__SUPABASE_URL__;
+    const injectedKey = window.__SUPABASE_KEY__;
+
+    if (injectedUrl && injectedKey) {
+        // MODE PRODUCTION: Data dari server (Vercel Env)
+        window.appConfig = {
+            supabaseUrl: injectedUrl,
+            supabaseKey: injectedKey
+        };
+    } else {
+        // MODE FALLBACK / DEVELOPMENT:
+        // Jika data injector kosong (misalnya buka file HTML langsung),
+        // Kita gunakan data manual di sini.
+        console.warn("⚠️ [Config] Tidak menemukan Env Injector. Menggunakan Fallback Local.");
+        
+        window.appConfig = {
+            // ⚠️ PENTING: Isi URL & Key Supabase Kamu di sini sebagai cadangan
+            // Agar HTML bisa berjalan meskipun fetch('/api/config') gagal.
+            supabaseUrl: "https://nkcctncsjmcfsiguowms.supabase.co", 
+            supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." // GANTI DENGAN ANON KEY KAMU
+        };
+    }
 } else {
-    // Jika dijalankan di NodeJS (Untuk testing)
+    // MODE NODEJS (Testing / Server-side Script)
     module.exports = {
         supabaseUrl: process.env.SUPABASE_URL,
-        supabaseKey: process.env.SUPABASE_KEY // Bisa gunakan key service_role atau anon
+        supabaseKey: process.env.SUPABASE_KEY
     };
 }
