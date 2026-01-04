@@ -4,12 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Masuk - AgriChain</title>
-
-    <!-- 1. Load Config (Wajib) -->
-    <script src="config.js"></script>
     
-    <!-- 2. Load Libraries (SDK & Web3) -->
-    <!-- Catatan: Pastikan library tidak diload 2 kali agar tidak error -->
+    <!-- Libraries -->
+    <!-- Catatan: Saya menghapus dependensi ke config.js agar tidak error -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/@walletconnect/web3-provider@1.7.1/dist/index.min.js"></script>
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
@@ -18,9 +15,8 @@
         :root { 
             --primary-green: #2E7D32; 
             --primary-dark: #1B5E20; 
-            --primary-light: #E8F5E9; 
-            --text-dark: #333333; 
-            --text-grey: #666666; 
+            --light-green: #E8F5E9; 
+            --text-dark: #333; 
             --white: #ffffff; 
             --error-red: #D32F2F; 
             --border: #ddd; 
@@ -28,7 +24,7 @@
         
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background-color: var(--primary-light); 
+            background-color: var(--light-green); 
             margin: 0; 
             display: flex; 
             justify-content: center; 
@@ -116,21 +112,9 @@
             align-items: center; 
         }
 
-        .btn-login:hover { 
-            background-color: var(--primary-dark); 
-            transform: translateY(-2px); 
-        }
-        
-        .btn-login:active { 
-            transform: translateY(0); 
-        }
-
-        .btn-loading { 
-            background-color: #81C784 !important; 
-            cursor: not-allowed; 
-            pointer-events: none; 
-            transform: none !important; 
-        }
+        .btn-login:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
+        .btn-login:active { transform: translateY(0); }
+        .btn-loading { background-color: #81C784 !important; cursor: not-allowed; transform: none !important; }
 
         .error-msg { 
             color: var(--error-red); 
@@ -202,7 +186,7 @@
         }
         
         #wallet-btn.connected { 
-            background-color: var(--primary-light); 
+            background-color: var(--light-green); 
             border-color: var(--primary-green); 
             color: var(--primary-green); 
             cursor: default; 
@@ -265,41 +249,60 @@
         <div class="subtitle">Masuk untuk kelola panen Anda</div>
 
         <form id="loginForm" autocomplete="off">
-            <div class="form-group"><label for="identifier">Alamat Email</label><input type="email" id="identifier" class="form-input" placeholder="nama@email.com" required></div>
-            <div class="form-group"><label for="password">Kata Sandi</label><input type="password" id="password" class="form-input" placeholder="Masukkan kata sandi" required></div>
-            <button type="submit" id="btnSubmit" class="btn-login"><span class="spinner" id="spinner"></span><span id="btnText">MASUK SEKARANG</span></button>
+            <div class="form-group">
+                <label for="identifier">Alamat Email</label>
+                <input type="email" id="identifier" class="form-input" placeholder="nama@email.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Kata Sandi</label>
+                <input type="password" id="password" class="form-input" placeholder="Masukkan kata sandi" required>
+            </div>
+
+            <button type="submit" id="btnSubmit" class="btn-login">
+                <span class="spinner" id="spinner"></span>
+                <span id="btnText">MASUK SEKARANG</span>
+            </button>
+            
             <div id="errorMsg" class="error-msg"></div>
         </form>
 
+        <!-- DOMPET -->
         <div class="wallet-section">
-            <div class="wallet-status-title"><div class="wallet-status-dot" id="walletDot"></div><span id="walletStatusText">Dompet Terputus</span></div>
-            <button id="wallet-btn" type="button"><span>🔗</span> Hubungkan Dompet (Web3)</button>
+            <div class="wallet-status-title">
+                <div class="wallet-status-dot" id="walletDot"></div>
+                <span id="walletStatusText">Dompet Terputus</span>
+            </div>
+            <button id="wallet-btn" type="button">
+                <span>🔗</span> Hubungkan Dompet (Web3)
+            </button>
         </div>
 
-        <div class="extra-links"><a href="forgot-password.html" class="forgot-link">Lupa kata sandi?</a><a href="register.html" class="register-link">Buat Akun Baru</a></div>
+        <div class="extra-links">
+            <a href="forgot-password.html" class="forgot-link">Lupa kata sandi?</a>
+            <a href="register.html" class="register-link">Buat Akun Baru</a>
+        </div>
+
         <a href="index.html" class="link-home">← Kembali ke Beranda</a>
     </div>
 
-    <!-- SCRIPT UTAMA -->
+    <!-- SCRIPT UTAMA (EMERGENCY FIX) -->
     <script>
-        // --- 1. CEK CONFIG (PENTING) ---
-        if (typeof window.appConfig === 'undefined') {
-            console.error("FATAL: config.js tidak dimuat.");
-            alert("Konfigurasi sistem hilang.");
-            throw new Error("Config Missing"); // Kita hentikan script agar tidak error undefined
-        }
-
-        // --- 2. INIT SUPABASE (Anti-Freeze & Aman) ---
-        // ✅ FIX: Kita ambil fungsi createClient langsung dari library supabase di window
-        // Ini menghindari masalah "non-configurable global property" yang disebabkan oleh ekstensi lain
-        const { createClient } = window.supabase;
+        // --- 1. KONFIGURASI EMERGENCY (HARDCODED) ---
+        // Kita masukkan key langsung di sini agar login bisa dipakai lagi.
+        // JANGAN UPLOAD KODE INI KE REPOSITORY PUBLIC KARENA KEY NAK TERLIH ORANG.
         
-        const SUPABASE_URL = window.appConfig.supabaseUrl;
-        const SUPABASE_KEY = window.appConfig.supabaseKey;
+        // ⚠️⚠️ GANTI BAGIAN INI DENGAN DATA DARI SUPABASE DASHBOARD ⚠️⚠️
+        const SUPABASE_URL = "https://nkcctncsjmcfsiguowms.supabase.co"; // <--- PASTE URL ASLI DISINI
+        const SUPABASE_KEY = "sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X";       // <--- PASTE ANON KEY ASLI DISINI
+
+        // --- 2. INIT SUPABASE ---
+        // Fungsi ini ada di library Supabase
+        const { createClient } = window.supabase; 
         
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        console.log("System Config Loaded:", SUPABASE_URL);
+        
+        console.log("System Loaded (Hardcoded Mode). URL:", SUPABASE_URL);
 
         // --- 3. DOM ELEMENTS ---
         const form = document.getElementById('loginForm');
@@ -367,19 +370,19 @@
         });
 
         // --- 5. LOGIKA UTAMA LOGIN ---
-        form.addEventListener('submit', async function(e) {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const email = identifierInput.value.trim();
             const password = passInput.value.trim();
 
-            if(!email || !password) { 
-                showError("Mohon isi Email dan Kata Sandi."); 
-                return; 
+            if(!email || !password) {
+                showError("Mohon isi Email dan Kata Sandi.");
+                return;
             }
-            
+
             // UI Loading State
-            setLoading(true); 
+            setLoading(true);
             errorMsg.style.display = 'none';
 
             try {
@@ -405,7 +408,7 @@
                     .single();
 
                 if (profileError) {
-                    console.error("❌ Gagal ambil profil:", profileError);
+                    console.error("❌ Error Database (RLS?):", profileError);
                     
                     // Pengecekan spesifik error RLS
                     if(profileError.code === 'PGRST116' || profileError.message.includes('JSON')) {
