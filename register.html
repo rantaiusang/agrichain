@@ -160,15 +160,26 @@
         </div>
     </div>
 
-    <!-- SCRIPT UTAMA -->
+    <!-- SCRIPT UTAMA (DIPERBAIKI) -->
     <script>
-        // --- 1. INIT SUPABASE ---
+        // --- 1. CEK CONFIG (PENTING) ---
+        if (typeof window.appConfig === 'undefined') {
+            console.error("FATAL: config.js tidak dimuat.");
+            alert("Error: File konfigurasi (config.js) tidak ditemukan.\nPastikan file config.js ada di folder yang sama dan isinya sudah diisi dengan URL & Key Supabase.");
+            // Kita hentikan script agar tidak error
+            throw new Error("Config Missing");
+        }
+
+        // --- 2. INIT SUPABASE ---
         const { supabase } = window;
         const SUPABASE_URL = window.appConfig.supabaseUrl;
         const SUPABASE_KEY = window.appConfig.supabaseKey;
+        
+        console.log("Config URL:", SUPABASE_URL); // Debugging
+
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 2. DOM ELEMENTS ---
+        // --- 3. DOM ELEMENTS ---
         const form = document.getElementById('registerForm');
         const roleSelect = document.getElementById('role');
         const emailInput = document.getElementById('email');
@@ -182,7 +193,7 @@
         const mismatchIcon = document.getElementById('passMismatchIcon');
         const passError = document.getElementById('passError');
 
-        // --- 3. FUNGSI MODAL ---
+        // --- 4. FUNGSI MODAL ---
         function showModal(type, title, desc, btnTextVal = null) {
             const modal = document.getElementById('statusModal');
             const icon = document.getElementById('modalIcon');
@@ -202,7 +213,7 @@
             }
         }
 
-        // --- 4. VALIDASI PASSWORD ---
+        // --- 5. VALIDASI PASSWORD ---
         function checkPasswordMatch() {
             const p1 = passInput.value; const p2 = confirmInput.value;
             if (p2.length === 0) { matchIcon.style.display = 'none'; mismatchIcon.style.display = 'none'; passError.style.display = 'none'; confirmInput.style.borderColor = 'var(--border)'; return false; }
@@ -212,7 +223,7 @@
         passInput.addEventListener('input', checkPasswordMatch);
         confirmInput.addEventListener('input', checkPasswordMatch);
 
-        // --- 5. LOGIKA REGISTER ---
+        // --- 6. LOGIKA REGISTER ---
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             const fullname = fullnameInput.value.trim();
@@ -227,17 +238,31 @@
 
             try {
                 console.log(`[System] Mencoba mendaftarkan: ${email} sebagai ${role}`);
+                
+                // ✅ PERBAIKAN: Tambahkan emailRedirectTo agar user tetap bisa login jika email conf aktif
+                // Dan pastikan data terkirim dengan benar
                 const { data, error } = await supabaseClient.auth.signUp({
-                    email: email, password: password,
+                    email: email, 
+                    password: password,
                     options: {
-                        data: { full_name: fullname, role: role, phone: '-', desa: '-', luas_lahan: 0 }
+                        data: { full_name: fullname, role: role, phone: '-', desa: '-', luas_lahan: 0 },
+                        emailRedirectTo: window.location.origin + '/login.html'
                     }
                 });
+
                 if (error) throw error;
+
                 console.log("[System] Sukses Auth:", data.user);
 
-                showModal('success', 'Pendaftaran Berhasil!', 'Akun Anda siap digunakan. Anda akan dialihkan ke halaman Login.', null);
-                setTimeout(() => { window.location.href = 'login.html'; }, 2500);
+                // Cek apakah perlu verifikasi email
+                if (data.user && !data.session) {
+                    // Email confirmation aktif
+                    showModal('success', 'Cek Email Kamu', 'Pendaftaran berhasil! Kami telah mengirim link konfirmasi ke email Kamu. Cek folder Inbox/Spam.', null);
+                } else {
+                    // Auto login (Email conf dimatikan)
+                    showModal('success', 'Pendaftaran Berhasil!', 'Akun Anda siap digunakan. Anda akan dialihkan ke halaman Login.', null);
+                    setTimeout(() => { window.location.href = 'login.html'; }, 2000);
+                }
 
             } catch (err) {
                 console.error("[System] Error Register:", err);
