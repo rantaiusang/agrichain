@@ -321,7 +321,7 @@
         const SUPABASE_URL = window.appConfig.supabaseUrl;
         const SUPABASE_KEY = window.appConfig.supabaseKey;
 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. CEK AUTH & ROLE ---
         document.addEventListener("DOMContentLoaded", async () => {
@@ -330,14 +330,14 @@
                 document.getElementById('mobileMenuBtn').style.display = 'block';
             }
 
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await supabaseClient.auth.getSession();
             if(!session) {
                 window.location.href = 'login.html';
                 return;
             }
 
             // Cek Role: Hanya ADMIN yang boleh akses halaman ini
-            const { data: profile } = await supabase
+            const { data: profile } = await supabaseClient
                 .from('profiles')
                 .select('role')
                 .eq('id', session.user.id)
@@ -359,7 +359,7 @@
             const tbody = document.getElementById('tableBody');
             
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('market_prices')
                     .select('*')
                     .order('commodity_name', { ascending: true });
