@@ -4,440 +4,147 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Dashboard Petani - AgriChain</title>
-    
-    <!-- Library Supabase & Chart.js -->
+    <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <style>
-        :root {
-            --primary: #2E7D32;
-            --primary-dark: #1B5E20;
-            --light-green: #E8F5E9;
-            --bg: #F8FAF9;
-            --white: #ffffff;
-            --text: #1F2937;
-            --sub: #6B7280;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
-            --shadow-float: 0 10px 20px rgba(46, 125, 50, 0.2);
-            --radius: 16px;
-        }
-
+        :root { --primary: #2E7D32; --primary-dark: #1B5E20; --light-green: #E8F5E9; --bg: #F8FAF9; --white: #ffffff; --text: #1F2937; --sub: #6B7280; --radius: 16px; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding-bottom: 80px; /* Space navbar bawah */
-        }
-
-        /* --- PROFILE HEADER --- */
-        .profile-header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            padding: 40px 20px 100px 20px;
-            color: white;
-            border-bottom-left-radius: 30px;
-            border-bottom-right-radius: 30px;
-            position: relative;
-        }
-
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding-bottom: 80px; }
+        
+        .profile-header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); padding: 40px 20px 100px 20px; color: white; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; position: relative; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .brand { font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
-        .settings-icon { cursor: pointer; font-size: 1.2rem; opacity: 0.8; transition: opacity 0.2s; }
-        .settings-icon:hover { opacity: 1; }
-
         .user-info h2 { margin: 0; font-size: 1.5rem; font-weight: 700; }
-        .user-info p { margin: 5px 0 0; opacity: 0.9; font-size: 0.9rem; }
         .role-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; border: 1px solid rgba(255,255,255,0.4); }
 
-        /* --- FLOATING STATS (ANIMASI) --- */
-        .stats-wrapper {
-            display: flex;
-            gap: 15px;
-            margin: -50px auto 20px; /* Naik ke atas header */
-            position: relative;
-            z-index: 10;
-            padding: 0 20px; /* Agar responsif di mobile kecil */
-        }
-
-        .stat-card {
-            background: var(--white);
-            flex: 1; /* Biar flexible */
-            padding: 15px;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-float);
-            text-align: center;
-            /* Animasi Slide Down */
-            animation: slideDown 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
+        .stats-wrapper { display: flex; gap: 15px; margin: -50px auto 20px; position: relative; z-index: 10; padding: 0 20px; }
+        .stat-card { background: var(--white); flex: 1; padding: 15px; border-radius: var(--radius); box-shadow: 0 10px 20px rgba(46, 125, 50, 0.2); text-align: center; animation: slideDown 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         .stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--sub); font-weight: 600; }
         .stat-value { font-size: 1.4rem; font-weight: 800; color: var(--primary); margin: 5px 0; }
         .stat-sub { font-size: 0.75rem; color: #9CA3AF; }
 
-        /* --- MAIN CONTAINER --- */
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-
-        .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .section-title { font-size: 1.1rem; font-weight: 700; color: var(--text); }
-        .view-all { color: var(--primary); text-decoration: none; font-size: 0.85rem; font-weight: 600; }
-
-        /* --- CHART CARD --- */
-        .card { background: var(--white); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow-sm); margin-bottom: 20px; border:1px solid #E5E7EB; }
-        
+        .card { background: var(--white); border-radius: var(--radius); padding: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; border:1px solid #E5E7EB; }
         .chart-box { height: 200px; position: relative; width: 100%; }
 
-        /* --- LIST ITEMS --- */
-        .list-item {
-            background: var(--white);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-            border: 1px solid transparent;
-            /* Animasi Fade Up Staggered */
-            opacity: 0;
-            animation: fadeInUp 0.5s ease forwards;
-            transition: transform 0.2s, border-color 0.2s;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .list-item:hover {
-            transform: translateX(5px);
-            border-color: var(--light-green);
-            box-shadow: 0 4px 10px rgba(46, 125, 50, 0.1);
-        }
-
+        .list-item { background: var(--white); padding: 15px; border-radius: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.03); border: 1px solid transparent; opacity: 0; animation: fadeInUp 0.5s ease forwards; transition: transform 0.2s; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .list-item:hover { transform: translateX(5px); border-color: var(--light-green); }
         .item-left { display: flex; align-items: center; gap: 15px; flex: 1; }
         .item-icon { width: 45px; height: 45px; background: var(--light-green); color: var(--primary); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; }
         .item-title { font-weight: 700; font-size: 1rem; color: var(--text); margin-bottom: 2px; }
         .item-meta { font-size: 0.8rem; color: var(--sub); }
-
         .item-right { text-align: right; }
         .item-price { font-weight: 800; font-size: 1.1rem; color: var(--primary); margin-bottom: 4px; }
-        
         .badge { font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; font-weight: 700; }
         .badge-pending { background: #FFFBEB; color: #B45309; }
         .badge-approved { background: #ECFDF5; color: #059669; }
         .badge-sold { background: #EFF6FF; color: #2563EB; }
 
-        /* --- BIG ACTION BUTTON --- */
-        .action-wrapper { margin-top: 30px; }
-        .btn-main {
-            width: 100%;
-            background: var(--primary);
-            color: white;
-            padding: 20px;
-            border: none;
-            border-radius: 16px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 10px 20px rgba(46, 125, 50, 0.4);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            text-decoration: none;
-            position: relative;
-            overflow: hidden;
-        }
+        .btn-main { width: 100%; background: var(--primary); color: white; padding: 20px; border: none; border-radius: 16px; font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 10px 20px rgba(46, 125, 50, 0.4); transition: all 0.3s; text-decoration: none; margin-top: 30px; }
+        .btn-main:hover { transform: translateY(-4px) scale(1.02); box-shadow: 0 15px 30px rgba(46, 125, 50, 0.5); }
 
-        /* Ripple Effect on Hover */
-        .btn-main::after {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.2);
-            opacity: 0;
-            transition: opacity 0.3s;
-            border-radius: 16px;
-        }
-
-        .btn-main:hover {
-            transform: translateY(-4px) scale(1.02);
-            box-shadow: 0 15px 30px rgba(46, 125, 50, 0.5);
-        }
-
-        .btn-main:hover::after { opacity: 1; }
-        
-        .btn-main:active { transform: translateY(-1px) scale(0.98); }
-
-        /* --- NAVBAR BAWAH --- */
-        .nav-bottom {
-            position: fixed;
-            bottom: 0; left: 0; width: 100%;
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            background: var(--white);
-            border-top: 1px solid #ddd;
-            z-index: 99;
-        }
-
-        .b-item {
-            text-decoration: none;
-            color: var(--sub);
-            font-size: 0.75rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 4px;
-            transition: color 0.2s;
-        }
+        .nav-bottom { position: fixed; bottom: 0; left: 0; width: 100%; display: flex; justify-content: space-around; padding: 10px 0; background: var(--white); border-top: 1px solid #ddd; z-index: 99; }
+        .b-item { text-decoration: none; color: var(--sub); font-size: 0.75rem; display: flex; flex-direction: column; align-items: center; gap: 4px; }
         .b-item.active { color: var(--primary); }
         .b-item svg { width: 24px; height: 24px; }
-
-        /* Loading */
-        .loading-text { text-align: center; padding: 20px; color: #999; font-size: 0.9rem; }
     </style>
 </head>
 <body>
-
-    <!-- PROFILE HEADER -->
     <div class="profile-header">
-        <div class="top-bar">
-            <div class="brand">🌾 AgriChain</div>
-            <div class="settings-icon" onclick="window.location.href='profile.html'">⚙️</div>
-        </div>
-        <div class="user-info">
-            <h2 id="userName">Loading...</h2>
-            <p id="userMeta"><span class="role-badge">PETANI</span> <span id="userDate">Bergabung Jan 2023</span></p>
-        </div>
+        <div class="top-bar"><div class="brand">🌾 AgriChain</div><div class="settings-icon" onclick="window.location.href='profile.html'">⚙️</div></div>
+        <div class="user-info"><h2 id="userName">Loading...</h2><p><span class="role-badge">PETANI</span> <span id="userDate"></span></p></div>
     </div>
 
-    <!-- FLOATING STATS -->
     <div class="stats-wrapper">
-        <div class="stat-card">
-            <div class="stat-label">Total Panen</div>
-            <div class="stat-value" id="statCount">...</div>
-            <div class="stat-sub">Transaksi</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-label">Estimasi Cuan</div>
-            <div class="stat-value" id="statRev" style="font-size:1.2rem;">Rp 0</div>
-            <div class="stat-sub">Pending</div>
-        </div>
+        <div class="stat-card"><div class="stat-label">Total Panen</div><div class="stat-value" id="statCount">...</div><div class="stat-sub">Transaksi</div></div>
+        <div class="stat-card"><div class="stat-label">Estimasi Cuan</div><div class="stat-value" id="statRev" style="font-size:1.2rem;">Rp 0</div><div class="stat-sub">Pending</div></div>
     </div>
 
-    <!-- MAIN CONTENT -->
     <div class="container">
+        <div class="card"><h3 style="margin:0 0 15px 0; color:var(--text);">Performa Penjualan</h3><div class="chart-box"><canvas id="salesChart"></canvas></div></div>
         
-        <!-- Chart Section -->
-        <div class="card">
-            <div class="section-head">
-                <h3 class="section-title">Performa Penjualan</h3>
-            </div>
-            <div class="chart-box">
-                <canvas id="salesChart"></canvas>
-            </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="margin:0; color:var(--text);">Riwayat Panen</h3>
+            <a href="riwayat.html" style="color:var(--primary); text-decoration:none; font-size:0.85rem; font-weight:600;">Lihat Semua</a>
         </div>
 
-        <!-- Harvest List -->
-        <div class="section-head">
-            <h3 class="section-title">Riwayat Panen</h3>
-            <a href="riwayat.html" class="view-all">Lihat Semua</a>
-        </div>
+        <div id="harvestList"><div style="text-align:center; padding:20px; color:#999;">Memuat data panen...</div></div>
 
-        <div id="harvestList">
-            <div class="loading-text">Memuat data panen...</div>
-        </div>
-
-        <!-- Big Action Button -->
-        <div class="action-wrapper">
-            <a href="input-panen.html" class="btn-main">
-                <span style="font-size:1.5rem;">🌾</span> Jual Hasil Panen Baru
-            </a>
-        </div>
+        <a href="input-panen.html" class="btn-main"><span style="font-size:1.5rem;">🌾</span> Jual Hasil Panen Baru</a>
     </div>
 
-    <!-- NAVBAR BOTTOM -->
     <nav class="nav-bottom">
-        <a href="index.html" class="b-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2z"></path></svg>
-            <span>Beranda</span>
-        </a>
-        <a href="belanja.html" class="b-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><path d="M1 1h4l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
-            <span>Belanja</span>
-        </a>
-        <a href="dashboard-petani.html" class="b-item active">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>
-            <span>Panen</span>
-        </a>
-        <a href="profile.html" class="b-item">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
-            <span>Profil</span>
-        </a>
+        <a href="index.html" class="b-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2z"></path></svg>Beranda</a>
+        <a href="belanja.html" class="b-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><path d="M1 1h4l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>Belanja</a>
+        <a href="dashboard-petani.html" class="b-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"></path></svg>Panen</a>
+        <a href="profile.html" class="b-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>Profil</a>
     </nav>
 
-    <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. LOAD CONFIG & INIT ---
-        if (typeof window.appConfig === 'undefined') {
-            console.error("FATAL: config.js tidak dimuat.");
-            alert("Konfigurasi sistem hilang.");
-        }
-
-        const SUPABASE_URL = window.appConfig.supabaseUrl;
-        const SUPABASE_KEY = window.appConfig.supabaseKey;
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
+        const { supabase } = window;
+        const supabaseClient = supabase.createClient(window.appConfig.supabaseUrl, window.appConfig.supabaseKey);
         let currentUser = null;
         let chartInstance = null;
 
-        // --- 2. INIT ---
         document.addEventListener("DOMContentLoaded", async () => {
-            // Cek Session (Wajib)
-            const { data: { session }, error } = await supabase.auth.getSession();
-            if (error || !session) {
-                alert("Anda belum login. Mengarahkan ke halaman login...");
-                window.location.href = 'login.html';
-                return;
-            }
+            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            if (error || !session) { alert("Anda belum login."); window.location.href = 'login.html'; return; }
             currentUser = session.user;
-
-            // Cek Role (Wajib PETANI)
-            const { data: profile } = await supabase.from('profiles').select('full_name, role').eq('id', currentUser.id).single();
-            if (!profile || profile.role !== 'PETANI') {
-                alert("Akses Ditolak: Halaman ini khusus Petani.");
-                window.location.href = 'index.html';
-                return;
-            }
-
-            // Update UI Header
+            const { data: profile } = await supabaseClient.from('profiles').select('full_name, role').eq('id', currentUser.id).single();
+            if (!profile || profile.role !== 'PETANI') { alert("Akses Ditolak."); window.location.href = 'index.html'; return; }
             document.getElementById('userName').textContent = "Halo, " + (profile.full_name.split(' ')[0] || "Petani");
-
-            // Load Data
             await loadHarvestData();
         });
 
-        // --- 3. LOAD DATA ---
         async function loadHarvestData() {
             const listEl = document.getElementById('harvestList');
             const statCount = document.getElementById('statCount');
             const statRev = document.getElementById('statRev');
-
             try {
-                const { data, error } = await supabase
-                    .from('panen')
-                    .select('*')
-                    .eq('user_id', currentUser.id)
-                    .order('created_at', { ascending: false })
-                    .limit(5); // Ambil 5 terakhir saja
-
+                const { data, error } = await supabaseClient.from('panen').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }).limit(5);
                 if (error) throw error;
-
-                // Update Stats
                 statCount.textContent = data.length;
                 const totalRev = data.reduce((acc, item) => acc + (item.estimated_total || 0), 0);
                 statRev.textContent = "Rp " + totalRev.toLocaleString('id-ID');
-
-                // Render List
                 listEl.innerHTML = '';
                 if (data.length === 0) {
-                    listEl.innerHTML = `
-                        <div style="text-align: center; padding: 40px; color: #999;">
-                            <div style="font-size:3rem; margin-bottom:10px;">📭</div>
-                            Belum ada panen.<br>Mulai jual hasil panen Anda sekarang!
-                        </div>
-                    `;
-                    // Render Chart Kosong
+                    listEl.innerHTML = `<div style="text-align:center; padding:40px; color:#999;"><div style="font-size:3rem; margin-bottom:10px;">📭</div>Belum ada panen.<br>Mulai jual hasil panen Anda!</div>`;
                     renderChart([]);
                 } else {
                     renderList(data);
                     renderChart(data);
                 }
-
-            } catch (err) {
-                console.error("Gagal load data:", err);
-                listEl.innerHTML = '<div class="loading-text" style="color:red;">Gagal memuat data panen.</div>';
-            }
+            } catch (err) { console.error("Gagal load data:", err); listEl.innerHTML = '<div style="text-align:center; color:red;">Gagal load data.</div>'; }
         }
 
-        // --- 4. RENDER LIST ---
         function renderList(data) {
             const listEl = document.getElementById('harvestList');
             listEl.innerHTML = '';
-
             data.forEach((item, index) => {
                 const date = new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-                
-                let badgeClass = 'badge-pending';
-                let badgeText = 'Menunggu';
+                let badgeClass = 'badge-pending'; let badgeText = 'Menunggu';
                 if(item.status === 'approved') { badgeClass = 'badge-approved'; badgeText = 'Disetujui'; }
                 if(item.status === 'sold') { badgeClass = 'badge-sold'; badgeText = 'Terjual'; }
-
-                const el = document.createElement('div');
-                el.className = 'list-item';
-                // Staggered Animation Delay
-                el.style.animationDelay = `${index * 0.1}s`;
-
-                el.innerHTML = `
-                    <div class="item-left">
-                        <div class="item-icon">🌾</div>
-                        <div>
-                            <div class="item-title">${item.nama_komoditas}</div>
-                            <div class="item-meta">${item.quantity} ${item.unit} • ${date}</div>
-                        </div>
-                    </div>
-                    <div class="item-right">
-                        <div class="item-price">Rp ${item.estimated_total.toLocaleString()}</div>
-                        <span class="badge ${badgeClass}">${badgeText}</span>
-                    </div>
-                `;
+                const el = document.createElement('div'); el.className = 'list-item'; el.style.animationDelay = `${index * 0.1}s`;
+                el.innerHTML = `<div class="item-left"><div class="item-icon">🌾</div><div><div class="item-title">${item.nama_komoditas}</div><div class="item-meta">${item.quantity} ${item.unit} • ${date}</div></div></div><div class="item-right"><div class="item-price">Rp ${item.estimated_total.toLocaleString()}</div><span class="badge ${badgeClass}">${badgeText}</span></div>`;
                 listEl.appendChild(el);
             });
         }
 
-        // --- 5. RENDER CHART ---
         function renderChart(data) {
             const ctx = document.getElementById('salesChart').getContext('2d');
             if (!ctx) return;
-
-            // Hancurkan chart lama jika ada (penting untuk refresh)
             if (chartInstance) chartInstance.destroy();
-
             const labels = data.map(d => d.nama_komoditas.substring(0,10) + '..');
             const values = data.map(d => d.estimated_total);
-
             chartInstance = new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: labels.length ? labels : ['Belum ada data'],
-                    datasets: [{
-                        label: 'Estimasi Pendapatan',
-                        data: values.length ? values : [0],
-                        borderColor: '#2E7D32',
-                        backgroundColor: 'rgba(46, 125, 50, 0.1)',
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { display: false } },
-                        x: { grid: { display: false } }
-                    }
-                }
+                data: { labels: labels.length ? labels : ['Belum ada data'], datasets: [{ label: 'Estimasi Pendapatan', data: values.length ? values : [0], borderColor: '#2E7D32', backgroundColor: 'rgba(46, 125, 50, 0.1)', fill: true, tension: 0.4 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
             });
         }
     </script>
