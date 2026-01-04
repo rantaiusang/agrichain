@@ -4,222 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Masuk - AgriChain</title>
-
-    <!-- 1. LOAD CONFIG (PENTING) -->
-    <script src="config.js"></script>
     
-    <!-- 2. LOAD LIBRARIES -->
+    <!-- 1. LOAD CONFIG & INIT -->
+    <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/@walletconnect/web3-provider@1.7.1/dist/index.min.js"></script>
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
 
     <style>
-        :root { 
-            --primary-green: #2E7D32; 
-            --primary-dark: #1B5E20; 
-            --light-green: #E8F5E9; 
-            --text-dark: #333; 
-            --white: #ffffff; 
-            --error-red: #D32F2F; 
-            --border: #ddd; 
-        }
-        
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background-color: var(--light-green); 
-            margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            padding: 20px; 
-        }
-
-        .login-card { 
-            background: var(--white); 
-            width: 100%; 
-            max-width: 400px; 
-            padding: 2.5rem 2rem; 
-            border-radius: 20px; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
-            animation: slideUp 0.5s ease-out; 
-        }
-
-        .logo { 
-            color: var(--primary-green); 
-            font-size: 2rem; 
-            margin-bottom: 0.5rem; 
-            font-weight: 800; 
-            text-align: center; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            gap: 10px; 
-        }
-        
-        .subtitle { 
-            color: #666; 
-            font-size: 0.95rem; 
-            margin-bottom: 2rem; 
-            text-align: center; 
-        }
-
-        .form-group { 
-            margin-bottom: 1.4rem; 
-            text-align: left; 
-        }
-
-        label { 
-            display: block; 
-            margin-bottom: 0.6rem; 
-            font-size: 0.85rem; 
-            font-weight: 700; 
-            color: var(--text-dark); 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px; 
-        }
-
-        .form-input { 
-            width: 100%; 
-            padding: 14px; 
-            border: 2px solid var(--border); 
-            border-radius: 10px; 
-            font-size: 1rem; 
-            box-sizing: border-box; 
-            background: #fff; 
-            transition: all 0.3s ease; 
-        }
-
-        .form-input:focus { 
-            border-color: var(--primary-green); 
-            outline: none; 
-            box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.1); 
-        }
-
-        .btn-login { 
-            width: 100%; 
-            padding: 16px; 
-            background-color: var(--primary-green); 
-            color: white; 
-            border: none; 
-            border-radius: 10px; 
-            font-size: 1rem; 
-            font-weight: 700; 
-            cursor: pointer; 
-            margin-top: 1.5rem; 
-            transition: all 0.2s; 
-            box-shadow: 0 4px 6px rgba(46, 125, 50, 0.2); 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-        }
-
+        :root { --primary-green: #2E7D32; --primary-dark: #1B5E20; --light-green: #E8F5E9; --text-dark: #333; --white: #ffffff; --error-red: #D32F2F; --border: #ddd; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--light-green); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .login-card { background: var(--white); width: 100%; max-width: 400px; padding: 2.5rem 2rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); animation: slideUp 0.5s ease-out; }
+        .logo { color: var(--primary-green); font-size: 2rem; margin-bottom: 0.5rem; font-weight: 800; text-align: center; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .subtitle { color: #666; font-size: 0.95rem; margin-bottom: 2rem; text-align: center; }
+        .form-group { margin-bottom: 1.4rem; text-align: left; }
+        label { display: block; margin-bottom: 0.6rem; font-size: 0.85rem; font-weight: 700; color: var(--text-dark); text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-input { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 10px; font-size: 1rem; box-sizing: border-box; background: #fff; transition: all 0.3s ease; }
+        .form-input:focus { border-color: var(--primary-green); outline: none; box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.1); }
+        .btn-login { width: 100%; padding: 16px; background-color: var(--primary-green); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: 1.5rem; transition: all 0.2s; box-shadow: 0 4px 6px rgba(46, 125, 50, 0.2); display: flex; justify-content: center; align-items: center; }
         .btn-login:hover { background-color: var(--primary-dark); transform: translateY(-2px); }
         .btn-login:active { transform: translateY(0); }
         .btn-loading { background-color: #81C784 !important; cursor: not-allowed; transform: none !important; }
-
-        .error-msg { 
-            color: var(--error-red); 
-            font-size: 0.85rem; 
-            margin-top: 15px; 
-            text-align: center; 
-            display: none; 
-            padding: 12px; 
-            background: #FFEBEE; 
-            border-radius: 8px; 
-            border-left: 4px solid var(--error-red); 
-        }
+        .error-msg { color: var(--error-red); font-size: 0.85rem; margin-top: 15px; text-align: center; display: none; padding: 12px; background: #FFEBEE; border-radius: 8px; border-left: 4px solid var(--error-red); }
         
-        /* Wallet Styles */
-        .wallet-section { 
-            margin-top: 2.5rem; 
-            padding-top: 2rem; 
-            border-top: 1px dashed #ccc; 
-            text-align: center; 
-        }
-
-        .wallet-status-title { 
-            font-size: 0.8rem; 
-            color: #888; 
-            margin-bottom: 12px; 
-            font-weight: 600; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            gap: 8px; 
-        }
-
-        .wallet-status-dot { 
-            width: 10px; 
-            height: 10px; 
-            background-color: #ccc; 
-            border-radius: 50%; 
-            border: 2px solid #fff; 
-            box-shadow: 0 0 0 2px rgba(0,0,0,0.1); 
-            transition: background-color 0.3s ease; 
-        }
+        /* Wallet */
+        .wallet-section { margin-top: 2.5rem; padding-top: 2rem; border-top: 1px dashed #ccc; text-align: center; }
+        .wallet-status-title { font-size: 0.8rem; color: #888; margin-bottom: 12px; font-weight: 600; display: flex; justify-content: center; align-items: center; gap: 8px; }
+        .wallet-status-dot { width: 10px; height: 10px; background-color: #ccc; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 0 0 2px rgba(0,0,0,0.1); transition: background-color 0.3s ease; }
         .wallet-status-dot.active { background-color: #00C851; box-shadow: 0 0 0 2px #00C851; }
-
-        #wallet-btn { 
-            width: 100%; 
-            padding: 12px; 
-            background-color: #ffffff; 
-            border: 1px solid #3B99FC; 
-            color: #3B99FC; 
-            border-radius: 8px; 
-            font-size: 0.9rem; 
-            font-weight: 700; 
-            cursor: pointer; 
-            transition: all 0.3s; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 8px; 
-        }
-
+        #wallet-btn { width: 100%; padding: 12px; background-color: #ffffff; border: 1px solid #3B99FC; color: #3B99FC; border-radius: 8px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         #wallet-btn:hover { background-color: #eff6ff; border-color: #2196F3; color: #2196F3; }
         #wallet-btn.connected { background-color: var(--light-green); border-color: var(--primary-green); color: var(--primary-green); cursor: default; }
         
-        .extra-links { 
-            margin-top: 2rem; 
-            display: flex; 
-            justify-content: center; 
-            gap: 20px; 
-            font-size: 0.9rem; 
-        }
-
-        .link-home { 
-            color: var(--primary-green); 
-            text-decoration: none; 
-            font-weight: 600; 
-            display: block; 
-            text-align: center; 
-            margin-top: 1.5rem; 
-        }
-        
+        .extra-links { margin-top: 2rem; display: flex; justify-content: center; gap: 20px; font-size: 0.9rem; }
+        .link-home { color: var(--primary-green); text-decoration: none; font-weight: 600; display: block; text-align: center; margin-top: 1.5rem; }
         .forgot-link { color: #666; text-decoration: none; }
         .register-link { color: var(--primary-green); font-weight: 700; text-decoration: none; }
-
-        .spinner { 
-            display: inline-block; 
-            width: 18px; 
-            height: 18px; 
-            border: 2px solid rgba(255,255,255,0.3); 
-            border-radius: 50%; 
-            border-top-color: #fff; 
-            animation: spin 0.8s linear infinite; 
-            margin-right: 8px; 
-            display: none; 
-        }
-        
-        @keyframes spin { 
-            to { transform: rotate(360deg); } 
-        }
-        
-        @keyframes slideUp { 
-            from { opacity: 0; transform: translateY(20px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
+        .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; margin-right: 8px; display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -230,15 +53,11 @@
 
         <form id="loginForm" autocomplete="off">
             <div class="form-group"><label for="identifier">Alamat Email</label><input type="email" id="identifier" class="form-input" placeholder="nama@email.com" required></div>
-            
             <div class="form-group"><label for="password">Kata Sandi</label><input type="password" id="password" class="form-input" placeholder="Masukkan kata sandi" required></div>
-
             <button type="submit" id="btnSubmit" class="btn-login"><span class="spinner" id="spinner"></span><span id="btnText">MASUK SEKARANG</span></button>
-            
             <div id="errorMsg" class="error-msg"></div>
         </form>
 
-        <!-- DOMPET -->
         <div class="wallet-section">
             <div class="wallet-status-title"><div class="wallet-status-dot" id="walletDot"></div><span id="walletStatusText">Dompet Terputus</span></div>
             <button id="wallet-btn" type="button"><span>🔗</span> Hubungkan Dompet (Web3)</button>
@@ -250,19 +69,18 @@
 
     <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. CEK KONEKSI CONFIG ---
+        // --- 1. LOAD CONFIG & INIT ---
         if (typeof window.appConfig === 'undefined') {
             console.error("FATAL: config.js tidak dimuat.");
             alert("Konfigurasi sistem hilang.");
         }
 
-        // --- 2. INISIALISASI SUPABASE ---
         const { supabase } = window;
         const SUPABASE_URL = window.appConfig.supabaseUrl;
         const SUPABASE_KEY = window.appConfig.supabaseKey;
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // --- 3. DOM ELEMENTS ---
+        // --- 2. DOM ELEMENTS ---
         const form = document.getElementById('loginForm');
         const identifierInput = document.getElementById('identifier');
         const passInput = document.getElementById('password');
@@ -278,17 +96,11 @@
         let userWalletAddress = null;
         let provider = null;
 
-        // --- 4. INISIALISASI WALLET ---
         if (typeof WalletConnectProvider !== 'undefined') {
             provider = new WalletConnectProvider.default({
-                rpc: {
-                    137: "https://polygon-rpc.com",
-                    80001: "https://rpc-mumbai.maticvigil.com"
-                },
+                rpc: { 137: "https://polygon-rpc.com", 80001: "https://rpc-mumbai.maticvigil.com" },
                 bridge: "https://bridge.walletconnect.org",
-                qrcodeModalOptions: {
-                    mobileLinks: ["metamask", "trust", "rainbow"]
-                }
+                qrcodeModalOptions: { mobileLinks: ["metamask", "trust", "rainbow"] }
             });
         } else {
             console.warn("WalletConnect Library tidak ditemukan.");
@@ -296,10 +108,7 @@
 
         walletBtn.addEventListener('click', async function(e) {
             e.preventDefault();
-            if (!provider) {
-                alert("Library Wallet gagal dimuat. Cek koneksi internet.");
-                return;
-            }
+            if (!provider) { alert("Library Wallet gagal dimuat. Cek koneksi internet."); return; }
             if (provider.connected) return;
 
             console.log("[Wallet] Memulai koneksi...");
@@ -327,20 +136,17 @@
             }
         });
 
-        // --- 5. LOGIKA UTAMA LOGIN ---
+        // --- 3. LOGIKA UTAMA LOGIN ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const email = identifierInput.value.trim();
             const password = passInput.value.trim();
 
-            if(!email || !password) {
-                showError("Mohon isi Email dan Kata Sandi.");
-                return;
-            }
-
+            if(!email || !password) { showError("Mohon isi Email dan Kata Sandi."); return; }
+            
             // UI Loading State
-            setLoading(true);
+            setLoading(true); 
             errorMsg.style.display = 'none';
 
             try {
@@ -354,7 +160,7 @@
 
                 if (authError) throw authError;
 
-                console.log("✅ Login Auth Berhasil. User ID:", data.user.id);
+                console.log("✅ Login Auth Sukses. User ID:", data.user.id);
 
                 // 2. AMBIL DATA PROFIL DARI DATABASE
                 console.log("🔍 Mengambil data profil dari tabel 'profiles'...");
@@ -366,18 +172,12 @@
                     .single();
 
                 if (profileError) {
-                    console.error("❌ Error Database (RLS?):", profileError);
-                    
-                    // Pengecekan spesifik error RLS
-                    if(profileError.code === 'PGRST116' || profileError.message.includes('JSON')) {
-                         throw new Error("Gagal membaca profil. Pastikan Policy RLS pada tabel 'profiles' mengizinkan SELECT.");
-                    } else {
-                        throw new Error(`Database Error: ${profileError.message}`);
-                    }
+                    console.error("❌ Gagal ambil profil:", profileError);
+                    throw new Error(`Database Error: ${profileError.message}. Cek apakah tabel profiles ada dan RLS sudah diatur.`);
                 }
 
                 if (!profile) {
-                    throw new Error("Data profil tidak ditemukan di database. \n\nSolusi: \n1. Pastikan Trigger SQL sudah dijalankan.\n2. Hapus user lama di Supabase Dashboard > Authentication > Users.\n3. Daftar ulang.");
+                    throw new Error("Data profil tidak ditemukan. \n\nSolusi: \n1. Pastikan Trigger SQL sudah dijalankan.\n2. Hapus user lama di Supabase Dashboard > Authentication > Users.\n3. Daftar ulang.");
                 }
 
                 console.log("✅ Data Profil Ditemukan:", profile);
@@ -392,8 +192,9 @@
 
                 // 4. REDIRECT BERDASARKAN ROLE
                 const role = (profile.role || "").toUpperCase().trim();
+                
                 console.log("🚀 User Role:", role);
-
+                
                 let targetUrl = 'index.html'; // Default fallback
 
                 switch (role) {
@@ -424,7 +225,7 @@
             } catch (err) {
                 console.error("💥 Login Error Total:", err);
                 
-                let msg = err.message || "Terjadi kesalahan tak terduga.";
+                let msg = err.message || "Terjadi kesalahan.";
                 
                 if (err.message.includes('Invalid login credentials')) {
                     msg = "Email atau password salah.";
