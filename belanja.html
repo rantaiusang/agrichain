@@ -309,7 +309,7 @@
 
         const SUPABASE_URL = window.appConfig.supabaseUrl;
         const SUPABASE_KEY = window.appConfig.supabaseKey;
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = wimdow.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. DOM ELEMENTS ---
         const grid = document.getElementById('productGrid');
@@ -321,7 +321,7 @@
 
         // --- 3. INIT ---
         document.addEventListener("DOMContentLoaded", async () => {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await supabaseClient.auth.getSession();
             
             // Opsional: Paksa login jika ingin belanja. 
             // Untuk demo, kita biarkan view saja, tapi jika mau transaksi, wajib login.
@@ -339,7 +339,7 @@
             try {
                 // Join table 'panen' dengan 'profiles' untuk ambil nama petani
                 // Asumsi Foreign Key di tabel 'panen' adalah 'farmer_id' yang mengarah ke 'profiles.id'
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('panen')
                     .select(`
                         id,
