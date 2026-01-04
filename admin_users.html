@@ -370,7 +370,7 @@
 
         const SUPABASE_URL = window.appConfig.supabaseUrl;
         const SUPABASE_KEY = window.appConfig.supabaseKey;
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let currentAdminId = null;
 
@@ -388,7 +388,7 @@
             }
 
             // Cek Session
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await supabaseClient.auth.getSession();
 
             if (!session) {
                 window.location.href = 'login.html';
@@ -396,7 +396,7 @@
             }
 
             // Cek Role Admin
-            const { data: profile } = await supabase
+            const { data: profile } = await supabaseClient
                 .from('profiles')
                 .select('role')
                 .eq('id', session.user.id)
@@ -553,7 +553,7 @@
         // --- 9. LOGOUT ---
         document.getElementById('btnLogout').addEventListener('click', async () => {
             if(confirm("Keluar dari Admin Panel?")) {
-                await supabase.auth.signOut();
+                await supabaseClient.auth.signOut();
                 localStorage.clear();
                 window.location.href = 'login.html';
             }
