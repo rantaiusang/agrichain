@@ -259,7 +259,10 @@
         console.error("SECURITY WARNING: Harap masukkan Supabase Key yang valid di script ini atau gunakan environment variables.");  
     }  
 
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);  
+ const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 
     // --- 2. DOM ELEMENTS ---  
     const form = document.getElementById('loginForm');  
