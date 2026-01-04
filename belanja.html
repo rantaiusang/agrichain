@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Belanja Panen - AgriChain</title>
     
+    <!-- 1. LOAD CONFIG (PENTING) -->
+    <script src="src/config.js"></script>
+    
     <!-- Library Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -195,6 +198,7 @@
             cursor: pointer;
             transition: background 0.2s;
         }
+        .btn-buy:hover { background-color: var(--dark-green); }
         .btn-buy:disabled {
             background-color: #ccc;
             cursor: not-allowed;
@@ -304,12 +308,13 @@
         // --- 1. LOAD CONFIG & INIT ---
         if (typeof window.appConfig === 'undefined') {
             console.error("FATAL: config.js tidak dimuat.");
-            alert("Konfigurasi sistem hilang.");
+            alert("Konfigurasi sistem hilang. Pastikan src/config.js ada.");
         }
 
         const SUPABASE_URL = window.appConfig.supabaseUrl;
         const SUPABASE_KEY = window.appConfig.supabaseKey;
-        const supabaseClient = wimdow.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // ✅ PERBAIKAN: Ketik 'window' dengan benar, bukan 'wimdow'
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. DOM ELEMENTS ---
         const grid = document.getElementById('productGrid');
@@ -323,12 +328,11 @@
         document.addEventListener("DOMContentLoaded", async () => {
             const { data: { session } } = await supabaseClient.auth.getSession();
             
-            // Opsional: Paksa login jika ingin belanja. 
-            // Untuk demo, kita biarkan view saja, tapi jika mau transaksi, wajib login.
             if(!session) { 
-                console.log("Guest Mode"); 
+                console.log("Guest Mode: Belanja sebagai tamu.");
             } else {
                 currentUser = session.user.id;
+                console.log("User Mode:", currentUser);
             }
             
             await loadPanenData();
@@ -337,8 +341,9 @@
         // --- 4. LOAD DATA (LOGIC JOIN TABEL) ---
         async function loadPanenData() {
             try {
-                // Join table 'panen' dengan 'profiles' untuk ambil nama petani
-                // Asumsi Foreign Key di tabel 'panen' adalah 'farmer_id' yang mengarah ke 'profiles.id'
+                // Query: Ambil data panen, join dengan profiles untuk nama petani.
+                // Asumsi kolom foreign key di tabel 'panen' bernama 'profiles' atau 'user_id'.
+                // Kita gunakan foreign key reference standar.
                 const { data, error } = await supabaseClient
                     .from('panen')
                     .select(`
@@ -357,25 +362,30 @@
 
                 if (error) throw error;
 
-                // Mapping data agar mudah dibaca di UI
-                allProducts = data.map(item => ({
-                    id: item.id,
-                    name: item.nama_komoditas || 'Tanaman',
-                    seller: item.profiles ? item.profiles.full_name : 'Petani Terdaftar',
-                    quantity: item.quantity,
-                    unit: item.unit,
-                    price: item.harga_per_unit || 0, 
-                    total: item.estimated_total || 0,
-                    quality: item.kualitas || 'Standard',
-                    status: item.status || 'pending',
-                    created_at: item.created_at
-                }));
+                // Mapping data
+                allProducts = data.map(item => {
+                    // Cek apakah data profile ada (untuk menghindari error jika relasi null)
+                    const farmerName = item.profiles ? item.profiles.full_name : 'Petani Terdaftar';
+                    
+                    return {
+                        id: item.id,
+                        name: item.nama_komoditas || 'Tanaman',
+                        seller: farmerName,
+                        quantity: item.quantity,
+                        unit: item.unit,
+                        price: item.harga_per_unit || 0, 
+                        total: item.estimated_total || 0,
+                        quality: item.kualitas || 'Standard',
+                        status: item.status || 'pending',
+                        created_at: item.created_at
+                    };
+                });
 
                 renderGrid(allProducts);
 
             } catch (err) {
                 console.error("Gagal load panen:", err);
-                grid.innerHTML = '<div class="status-msg" style="color:red;">Gagal memuat data. Cek koneksi database.</div>';
+                grid.innerHTML = '<div class="status-msg" style="color:red;">Gagal memuat data. Cek koneksi internet atau database.</div>';
             }
         }
 
@@ -389,7 +399,7 @@
             }
 
             products.forEach(item => {
-                // Gambar Placeholder
+                // Gambar Placeholder Random tapi konsisten berdasarkan ID
                 const imgUrl = `https://picsum.photos/seed/${item.id}/400/300`;
                 
                 // Logic Badge Status
@@ -406,12 +416,12 @@
                 const card = document.createElement('div');
                 card.className = 'card';
                 
-                // Opacity rendah jika terjual atau pending
+                // Opacity rendah jika pending atau sold
                 if (item.status === 'pending') card.style.opacity = '0.7';
 
                 card.innerHTML = `
                     <div class="card-img-wrapper">
-                        <img src="${imgUrl}" alt="${item.name}" class="card-img">
+                        <img src="${imgUrl}" alt="${item.name}" class="card-img" loading="lazy">
                     </div>
                     <div class="card-body">
                         <div class="card-category">${item.quality}</div>
@@ -428,7 +438,7 @@
                         
                         <div class="card-actions">
                             <button class="btn-buy" 
-                                onclick="handleBuy('${item.id}', '${item.name}')" 
+                                onclick="handleBuy(${item.id}, '${item.name.replace(/'/g, "\\'")}', ${item.total})" 
                                 ${isSold ? 'disabled' : ''}>
                                 ${isSold ? 'Stok Habis' : 'Beli Sekarang'}
                             </button>
@@ -457,18 +467,53 @@
         searchInput.addEventListener('input', filterData);
         filterStatus.addEventListener('change', filterData);
 
-        // --- 7. LOGIC BELI ---
-        window.handleBuy = function(id, name) {
+        // --- 7. LOGIC BELI (IMPLEMENTASI DATABASE) ---
+        window.handleBuy = async function(id, name, totalPrice) {
             if(!currentUser) {
-                alert("Silakan login terlebih dahulu untuk membeli.");
+                alert("Silakan login terlebih dahulu untuk melakukan transaksi.");
                 window.location.href = 'login.html';
                 return;
             }
 
-            const confirmBuy = confirm(`Apakah Anda yakin ingin membeli ${name}?`);
+            // Cek stok lagi di frontend (jaga-jaga user klik cepat)
+            const product = allProducts.find(p => p.id === id);
+            if(product.status !== 'approved') {
+                alert("Maaf, produk ini sudah tidak tersedia.");
+                loadPanenData(); // Refresh data
+                return;
+            }
+
+            const confirmBuy = confirm(`Apakah Anda yakin ingin membeli ${name} seharga Rp ${totalPrice.toLocaleString('id-ID')}?`);
             if(confirmBuy) {
-                alert("Pesanan sedang diproses! (Simulasi)");
-                // TODO: Insert ke tabel 'orders'
+                const btn = event.target;
+                const originalText = btn.innerText;
+                btn.innerText = "Memproses...";
+                btn.disabled = true;
+
+                try {
+                    // ✅ IMPLEMENTASI: Insert ke tabel 'orders'
+                    const { data, error } = await supabaseClient.from('orders').insert([{
+                        buyer_id: currentUser,
+                        panen_id: id,
+                        total_price: totalPrice,
+                        status: 'pending' // Status awal order
+                    }]);
+
+                    if (error) throw error;
+
+                    alert("Pesanan berhasil dibuat! Petani akan segera menghubungi Anda.");
+                    
+                    // Redirect ke dashboard pembeli untuk melihat riwayat
+                    setTimeout(() => {
+                        window.location.href = 'dashboard-pembeli.html';
+                    }, 1000);
+
+                } catch (err) {
+                    console.error("Gagal membuat pesanan:", err);
+                    alert("Gagal memproses pesanan: " + err.message);
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                }
             }
         };
     </script>
