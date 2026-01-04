@@ -358,7 +358,7 @@
         const SUPABASE_URL = window.appConfig.supabaseUrl;
         const SUPABASE_KEY = window.appConfig.supabaseKey;
 
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // --- 2. DOM ELEMENTS ---
         const form = document.getElementById('registerForm');
@@ -456,7 +456,7 @@
             const email = emailInput.value.trim();
             const password = passInput.value;
             const confirmPassword = confirmInput.value;
-            const role = roleSelect.value;
+            const role = roleSelect.value.toLowerCase();
 
             if (password !== confirmPassword) {
                 showModal('error', 'Password Salah', 'Pastikan kata sandi dan konfirmasi sama.', 'Koreksi');
@@ -473,7 +473,7 @@
                 console.log(`[System] Mencoba mendaftarkan: ${email} sebagai ${role}`);
 
                 // Registrasi ke Supabase Auth dengan Metadata
-                const { data, error } = await supabase.auth.signUp({
+                const { data, error } = await supabaseClient.auth.signUp({
                     email: email,
                     password: password,
                     options: {
