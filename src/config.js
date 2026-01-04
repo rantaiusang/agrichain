@@ -1,36 +1,21 @@
-// --- src/config.js ---
+// File: api/config.js
+// Tugas: Membaca data dari Vercel Env dan mengirimkannya ke Frontend
 
-const isBrowser = typeof window !== 'undefined';
+export default async function handler(req, res) {
+  // Cek apakah Environment Variable sudah terisi di Vercel
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (isBrowser) {
-    // 1. Coba ambil dari Script Injector (Production/Server Side)
-    // Biasanya di-set oleh script async di head HTML: window.__SUPABASE_URL__ = ...
-    const injectedUrl = window.__SUPABASE_URL__;
-    const injectedKey = window.__SUPABASE_KEY__;
+  // Jika kosong, beri pesan error jelas
+  if (!supabaseUrl || !supabaseKey) {
+    return res.status(500).json({ 
+      error: "Environment Variables di Vercel belum diisi!" 
+    });
+  }
 
-    if (injectedUrl && injectedKey) {
-        // MODE PRODUCTION: Data dari server (Vercel Env)
-        window.appConfig = {
-            supabaseUrl: injectedUrl,
-            supabaseKey: injectedKey
-        };
-    } else {
-        // MODE FALLBACK / DEVELOPMENT:
-        // Jika data injector kosong (misalnya buka file HTML langsung),
-        // Kita gunakan data manual di sini.
-        console.warn("⚠️ [Config] Tidak menemukan Env Injector. Menggunakan Fallback Local.");
-        
-        window.appConfig = {
-            // ⚠️ PENTING: Isi URL & Key Supabase Kamu di sini sebagai cadangan
-            // Agar HTML bisa berjalan meskipun fetch('/api/config') gagal.
-            supabaseUrl: "https://nkcctncsjmcfsiguowms.supabase.co", 
-            supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." // GANTI DENGAN ANON KEY KAMU
-        };
-    }
-} else {
-    // MODE NODEJS (Testing / Server-side Script)
-    module.exports = {
-        supabaseUrl: process.env.SUPABASE_URL,
-        supabaseKey: process.env.SUPABASE_KEY
-    };
+  // Kirim data kembali ke Frontend sebagai JSON
+  res.status(200).json({
+    supabaseUrl: supabaseUrl,
+    supabaseKey: supabaseKey
+  });
 }
