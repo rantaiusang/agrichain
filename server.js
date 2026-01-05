@@ -1,32 +1,32 @@
 const express = require('express');
 const cors = require('cors');
 
-// JANGAN PAKAI require('dotenv').config() DI VERCEL
+// Tidak perlu require('dotenv').config() karena Vercel otomatis membaca Environment Variables
 const app = express();
 
 // Import Routes
-// Pastikan path file ini sesuai dengan folder
 const authRouter = require('./auth'); 
-const resetRouter = require('./crud-panen'); // Sesuaikan nama file route Anda
+const resetRouter = require('./crud-panen'); 
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- INISIALISASI SUPABASE (WAJIB) ---
+// --- INISIALISASI SUPABASE (Sesuaikan nama Env Vars) ---
 const { createClient } = require('@supabase/supabase-js');
 
 // Mengambil data dari Environment Variables di Dashboard Vercel
-const supabaseUrl = process.env.SUPABASE_URL; 
-const supabaseKey = process.env.SUPABASE_KEY;
+// PASTIKAN NAMA INI SAMA PERSIS DENGAN YANG ADA DI DASHBOARD VERCEL
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL; 
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
-    console.error("❌ GAGAL: SUPABASE_URL atau SUPABASE_KEY belum diset di Environment Variables Vercel.");
+    console.error("❌ GAGAL: NEXT_PUBLIC_SUPABASE_URL atau NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY belum diset di Environment Variables Vercel.");
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Inject supabase ke request (Agar routes bisa pakai req.supabase)
+// Inject supabase ke request (Middleware)
 app.use((req, res, next) => {
     req.supabase = supabase;
     next();
