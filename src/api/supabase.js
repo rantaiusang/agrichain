@@ -1,9 +1,19 @@
-import { createClient } from "https://unpkg.com/@supabase/supabase-js@2"
+// src/api/supabase.js
+import { createClient } from '@supabase/supabase-js'
 
-const SUPABASE_URL = "https://nkcctncsjmcfsiguowms.supabase.co"
-const SUPABASE_KEY = "PASTE_PUBLISHABLE_KEY_KAMU"
+// Ambil environment variables dari VITE (Vite / frontend)
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
 
-export const supabase = createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-)
+// Cek jika ENV tidak terload
+if (!SUPABASE_URL || !SUPABASE_KEY) {
+  console.error('❌ Supabase URL atau Key belum diatur di .env / Vercel')
+}
+
+// Buat client Supabase
+export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    persistSession: true,     // simpan session otomatis
+    autoRefreshToken: true    // refresh token otomatis
+  }
+})
