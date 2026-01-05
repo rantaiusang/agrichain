@@ -3,42 +3,52 @@ const cors = require('cors');
 
 const app = express();
 
-// 1. CONFIGURASI MIDDLEWARE (WAJIB PALING ATAS)
+// 1. 导入路由
+const authRouter = require('./backend/router');
+
+// 2. 中间件
 app.use(cors());
-app.use(express.json()); // <--- WAJIB DI SINI
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 2. INISIALISASI SUPABASE
+// 3. Supabase 初始化
 const { createClient } = require('@supabase/supabase-js');
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL; 
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-// Check Env Vars (Biar tidak blank)
-const supabase = createClient(
-    supabaseUrl || "https://nkcctncsjmcfsiguowms.supabase.co", 
-    supabaseKey || "sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X"
-);
+// 从环境变量获取 Key (优先 Vercel 环境变量，无则使用硬编码作为本地调试)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://nkcctncsjmcfsiguowms.supabase.co";
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || "sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X";
 
-// Inject supabase
+// 初始化客户端
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// 注入 Supabase 实例
 app.use((req, res, next) => {
     req.supabase = supabase;
     next();
 });
 
-// 3. ROUTES (API)
-// Route Config
+// 4. API 路由
+// 获取配置的专用接口
 app.get('/api/config', (req, res) => {
-    // HANYA res.json() DI SINI
     res.json({
         supabaseUrl: supabaseUrl,
         supabaseKey: supabaseKey
     });
 });
 
-// Import dan Gunakan Routes (jika Anda punya folder backend)
-const authRouter = require('./backend/router');
+// 认证路由
 app.use('/api', authRouter);
 
-// JANGAN ADA app.get('/' ...) yang mengirim file HTML di sini
+// 健康检查
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'OK', message: 'Backend AgriChain Running' });
+});
 
+// 5. 导出
 module.exports = app;
+
+// 6. Vercel Handler (Serverless 入口)
+export default async function handler(req, res) {
+    console.log(`[Vercel Handler] ${req.method} ${req.url}`);
+    return app(req, res);
+}
