@@ -6,7 +6,7 @@
     <title>Masuk - AgriChain</title>
     
     <!-- Libraries -->
-    <!-- Catatan: Saya menghapus dependensi ke config.js agar tidak error -->
+    <script src="config.js"></script> <!-- Mencoba load config eksternal dulu -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://unpkg.com/@walletconnect/web3-provider@1.7.1/dist/index.min.js"></script>
     <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
@@ -286,24 +286,30 @@
         <a href="index.html" class="link-home">← Kembali ke Beranda</a>
     </div>
 
-    <!-- SCRIPT UTAMA (EMERGENCY FIX) -->
+    <!-- SCRIPT UTAMA -->
     <script>
-        // --- 1. KONFIGURASI EMERGENCY (HARDCODED) ---
-        // Kita masukkan key langsung di sini agar login bisa dipakai lagi.
-        // JANGAN UPLOAD KODE INI KE REPOSITORY PUBLIC KARENA KEY NAK TERLIH ORANG.
+        // --- 1. SETUP KONFIGURASI (SMART CONFIG) ---
         
-        // ⚠️⚠️ GANTI BAGIAN INI DENGAN DATA DARI SUPABASE DASHBOARD ⚠️⚠️
-        const SUPABASE_URL = "https://nkcctncsjmcfsiguowms.supabase.co"; // <--- PASTE URL ASLI DISINI
-        const SUPABASE_KEY = "sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X";       // <--- PASTE ANON KEY ASLI DISINI
+        let SUPABASE_URL, SUPABASE_KEY;
+
+        // Prioritas 1: Cek config.js (File terpisah)
+        if (typeof window.appConfig !== 'undefined') {
+            console.log("✅ Menggunakan config.js");
+            SUPABASE_URL = window.appConfig.supabaseUrl;
+            SUPABASE_KEY = window.appConfig.supabaseKey;
+        } 
+        // Prioritas 2: Fallback Hardcoded (Jika config.js error/hilang)
+        else {
+            console.warn("⚠️ config.js tidak ditemukan. Menggunakan fallback config.");
+            // ⚠️ PASTIKAN DATA INI SAMA DENGAN DASHBOARD SUPABASE ANDA
+            SUPABASE_URL = "https://nkcctncsjmcfsiguowms.supabase.co"; 
+            SUPABASE_KEY = "sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X"; 
+        }
 
         // --- 2. INIT SUPABASE ---
-        // Fungsi ini ada di library Supabase
         const { createClient } = window.supabase; 
-        
         const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        console.log("System Loaded (Hardcoded Mode). URL:", SUPABASE_URL);
-
         // --- 3. DOM ELEMENTS ---
         const form = document.getElementById('loginForm');
         const identifierInput = document.getElementById('identifier');
@@ -399,10 +405,11 @@
                 console.log("✅ Login Auth Berhasil. User ID:", data.user.id);
 
                 // 2. AMBIL DATA PROFIL DARI DATABASE
-                console.log("🔍 Mengambil data profil dari tabel 'profiles'...");
+                // 🔧 PERBAIKAN PENTING: Mengambil dari tabel 'users' (bukan 'profiles')
+                console.log("🔍 Mengambil data profil dari tabel 'users'...");
                 
                 const { data: profile, error: profileError } = await supabaseClient
-                    .from('profiles')
+                    .from('users') // <--- PASTIKAN NAMA TABEL INI SESUAI DI DB
                     .select('role, full_name')
                     .eq('id', data.user.id)
                     .single();
@@ -410,16 +417,15 @@
                 if (profileError) {
                     console.error("❌ Error Database (RLS?):", profileError);
                     
-                    // Pengecekan spesifik error RLS
                     if(profileError.code === 'PGRST116' || profileError.message.includes('JSON')) {
-                         throw new Error("Gagal membaca profil. Pastikan Policy RLS pada tabel 'profiles' mengizinkan SELECT.");
+                         throw new Error("Gagal membaca profil. Pastikan Policy RLS pada tabel 'users' mengizinkan SELECT.");
                     } else {
                         throw new Error(`Database Error: ${profileError.message}`);
                     }
                 }
 
                 if (!profile) {
-                    throw new Error("Data profil tidak ditemukan di database. \n\nSolusi: \n1. Pastikan Trigger SQL sudah dijalankan.\n2. Hapus user lama di Supabase Dashboard > Authentication > Users.\n3. Daftar ulang.");
+                    throw new Error("Data profil tidak ditemukan. \n\nSolusi: \n1. Hapus user di Auth > Users.\n2. Daftar ulang agar Trigger bekerja.");
                 }
 
                 console.log("✅ Data Profil Ditemukan:", profile);
@@ -429,7 +435,8 @@
                     id: data.user.id,
                     email: data.user.email,
                     role: profile.role,
-                    name: profile.full_name
+                    name: profile.full_name,
+                    wallet: userWalletAddress // Simpan alamat wallet jika connected
                 }));
 
                 // 4. REDIRECT BERDASARKAN ROLE
@@ -453,7 +460,7 @@
                         break;
                     default:
                         console.warn("Role tidak dikenali:", role);
-                        alert(`Role Kamu (${role}) tidak dikenali oleh sistem.`);
+                        alert(`Role Kamu (${role}) tidak dikenali oleh sistem. Mengarahkan ke Home.`);
                         targetUrl = 'index.html';
                 }
 
@@ -461,17 +468,20 @@
                 setTimeout(() => {
                     console.log("✨ Redirect ke:", targetUrl);
                     window.location.href = targetUrl;
-                }, 1000);
+                }, 800);
 
             } catch (err) {
                 console.error("💥 Login Error Total:", err);
                 
                 let msg = err.message || "Terjadi kesalahan tak terduga.";
                 
+                // Pesan Error yang lebih user-friendly
                 if (err.message.includes('Invalid login credentials')) {
                     msg = "Email atau password salah.";
                 } else if (err.message.includes('Email not confirmed')) {
-                    msg = "Email belum dikonfirmasi. Cek inbox Anda.";
+                    msg = "Email belum dikonfirmasi. Cek inbox/spam Anda.";
+                } else if (err.message.includes('Database Error')) {
+                    msg = "Terjadi masalah koneksi database.";
                 }
                 
                 showError(msg);
@@ -503,7 +513,7 @@
                 { transform: 'translateX(-5px)' },
                 { transform: 'translateX(5px)' },
                 { transform: 'translateX(0)' }
-            ], { duration: 300 });
+            ], { duration: 300, iterations: 1 });
         }
     </script>
 </body>
