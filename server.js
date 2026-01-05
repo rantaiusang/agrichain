@@ -3,54 +3,42 @@ const cors = require('cors');
 
 const app = express();
 
-// --- PERBAIKAN 1: Import Router dari dalam folder backend ---
-// Titik dua (./) artinya folder sekarang, 'backend/' artinya masuk ke folder backend
-const authRouter = require('./backend/router'); 
-
-// Middleware
+// 1. CONFIGURASI MIDDLEWARE (WAJIB PALING ATAS)
 app.use(cors());
-app.use(express.json());
+app.use(express.json()); // <--- WAJIB DI SINI
 app.use(express.urlencoded({ extended: true }));
 
-// --- INISIALISASI SUPABASE ---
+// 2. INISIALISASI SUPABASE
 const { createClient } = require('@supabase/supabase-js');
-
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL; 
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-if (!supabaseUrl || !supabaseKey) {
-    console.error("❌ GAGAL: Environment Variables Vercel belum diset.");
-}
+// Check Env Vars (Biar tidak blank)
+const supabase = createClient(
+    supabaseUrl || "https://nkcctncsjmcfsiguowms.supabase.co", 
+    supabaseKey || "sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X"
+);
 
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-// Inject supabase ke request (Agar bisa dipakai di file backend/auth.js)
+// Inject supabase
 app.use((req, res, next) => {
     req.supabase = supabase;
     next();
 });
 
-// --- ROUTE CONFIG KHUSUS ---
-// Frontend (config.js) memanggil '/api/config', jadi kita buat di sini
+// 3. ROUTES (API)
+// Route Config
 app.get('/api/config', (req, res) => {
+    // HANYA res.json() DI SINI
     res.json({
         supabaseUrl: supabaseUrl,
         supabaseKey: supabaseKey
     });
 });
 
-// --- ROUTE UTAMA ---
+// Import dan Gunakan Routes (jika Anda punya folder backend)
+const authRouter = require('./backend/router');
 app.use('/api', authRouter);
 
-app.get('/', (req, res) => {
-    res.json({ status: 'OK', message: 'Backend AgriChain Running' });
-});
+// JANGAN ADA app.get('/' ...) yang mengirim file HTML di sini
 
-// --- EXPORTS ---
 module.exports = app;
-
-// --- EXPORT HANDLER UNTUK VERCEL ---
-export default async function handler(req, res) {
-    console.log(`[Vercel Handler] ${req.method} ${req.url}`);
-    return app(req, res);
-}
