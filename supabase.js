@@ -1,6 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_URL = "https://xxxx.supabase.co"
+const SUPABASE_KEY = "sb_publishable_xxxxx"
 
-export const supa = createClient(supabaseUrl, supabaseKey);
+window.supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+</script>
