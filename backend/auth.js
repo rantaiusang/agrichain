@@ -1,103 +1,164 @@
 const { createClient } = require('@supabase/supabase-js');
 
-// Membuat client local untuk fungsi logic ini
-// (Alternatif: Bisa pakai client yang di-inject dari index.js jika diubah jadi middleware global)
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL; 
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
-const supa = createClient(supabaseUrl, supabaseKey);
+/**
+ * ==============================
+ * VALIDASI ENV (ANTI ERROR DIAM)
+ * ==============================
+ */
+if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+    console.error("❌ ENV SUPABASE BELUM LENGKAP");
+    console.error("SUPABASE_URL:", process.env.SUPABASE_URL);
+    console.error("SUPABASE_ANON_KEY:", process.env.SUPABASE_ANON_KEY);
+    throw new Error("Supabase ENV missing");
+}
 
 /**
- * Fungsi Register
+ * ==============================
+ * CLIENT SUPABASE (BACKEND)
+ * ==============================
  */
-exports.register = async function(email, password, fullName, role) {
+const supa = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY,
+    {
+        auth: {
+            persistSession: false,
+            autoRefreshToken: false
+        }
+    }
+);
+
+/**
+ * ==============================
+ * REGISTER USER
+ * ==============================
+ */
+async function register(email, password, fullName = 'User AgriChain', role = 'PETANI') {
     try {
         const { data, error } = await supa.auth.signUp({
             email,
             password,
             options: {
-                data: { full_name: fullName, role: role },
-                emailRedirectTo: process.env.NEXT_PUBLIC_SUPABASE_URL + '/login.html'
+                data: {
+                    full_name: fullName,
+                    role: role
+                }
             }
         });
 
         if (error) throw error;
+        if (!data?.user) throw new Error("User tidak terbentuk");
 
-        if (data && data.user) {
-            const { error: insertError } = await supa
-                .from('users')
-                .insert([{
-                    id: data.user.id,
-                    full_name: fullName || 'User AgriChain',
-                    role: role || 'PETANI',
-                    created_at: new Date().toISOString()
-                }]);
+        // Simpan ke tabel users (jika RLS mengizinkan)
+        const { error: insertError } = await supa
+            .from('users')
+            .insert({
+                id: data.user.id,
+                full_name: fullName,
+                role: role
+            });
 
-            if (insertError) console.error("[AuthJS] Gagal Insert Manual:", insertError);
+        if (insertError) {
+            console.warn("⚠️ Insert users gagal (cek RLS):", insertError.message);
         }
 
-        return { success: true, user: data.user };
+        return {
+            success: true,
+            user: {
+                id: data.user.id,
+                email: data.user.email,
+                full_name: fullName,
+                role: role
+            }
+        };
+
     } catch (err) {
-        console.error("[AuthJS] Error Register:", err);
+        console.error("[REGISTER ERROR]", err.message);
         throw err;
     }
 }
 
 /**
- * Fungsi Login
+ * ==============================
+ * LOGIN USER
+ * ==============================
  */
-exports.login = async function(email, password) {
+async function login(email, password) {
     try {
         const { data, error } = await supa.auth.signInWithPassword({
-            email, password
+            email,
+            password
         });
 
         if (error) throw error;
+        if (!data?.user) throw new Error("Login gagal");
 
-        if (data && data.user) {
-            const { data: userData, error: userError } = await supa
-                .from('users')
-                .select('role, full_name')
-                .eq('id', data.user.id)
-                .single();
-
-            // Jika user tidak ditemukan di tabel users, beri default
-            const finalUser = {
-                id: data.user.id,
-                email: data.user.email,
-                ... (userData || { role: 'UNKNOWN', full_name: email.split('@')[0] })
-            };
-
-            return { success: true, user: finalUser };
-        }
-        throw new Error("Login Gagal.");
-    } catch (err) {
-        console.error("[AuthJS] Error Login:", err);
-        throw err; 
-    }
-}
-
-/**
- * Fungsi Get User
- */
-exports.getUser = async function(accessToken) {
-    if (!accessToken) throw new Error("No Token");
-
-    try {
-        const { data: { user }, error } = await supa.auth.getUser(accessToken);
-        if (error) throw error;
-
-        const { data: userData, error: userError } = await supa
+        // Ambil profil tambahan
+        const { data: profile } = await supa
             .from('users')
-            .select('role, full_name')
-            .eq('id', user.id)
+            .select('full_name, role')
+            .eq('id', data.user.id)
             .single();
 
         return {
             success: true,
-            user: { ...user, ...(userData || {}) }
+            session: data.session,
+            user: {
+                id: data.user.id,
+                email: data.user.email,
+                full_name: profile?.full_name || email.split('@')[0],
+                role: profile?.role || 'UNKNOWN'
+            }
         };
+
     } catch (err) {
-        console.error("[AuthJS] Error Get User:", err);
+        console.error("[LOGIN ERROR]", err.message);
         throw err;
     }
 }
+
+/**
+ * ==============================
+ * GET USER DARI TOKEN
+ * ==============================
+ */
+async function getUser(accessToken) {
+    if (!accessToken) throw new Error("Access token kosong");
+
+    try {
+        const { data, error } = await supa.auth.getUser(accessToken);
+        if (error) throw error;
+        if (!data?.user) throw new Error("User tidak valid");
+
+        const { data: profile } = await supa
+            .from('users')
+            .select('full_name, role')
+            .eq('id', data.user.id)
+            .single();
+
+        return {
+            success: true,
+            user: {
+                id: data.user.id,
+                email: data.user.email,
+                full_name: profile?.full_name,
+                role: profile?.role
+            }
+        };
+
+    } catch (err) {
+        console.error("[GET USER ERROR]", err.message);
+        throw err;
+    }
+}
+
+/**
+ * ==============================
+ * EXPORT
+ * ==============================
+ */
+module.exports = {
+    register,
+    login,
+    getUser
+};
