@@ -1,44 +1,22 @@
+// backend/router.js
 const express = require('express');
 const router = express.Router();
 
-// Import Logic
-const authLogic = require('./auth');
+// Import logic dari folder backend juga (tidak pakai ./ karena sudah se-folder)
+const authLogic = require('./auth'); 
+const crudLogic = require('./crudpanen'); // Sesuaikan nama file logic Anda
 
-// POST /api/auth/register
-router.post('/register', async (req, res) => {
+// Contoh Route
+router.post('/auth/register', async (req, res) => {
     try {
         const { email, password, full_name, role } = req.body;
         const result = await authLogic.register(email, password, full_name, role);
         res.status(201).json(result);
     } catch (err) {
-        console.error(err);
         res.status(400).json({ error: err.message });
     }
 });
 
-// POST /api/auth/login
-router.post('/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const result = await authLogic.login(email, password);
-        res.status(200).json(result);
-    } catch (err) {
-        console.error(err);
-        res.status(401).json({ error: err.message });
-    }
-});
-
-// GET /api/auth/me
-router.get('/me', async (req, res) => {
-    try {
-        const authHeader = req.headers.authorization;
-        const token = authHeader && authHeader.split(' ')[1];
-        
-        const result = await authLogic.getUser(token);
-        res.status(200).json(result);
-    } catch (err) {
-        res.status(401).json({ error: err.message });
-    }
-});
+// ... route lainnya
 
 module.exports = router;
