@@ -1,17 +1,16 @@
-// File: api/config.js
-// Tugas: Mengambil Env Vercel dan mengirimnya ke Frontend
+// public/config.js (ATAU src/config.js)
+// Ini AMAN di-upload ke GitHub karena tidak ada kunci rahasianya di sini.
 
-export default async function handler(req, res) {
-  // Pastikan variabel Vercel ada
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+window.appConfig = {
+    supabaseUrl: null,
+    supabaseKey: null
+};
 
-  if (!supabaseUrl || !supabaseKey) {
-    return res.status(500).json({ error: "Environment Variables Vercel belum diset!" });
-  }
-
-  res.status(200).json({
-    supabaseUrl: supabaseUrl,
-    supabaseKey: supabaseKey
-  });
-}
+fetch('/api/config')
+    .then(res => res.json())
+    .then(data => {
+        window.appConfig.supabaseUrl = data.supabaseUrl;
+        window.appConfig.supabaseKey = data.supabaseKey;
+        console.log("Config loaded");
+    })
+    .catch(err => console.error("Gagal ambil config:", err));
