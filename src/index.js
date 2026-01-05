@@ -1,49 +1,75 @@
-// index.js — entry point frontend
+// src/index.js — entry point frontend
 import { register, login, logout } from './api/auth.js'
 import { getMe } from './api/me.js'
 
-// Contoh: register user baru
+/**
+ * Handler register user baru
+ */
 async function handleRegister() {
-  const email = document.getElementById('email').value
-  const password = document.getElementById('password').value
-  const role = document.getElementById('role').value  // PETANI / PEMBELI / LEMBAGA
+  const email = document.getElementById('email')?.value
+  const password = document.getElementById('password')?.value
+  const role = document.getElementById('role')?.value || 'PETANI' // default PETANI
+
+  if (!email || !password) {
+    alert('Email dan password wajib diisi!')
+    return
+  }
 
   try {
     const { data, error } = await register(email, password, role)
     if (error) throw error
 
-    alert('Register berhasil! Silakan login.')
+    alert('✅ Register berhasil! Silakan login.')
+    console.log('User register data:', data)
   } catch (err) {
-    alert('Gagal register: ' + err.message)
+    console.error('Register error:', err)
+    alert('❌ Gagal register: ' + err.message)
   }
 }
 
-// Contoh: login user
+/**
+ * Handler login user
+ */
 async function handleLogin() {
-  const email = document.getElementById('email').value
-  const password = document.getElementById('password').value
+  const email = document.getElementById('email')?.value
+  const password = document.getElementById('password')?.value
+
+  if (!email || !password) {
+    alert('Email dan password wajib diisi!')
+    return
+  }
 
   try {
     const { data, error } = await login(email, password)
     if (error) throw error
 
-    alert('Login berhasil!')
+    alert('✅ Login berhasil!')
 
-    // Ambil data user
+    // Ambil data user yang sedang login
     const user = await getMe()
-    console.log('User:', user)
+    console.log('User logged in:', user)
   } catch (err) {
-    alert('Gagal login: ' + err.message)
+    console.error('Login error:', err)
+    alert('❌ Gagal login: ' + err.message)
   }
 }
 
-// Contoh: logout
+/**
+ * Handler logout user
+ */
 async function handleLogout() {
-  await logout()
-  alert('Logout berhasil!')
+  try {
+    await logout()
+    alert('✅ Logout berhasil!')
+  } catch (err) {
+    console.error('Logout error:', err)
+    alert('❌ Gagal logout: ' + err.message)
+  }
 }
 
-// Hubungkan ke form / tombol di HTML
+/**
+ * Hubungkan tombol/form di HTML
+ */
 document.addEventListener('DOMContentLoaded', () => {
   const registerBtn = document.getElementById('registerBtn')
   const loginBtn = document.getElementById('loginBtn')
