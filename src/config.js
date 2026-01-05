@@ -1,24 +1,22 @@
-// --- src/config.js ---
-
+// --- src/config.js (VERSI AMAN) ---
 const isBrowser = typeof window !== 'undefined';
 
 if (isBrowser) {
-    // ⚠️ MODE SUPER ADMIN (RISKY MODE)
-    // Kita memaksa menggunakan Service Role Key
-    // Dengan ini, Kamu bisa INSERT, UPDATE, dan DELETE data di backend tanpa dicek oleh Policies.
-    
-    console.warn("⚠️ [SUPER ADMIN] Mode Service Role Key AKTIF. Hati-hati.");
+    // 🔒 MODE CLIENT (AMAN)
+    // Gunakan Anon Key / Public Key.
+    // Key ini ada di Supabase Dashboard -> Settings -> API -> Project API Keys (anon/public)
     
     window.appConfig = {
-        // ⚠️ GANTI DENGAN SERVICE ROLE KEY (SB_SECRET_...) ⚠️
-        // Key ini ada di Supabase Dashboard -> Settings -> API -> Secret Keys
         supabaseUrl: "https://nkcctncsjmcfsiguowms.supabase.co", 
-        supabaseKey: "sb_secret_j0KE8cBMHSxQ40MIg0tCNg_J2K_lACo" 
+        // PASTIKAN INI ADALAH 'anon' KEY, BUKAN 'service_role' SECRET!
+        supabaseKey: "sb_publishable_CY2GLPbRJRDcRAyPXzOD4Q_63uR5W9X" // <--- GANTI DENGAN ANON KEY
     };
 } else {
-    // MODE NODEJS
+    // MODE SERVER / NODEJS
+    // Kalau ini jalan di server (Vercel/Node), boleh pakai Service Role lewat ENV Variable
+    // JANGAN hardcode di sini!
     module.exports = {
         supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-        supabaseKey: process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY // Di server juga pakai secret key
+        supabaseKey: process.env.SUPABASE_SERVICE_ROLE_KEY 
     };
 }
