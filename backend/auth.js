@@ -1,25 +1,37 @@
 // --- backend/auth.js ---
-import { supa } from './supabase.js';
+
+// Format CommonJS (Sesuaikan dengan package.json yang ada 'require')
+const { createClient } = require('@supabase/supabase-js');
+
+// Kita inisialisasi client di sini
+// Catatan: Dalam arsitektur Express yang benar, sebaiknya app config dilakukan di index.js
+// dan instance client dipassing ke sini. Tapi untuk kesederhanaan, kita buat instance di sini
+// menggunakan ENV Vars yang sama.
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL; 
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+const supa = createClient(supabaseUrl, supabaseKey);
 
 /**
  * 1. Fungsi Registrasi User
  * Endpoint yang biasanya: POST /api/auth/register
  * Body: { email, password, full_name, role }
  */
-export async function register(email, password, fullName, role) {
+exports.register = async function(email, password, fullName, role) {
     try {
         // 1. Buat Akun di Supabase Auth
         const { data, error } = await supa.auth.signUp({
             email,
             password,
             options: {
-                // ✅ PERBAIKAN: Supabase versi 2.x pakai ini untuk metadata
+                // Metadata untuk disimpan di Auth
                 data: { 
                     full_name: fullName, 
                     role: role 
                 },
-                // Redirect user ke halaman setelah klik link email (jika feature aktif)
-                emailRedirectTo: process.env.APP_URL + '/login.html'
+                // Redirect setelah konfirmasi email (jika aktif)
+                emailRedirectTo: process.env.NEXT_PUBLIC_SUPABASE_URL + '/login.html'
             }
         });
 
@@ -27,32 +39,32 @@ export async function register(email, password, fullName, role) {
 
         console.log("[Backend] Auth Success:", data.user.id);
 
-        // 2. Masukkan Data Tambahan ke Tabel 'profiles'
+        // 2. Masukkan Data Tambahan ke Tabel 'users' (BUKAN 'profiles')
         // Ini adalah "Backup" jika Trigger SQL gagal jalan.
         if (data && data.user) {
             const userId = data.user.id;
             const defaultRole = role || 'PETANI'; // Default jika role tidak dikirim
 
             const { error: profileError } = await supa
-                .from('profiles')
+                .from('users') // <--- PERBAIKAN: Nama tabel 'users'
                 .insert([
                     {
-                        id: userId, // Samakan id profile dengan id auth (Best Practice)
-                        email: email,
+                        id: userId, 
                         full_name: fullName || 'User AgriChain',
                         role: defaultRole,
-                        phone: '-', // Default kosong
-                        desa: '-', // Default kosong
-                        luas_lahan: 0 // Default kosong
+                        phone: '-', 
+                        desa: '-', 
+                        luas_lahan: 0,
+                        created_at: new Date().toISOString()
                     }
                 ]);
 
             if (profileError) {
-                console.error("[Backend] Gagal menyimpan profile manual:", profileError);
+                console.error("[Backend] Gagal menyimpan user manual:", profileError);
                 // Jangan throw error di sini agar Auth tetap sukses. 
                 // Hanya log error saja.
             } else {
-                console.log("[Backend] Profile Manual Insert Sukses.");
+                console.log("[Backend] User Manual Insert Sukses.");
             }
         }
 
@@ -69,7 +81,7 @@ export async function register(email, password, fullName, role) {
  * Endpoint yang biasanya: POST /api/auth/login
  * Body: { email, password }
  */
-export async function login(email, password) {
+exports.login = async function(email, password) {
     try {
         const { data, error } = await supa.auth.signInWithPassword({
             email,
@@ -80,27 +92,34 @@ export async function login(email, password) {
 
         console.log("[Backend] Login Auth Success:", data.user.id);
 
-        // 3. Ambil Data Profile Lengkap (Gabungkan Auth + Database)
-        // Ini penting agar Frontend tahu Role User (PETANI/PEMBELI/DLL)
+        // 3. Ambil Data Profile Lengkap dari tabel 'users'
         if (data && data.user) {
-            const { data: profileData, error: profileError } = await supa
-                .from('profiles')
-                .select('role, full_name, phone') // Tambahkan phone jika diperlukan
+            const { data: userData, error: userError } = await supa
+                .from('users') // <--- PERBAIKAN: Nama tabel 'users'
+                .select('role, full_name, phone') 
                 .eq('id', data.user.id)
                 .single();
 
-            if (profileError) {
-                console.error("[Backend] Error Ambil Profile:", profileError);
-                // Jika error adalah karena profile tidak ada, kita buat object dummy
-                // agar frontend tidak crash
+            if (userError) {
+                console.error("[Backend] Error Ambil User:", userError);
+                // Toleransi error: Jika profile belum ada, kita kembalikan data auth saja
+                return {
+                    success: true,
+                    user: {
+                        ...data.user,
+                        role: 'UNKNOWN', // Role default
+                        full_name: email.split('@')[0] // Nama default dari email
+                    }
+                };
             }
 
-            // Gabungkan ke response
+            // Gabungkan data Auth + Data Tabel Users
             return {
                 success: true,
                 user: {
-                    ...data.user, // ID, Email, Access Token, Refresh Token
-                    ...profileData // Role, Nama Lengkap, dll
+                    id: data.user.id,
+                    email: data.user.email,
+                    ...userData // role, full_name, phone
                 }
             };
         } else {
@@ -109,7 +128,7 @@ export async function login(email, password) {
 
     } catch (err) {
         console.error("[Backend] Error Login:", err);
-        throw err; // Lempar error ke controller agar bisa ditampilkan pesan error di frontend
+        throw err; 
     }
 }
 
@@ -118,21 +137,20 @@ export async function login(email, password) {
  * Endpoint yang biasanya: GET /api/auth/me
  * Menggunakan Bearer Token dari Header Authorization
  */
-export async function getUser(accessToken) {
+exports.getUser = async function(accessToken) {
     if (!accessToken) {
         throw new Error("Access Token tidak ditemukan.");
     }
 
     try {
-        // ✅ PERBAIKAN: Cara paling aman untuk Serverless Function
-        // Kita gunakan function getUser() dengan token langsung, bukan setSession.
+        // Mengambil user berdasarkan Access Token
         const { data: { user }, error } = await supa.auth.getUser(accessToken);
 
         if (error) throw error;
 
-        // Ambil data profile lagi jika perlu (untuk nama lengkap, dll)
-        const { data: profileData, error: profileError } = await supa
-            .from('profiles')
+        // Ambil data role/nama dari tabel 'users'
+        const { data: userData, error: userError } = await supa
+            .from('users') // <--- PERBAIKAN: Nama tabel 'users'
             .select('role, full_name')
             .eq('id', user.id)
             .single();
@@ -141,7 +159,7 @@ export async function getUser(accessToken) {
             success: true,
             user: {
                 ...user,
-                ...profileData
+                ...(userData || {}) // Gabungkan jika ada, jika tidak kosongkan
             }
         };
 
